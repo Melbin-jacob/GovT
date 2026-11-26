@@ -22,8 +22,9 @@ up:  ## Build and start postgres + rulebook (API on http://localhost:8000)
 down:  ## Stop the stack
 	docker compose down
 
-import-golden:  ## Regenerate data/catalogs from the golden-set CSV
+import-golden:  ## Regenerate catalogs from the golden-set CSVs (real and synthetic demo)
 	uv run rulebook import-golden data/golden/dadm-section6.csv
+	uv run rulebook import-golden data/demo/golden/example-widgets.csv --out-dir data/demo/catalogs
 
 migrate:  ## Apply database migrations to RULEBOOK_DATABASE_URL
 	uv run rulebook migrate

@@ -1,0 +1,21 @@
+# SYNTHETIC demo golden set for the fictional Directive on Example Widgets.
+SOURCE_DATE = "2026-11-27T00:00:00Z"
+VERSION = "1.0.0"
+GROUP_PREFIX = "widgets"
+# Source clauses use the numbering of the 2023-01-01 version.
+SOURCE_INSTRUMENT = "example-widgets"
+SOURCE_VERSION = "2023-01-01"
+SOURCE_META_DIR = "../sources"
+STATEMENT_STATUS = "synthetic-test-data"
+
+[catalog.en]
+document = "Directive on Example Widgets (synthetic)"
+href = "https://example.invalid/directive-on-example-widgets"
+title = "Directive on Example Widgets — checks (SYNTHETIC demo data)"
+remarks = "SYNTHETIC test data, not policy. Generated from {source} by the rulebook golden-set importer."
+
+[catalog.fr]
+document = "Directive sur les widgets d'exemple (synthétique)"
+href = "https://example.invalid/directive-sur-les-widgets"
+title = "Directive sur les widgets d'exemple — contrôles (données de démonstration SYNTHÉTIQUES)"
+remarks = "Données de test SYNTHÉTIQUES, pas une politique. Généré à partir de {source} par l'importateur de l'ensemble de référence du rulebook."

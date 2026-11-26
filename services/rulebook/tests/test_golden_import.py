@@ -5,6 +5,7 @@ import csv
 import json
 import re
 import shutil
+import tomllib
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -87,7 +88,7 @@ def test_real_golden_set_imports(tmp_path: Path) -> None:
         assert on_disk == result.catalogs[lang]
         meta = on_disk["catalog"]["metadata"]
         assert meta["oscal-version"] == "1.1.3"
-        assert meta["version"] == "1.0.0"
+        assert meta["version"] == "1.1.0"
         props = {p["name"]: p["value"] for p in meta["props"]}
         assert props["source-amended"] == "2025-06-24"
         assert props["statement-status"] == "paraphrase-pending-verification"
@@ -231,7 +232,8 @@ def test_last_modified_comes_from_source_date(tmp_path: Path) -> None:
     result = import_golden(GOLDEN, tmp_path)
     for lang in ("en", "fr"):
         stamp = result.catalogs[lang]["catalog"]["metadata"]["last-modified"]
-        assert datetime.fromisoformat(stamp) == datetime(2026, 11, 26, tzinfo=UTC)
+        expected = tomllib.loads(SETTINGS.read_text("utf-8"))["SOURCE_DATE"]
+        assert datetime.fromisoformat(stamp) == datetime.fromisoformat(expected)
 
 
 @pytest.mark.parametrize(

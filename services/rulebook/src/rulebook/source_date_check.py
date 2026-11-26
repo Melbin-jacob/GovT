@@ -17,20 +17,22 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-GOLDEN_DIR = "data/golden"
+GOLDEN_DIRS = ("data/golden", "data/demo/golden")
 
 
 @dataclass(frozen=True)
 class GoldenSet:
     name: str
+    directory: str = GOLDEN_DIRS[0]
 
     @property
     def guarded(self) -> tuple[str, ...]:
-        return (f"{GOLDEN_DIR}/{self.name}.csv", f"{GOLDEN_DIR}/{self.name}.groups.csv")
+        base = f"{self.directory}/{self.name}"
+        return (f"{base}.csv", f"{base}.groups.csv")
 
     @property
     def settings(self) -> str:
-        return f"{GOLDEN_DIR}/{self.name}.settings.toml"
+        return f"{self.directory}/{self.name}.settings.toml"
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -84,8 +86,17 @@ def check(repo: Path, base: str | None, head: str, golden: GoldenSet) -> list[st
     return problems
 
 
-def main(repo: Path, base: str | None, head: str, names: Sequence[str]) -> int:
-    problems = [p for name in names for p in check(repo, base, head, GoldenSet(name))]
+def discover(repo: Path) -> list[GoldenSet]:
+    """Every golden set with a settings file, in all golden-set directories."""
+    return [
+        GoldenSet(p.name.removesuffix(".settings.toml"), directory)
+        for directory in GOLDEN_DIRS
+        for p in sorted((repo / directory).glob("*.settings.toml"))
+    ]
+
+
+def main(repo: Path, base: str | None, head: str, sets: Sequence[GoldenSet]) -> int:
+    problems = [p for golden in sets for p in check(repo, base, head, golden)]
     for problem in problems:
         print(problem)
     if not problems:

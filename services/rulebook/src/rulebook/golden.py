@@ -22,6 +22,7 @@ Mapping (one CSV row -> one control in each language catalog, identical IDs):
 from __future__ import annotations
 
 import csv
+import json
 import re
 import tomllib
 from collections import Counter
@@ -73,6 +74,9 @@ REQUIRED_COLUMNS: tuple[str, ...] = (
 COL_APPLIES_FR = "S'applique lorsque"
 COL_EVIDENCE_FR = "Preuves attendues"
 COL_AGREED_FR = "Libellé final convenu"
+# Optional: semicolon-separated clause numbers in the source version named by SOURCE_VERSION.
+# Empty means "no links yet" (reported, not an error).
+COL_SOURCE_CLAUSES = "Source clauses"
 
 # Controlled vocabularies: CSV display value -> language-neutral code stored in both catalogs.
 NUMBERING_STATUS_CODES: dict[str, str] = {
@@ -92,38 +96,6 @@ _ID_CLAUSE_RE = re.compile(r"\d+(?:\.\d+)+")
 _TOKEN_RE = re.compile(r"^[^\W\d][\w.\-]*$")
 _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
-SOURCE_AMENDED = "2025-06-24"
-SOURCE: dict[Lang, dict[str, str]] = {
-    "en": {
-        "document": "Directive on Automated Decision-Making",
-        "href": "https://www.tbs-sct.canada.ca/pol/doc-eng.aspx?id=32592",
-        "title": "Directive on Automated Decision-Making — section 6 checks (golden set)",
-        "remarks": (
-            "Source: Directive on Automated Decision-Making, as amended 2025-06-24 "
-            "(Treasury Board of Canada Secretariat). Check statements are paraphrases "
-            "pending verification against the official text; they are not the text of the "
-            "Directive. Clause numbers are draft numbering. Generated from {source} by the "
-            "rulebook golden-set importer."
-        ),
-    },
-    "fr": {
-        "document": "Directive sur la prise de décisions automatisée",
-        "href": "https://www.tbs-sct.canada.ca/pol/doc-fra.aspx?id=32592",
-        "title": (
-            "Directive sur la prise de décisions automatisée — contrôles de la section 6 "
-            "(ensemble de référence)"
-        ),
-        "remarks": (
-            "Source : Directive sur la prise de décisions automatisée, telle que modifiée le "
-            "2025-06-24 (Secrétariat du Conseil du Trésor du Canada). Les énoncés des "
-            "contrôles sont des paraphrases en attente de vérification par rapport au texte "
-            "officiel; ils ne constituent pas le texte de la Directive. Les numéros de "
-            "disposition sont provisoires. Généré à partir de {source} par l'importateur de "
-            "l'ensemble de référence du rulebook."
-        ),
-    },
-}
-
 
 class GoldenImportError(ValueError):
     """The CSV cannot be imported. Lists every problem found, not just the first."""
@@ -131,6 +103,33 @@ class GoldenImportError(ValueError):
     def __init__(self, errors: Sequence[str]) -> None:
         self.errors = list(errors)
         super().__init__("golden-set import failed:\n" + "\n".join(f"  - {e}" for e in self.errors))
+
+
+@dataclass(frozen=True)
+class CatalogText:
+    document: str
+    href: str
+    title: str
+    remarks: str
+
+
+@dataclass(frozen=True)
+class GoldenSettings:
+    """Everything about a golden set that is not in its CSV (``<name>.settings.toml``)."""
+
+    path: Path
+    source_date: datetime
+    version: str
+    group_prefix: str
+    source_instrument: str
+    source_version: str
+    source_meta_dir: Path
+    statement_status: str
+    catalog: dict[Lang, CatalogText]
+
+    def meta_path(self, lang: Lang) -> Path:
+        name = f"{self.source_instrument}.{self.source_version}.{lang}.meta.json"
+        return self.source_meta_dir / name
 
 
 @dataclass(frozen=True)
@@ -152,10 +151,12 @@ class GoldenRow:
     reviewed: dict[Lang, bool]
     guidance: dict[Lang, str | None]
     objective: dict[Lang, str | None]
+    source_clauses: tuple[str, ...] = ()
 
 
 @dataclass
 class ImportResult:
+    settings: GoldenSettings
     name: str
     version: str
     source: Path
@@ -186,8 +187,8 @@ def section_of(clause: str) -> str | None:
     return f"{match.group(1)}.{match.group(2)}" if match else None
 
 
-def group_id(section: str) -> str:
-    return f"dadm-{section}"
+def group_id(section: str, prefix: str = "dadm") -> str:
+    return f"{prefix}-{section}"
 
 
 def read_groups(path: Path) -> dict[str, GroupTitle]:
@@ -280,6 +281,16 @@ def read_rows(
                     f"{check_id}: ID implies clause {id_clause.group(0)} but Clause is {clause!r}"
                 )
 
+            links = tuple(
+                p.strip() for p in _cell(record, COL_SOURCE_CLAUSES).split(";") if p.strip()
+            )
+            bad_links = [n for n in links if not _SINGLE_CLAUSE_RE.match(n)]
+            if bad_links:
+                errors.append(f"{where}: Source clauses {bad_links} are not clause numbers")
+                continue
+            if len(set(links)) != len(links):
+                errors.append(f"{where}: Source clauses lists a clause twice")
+                continue
             agreed_en, agreed_fr = _cell(record, COL_AGREED_EN), _cell(record, COL_AGREED_FR)
             rows.append(
                 GoldenRow(
@@ -300,6 +311,7 @@ def read_rows(
                         "en": _cell(record, COL_EVIDENCE_EN) or None,
                         "fr": _cell(record, COL_EVIDENCE_FR) or None,
                     },
+                    source_clauses=links,
                 )
             )
 
@@ -314,7 +326,7 @@ def _hub_prop(name: str, value: str) -> dict[str, str]:
     return {"name": name, "ns": OSCAL_NS, "value": value}
 
 
-def _control(row: GoldenRow, lang: Lang) -> dict[str, Any]:
+def _control(row: GoldenRow, lang: Lang, resource_uuid: str | None = None) -> dict[str, Any]:
     props: list[dict[str, str]] = [
         {"name": "label", "value": row.clause},
         _hub_prop("check-type", row.check_type),
@@ -324,6 +336,7 @@ def _control(row: GoldenRow, lang: Lang) -> dict[str, Any]:
         props.append(_hub_prop("numbering-note", row.numbering_note))
         props.append(_hub_prop("numbering-note-lang", NOTE_LANG))
     props.append(_hub_prop("review-status", "reviewed" if row.reviewed[lang] else "draft"))
+    props.extend(_hub_prop("source-clause", number) for number in row.source_clauses)
 
     parts: list[dict[str, str]] = [
         {"id": f"{row.check_id}_smt", "name": "statement", "prose": row.statement[lang]}
@@ -335,7 +348,56 @@ def _control(row: GoldenRow, lang: Lang) -> dict[str, Any]:
         parts.append(
             {"id": f"{row.check_id}_obj", "name": "assessment-objective", "prose": objective}
         )
-    return {"id": row.check_id, "title": row.check_id, "props": props, "parts": parts}
+    control: dict[str, Any] = {"id": row.check_id, "title": row.check_id, "props": props}
+    if row.source_clauses and resource_uuid:
+        control["links"] = [{"href": f"#{resource_uuid}", "rel": "reference"}]
+    control["parts"] = parts
+    return control
+
+
+def _source_resource(settings: GoldenSettings, lang: Lang) -> tuple[str, dict[str, Any]]:
+    """Back-matter resource describing the source version that source-clause props cite."""
+    uuid = stable_uuid("source-document", settings.source_instrument, settings.source_version, lang)
+    rlink: dict[str, Any] = {"href": settings.catalog[lang].href}
+    meta = settings.meta_path(lang)
+    if meta.is_file():
+        file_hash = json.loads(meta.read_text(encoding="utf-8"))["file"]["sha256"]
+        rlink["hashes"] = [{"algorithm": "SHA-256", "value": file_hash}]
+    return uuid, {
+        "uuid": uuid,
+        "title": f"{settings.catalog[lang].document} ({settings.source_version})",
+        "props": [
+            _hub_prop("source-instrument", settings.source_instrument),
+            _hub_prop("source-version", settings.source_version),
+            _hub_prop("language", lang),
+        ],
+        "rlinks": [rlink],
+    }
+
+
+def check_source_links(rows: Sequence[GoldenRow], settings: GoldenSettings) -> list[str]:
+    """Every linked clause must exist in the source version (both languages)."""
+    linked = [r for r in rows if r.source_clauses]
+    if not linked:
+        return []
+    errors: list[str] = []
+    for lang in LANGS:
+        meta = settings.meta_path(lang)
+        if not meta.is_file():
+            errors.append(
+                f"cannot check Source clauses: {meta} not found (import the {lang} source "
+                f"{settings.source_instrument} {settings.source_version} first)"
+            )
+            continue
+        numbers = {c["number"] for c in json.loads(meta.read_text(encoding="utf-8"))["clauses"]}
+        for row in linked:
+            missing = [n for n in row.source_clauses if n not in numbers]
+            if missing:
+                errors.append(
+                    f"{row.check_id}: Source clauses {missing} not in "
+                    f"{settings.source_instrument} {settings.source_version} ({lang})"
+                )
+    return errors
 
 
 def _section_key(section: str) -> tuple[int, ...]:
@@ -351,42 +413,47 @@ def build_catalog(
     version: str,
     source_name: str,
     last_modified: datetime,
+    settings: GoldenSettings,
 ) -> dict[str, Any]:
     """Build, normalize and schema-validate one language catalog.
 
     The top-level ``uuid`` is derived from the content hash, so the same content always
     yields the same uuid and any content change yields a new one.
     """
-    src = SOURCE[lang]
+    src = settings.catalog[lang]
+    resource_uuid, resource = _source_resource(settings, lang)
     sections = sorted({r.group for r in rows}, key=_section_key)
     body: dict[str, Any] = {
         "uuid": "00000000-0000-4000-8000-000000000000",  # replaced below
         "metadata": {
-            "title": src["title"],
+            "title": src.title,
             "last-modified": last_modified.isoformat(),
             "version": version,
             "oscal-version": OSCAL_VERSION,
             "props": [
                 _hub_prop("catalog-name", name),
                 _hub_prop("language", lang),
-                _hub_prop("source-document", src["document"]),
-                _hub_prop("source-amended", SOURCE_AMENDED),
-                _hub_prop("statement-status", "paraphrase-pending-verification"),
+                _hub_prop("source-document", src.document),
+                _hub_prop("source-amended", settings.source_version),
+                _hub_prop("statement-status", settings.statement_status),
                 _hub_prop("source-file", source_name),
+                _hub_prop("source-instrument", settings.source_instrument),
+                _hub_prop("source-version", settings.source_version),
             ],
-            "links": [{"href": src["href"], "rel": "reference", "text": src["document"]}],
-            "remarks": src["remarks"].format(source=source_name),
+            "links": [{"href": src.href, "rel": "reference", "text": src.document}],
+            "remarks": src.remarks.format(source=source_name),
         },
         "groups": [
             {
-                "id": group_id(section),
+                "id": group_id(section, settings.group_prefix),
                 "class": "section",
                 "title": groups[section].title[lang],
                 "props": [{"name": "label", "value": section}],
-                "controls": [_control(r, lang) for r in rows if r.group == section],
+                "controls": [_control(r, lang, resource_uuid) for r in rows if r.group == section],
             }
             for section in sections
         ],
+        "back-matter": {"resources": [resource]},
     }
     draft = normalize({"catalog": body}, "catalog")
     digest = content_hash(draft, "catalog")
@@ -396,11 +463,18 @@ def build_catalog(
     return final
 
 
-def read_settings(path: Path) -> datetime:
-    """Read ``SOURCE_DATE`` (ISO 8601 with a UTC offset) from the golden-set settings file.
+def _setting(settings: Mapping[str, Any], key: str, path: Path, default: str | None = None) -> str:
+    value = settings.get(key, default)
+    if not isinstance(value, str) or not value:
+        raise GoldenImportError([f"{path}: {key} must be a non-empty string"])
+    return value
 
-    It becomes every catalog's ``last-modified``, so output never depends on the clock.
-    Bump it whenever the CSV or groups file changes.
+
+def read_settings(path: Path) -> GoldenSettings:
+    """Read the golden-set settings file.
+
+    ``SOURCE_DATE`` (ISO 8601 with a UTC offset) becomes every catalog's ``last-modified``,
+    so output never depends on the clock. Bump it whenever the CSV or groups file changes.
     """
     try:
         settings = tomllib.loads(path.read_text(encoding="utf-8"))
@@ -417,7 +491,31 @@ def read_settings(path: Path) -> datetime:
         raise GoldenImportError([f"{path}: SOURCE_DATE {raw!r} is not ISO 8601"]) from None
     if value.tzinfo is None:
         raise GoldenImportError([f"{path}: SOURCE_DATE {raw!r} needs a UTC offset (e.g. Z)"])
-    return value.astimezone(UTC).replace(microsecond=0)
+    version = _setting(settings, "VERSION", path, "1.0.0")
+    if not _SEMVER_RE.match(version):
+        raise GoldenImportError([f"{path}: VERSION {version!r} is not MAJOR.MINOR.PATCH"])
+    catalog_tables = settings.get("catalog", {})
+    catalog: dict[Lang, CatalogText] = {}
+    for lang in LANGS:
+        table = catalog_tables.get(lang)
+        if not isinstance(table, dict):
+            raise GoldenImportError([f"{path}: missing [catalog.{lang}] table"])
+        catalog[lang] = CatalogText(
+            **{k: _setting(table, k, path) for k in ("document", "href", "title", "remarks")}
+        )
+    return GoldenSettings(
+        path=path,
+        source_date=value.astimezone(UTC).replace(microsecond=0),
+        version=version,
+        group_prefix=_setting(settings, "GROUP_PREFIX", path),
+        source_instrument=_setting(settings, "SOURCE_INSTRUMENT", path),
+        source_version=_setting(settings, "SOURCE_VERSION", path),
+        source_meta_dir=(path.parent / _setting(settings, "SOURCE_META_DIR", path)).resolve(),
+        statement_status=_setting(
+            settings, "STATEMENT_STATUS", path, "paraphrase-pending-verification"
+        ),
+        catalog=catalog,
+    )
 
 
 def import_golden(
@@ -425,14 +523,14 @@ def import_golden(
     out_dir: Path,
     *,
     name: str | None = None,
-    version: str = "1.0.0",
+    version: str | None = None,
     groups_path: Path | None = None,
     settings_path: Path | None = None,
     source_date: datetime | None = None,
     write: bool = True,
 ) -> ImportResult:
     """Import a golden-set CSV into EN and FR catalogs (validated, parity-checked)."""
-    if not _SEMVER_RE.match(version):
+    if version is not None and not _SEMVER_RE.match(version):
         raise GoldenImportError([f"version {version!r} is not MAJOR.MINOR.PATCH"])
     name = name or csv_path.name.removesuffix(".csv")
     groups_path = groups_path or csv_path.with_name(f"{name}.groups.csv")
@@ -440,10 +538,19 @@ def import_golden(
         raise GoldenImportError([f"groups file not found: {groups_path}"])
     groups = read_groups(groups_path)
     rows, warnings = read_rows(csv_path, groups)
-    if source_date is None:
-        source_date = read_settings(settings_path or csv_path.with_name(f"{name}.settings.toml"))
+    settings = read_settings(settings_path or csv_path.with_name(f"{name}.settings.toml"))
+    link_errors = check_source_links(rows, settings)
+    if link_errors:
+        raise GoldenImportError(link_errors)
+    source_date = source_date or settings.source_date
+    version = version or settings.version
 
-    kwargs: dict[str, Any] = {"name": name, "version": version, "source_name": csv_path.name}
+    kwargs: dict[str, Any] = {
+        "name": name,
+        "version": version,
+        "source_name": csv_path.name,
+        "settings": settings,
+    }
     catalogs: dict[Lang, dict[str, Any]] = {
         lang: build_catalog(rows, groups, lang, last_modified=source_date, **kwargs)
         for lang in LANGS
@@ -461,6 +568,7 @@ def import_golden(
             path.write_text(text, encoding="utf-8")
 
     return ImportResult(
+        settings=settings,
         name=name,
         version=version,
         source=csv_path,
@@ -482,7 +590,8 @@ def format_summary(result: ImportResult) -> str:
     ]
     by_group = Counter(r.group for r in rows)
     for section in sorted(by_group, key=_section_key):
-        lines.append(f"    {group_id(section):<10} {by_group[section]:>3} controls")
+        gid = group_id(section, result.settings.group_prefix)
+        lines.append(f"    {gid:<10} {by_group[section]:>3} controls")
     for label, counter in (
         ("numbering-status", Counter(r.numbering_status for r in rows)),
         ("check-type", Counter(r.check_type for r in rows)),
@@ -498,6 +607,14 @@ def format_summary(result: ImportResult) -> str:
         "  fr optional parts present: " + ", ".join(f"{k}={v}" for k, v in fr_extra.items())
     )
     lines.append("  EN/FR parity: OK (identical control IDs)")
+    settings = result.settings
+    unlinked = [r.check_id for r in rows if not r.source_clauses]
+    lines.append(
+        f"  source links ({settings.source_instrument} {settings.source_version}): "
+        f"{len(rows) - len(unlinked)}/{len(rows)} controls linked"
+    )
+    if unlinked:
+        lines.append(f"    no links yet ({len(unlinked)}): {', '.join(unlinked)}")
     for lang in LANGS:
         doc = result.catalogs[lang]["catalog"]
         state = "written" if result.changed[lang] else "unchanged"

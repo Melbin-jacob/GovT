@@ -92,8 +92,12 @@ def client(engine: Engine, db: Session) -> Iterator[TestClient]:
 
 
 def _load(lang: str) -> dict[str, Any]:
+    """The committed golden catalog, pinned to version 1.0.0 so API tests can build
+    later versions (1.0.1, 1.1.0 ...) on top of it whatever the committed version is."""
+    from helpers import new_version
+
     data: dict[str, Any] = json.loads((CATALOGS / f"dadm-section6.{lang}.json").read_text())
-    return data
+    return new_version(data, "1.0.0")
 
 
 @pytest.fixture

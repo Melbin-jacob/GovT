@@ -3,4 +3,33 @@
 # Becomes `metadata.last-modified` of both generated catalogs. ISO 8601 with a UTC offset.
 # The importer never uses the current time, so output is reproducible from a clean clone.
 # Bump this whenever dadm-section6.csv or dadm-section6.groups.csv changes.
-SOURCE_DATE = "2026-11-26T00:00:00Z"
+SOURCE_DATE = "2026-11-27T00:00:00Z"
+
+# Catalog semantic version written to metadata.version.
+VERSION = "1.1.0"
+
+# Group IDs are <GROUP_PREFIX>-<section>, e.g. dadm-6.1.
+GROUP_PREFIX = "dadm"
+
+# The source document the "Source clauses" column refers to (instrument key in
+# data/sources/instruments.toml, effective date), and where its *.meta.json files are,
+# relative to this file. Clause numbers in that column use this version's numbering.
+SOURCE_INSTRUMENT = "dadm"
+SOURCE_VERSION = "2025-06-24"
+SOURCE_META_DIR = "../sources"
+
+STATEMENT_STATUS = "paraphrase-pending-verification"
+
+# Catalog title and remarks (unverified, written by Claude Code: docs/decisions.md #16).
+# {source} is replaced by the CSV file name.
+[catalog.en]
+document = "Directive on Automated Decision-Making"
+href = "https://www.tbs-sct.canada.ca/pol/doc-eng.aspx?id=32592"
+title = "Directive on Automated Decision-Making — section 6 checks (golden set)"
+remarks = "Source: Directive on Automated Decision-Making, as amended 2025-06-24 (Treasury Board of Canada Secretariat). Check statements are paraphrases pending verification against the official text; they are not the text of the Directive. Clause numbers are draft numbering. Generated from {source} by the rulebook golden-set importer."
+
+[catalog.fr]
+document = "Directive sur la prise de décisions automatisée"
+href = "https://www.tbs-sct.canada.ca/pol/doc-fra.aspx?id=32592"
+title = "Directive sur la prise de décisions automatisée — contrôles de la section 6 (ensemble de référence)"
+remarks = "Source : Directive sur la prise de décisions automatisée, telle que modifiée le 2025-06-24 (Secrétariat du Conseil du Trésor du Canada). Les énoncés des contrôles sont des paraphrases en attente de vérification par rapport au texte officiel; ils ne constituent pas le texte de la Directive. Les numéros de disposition sont provisoires. Généré à partir de {source} par l'importateur de l'ensemble de référence du rulebook."

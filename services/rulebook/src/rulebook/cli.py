@@ -92,6 +92,28 @@ def _import_source(args: argparse.Namespace) -> int:
     return status
 
 
+def _suggest(args: argparse.Namespace) -> int:
+    from rulebook.golden import GoldenImportError, read_groups, read_rows
+    from rulebook.sources.model import SourceDocument
+    from rulebook.sources.suggest import suggest, to_csv
+
+    golden = Path(args.golden)
+    name = golden.name.removesuffix(".csv")
+    try:
+        rows, _ = read_rows(golden, read_groups(golden.with_name(f"{name}.groups.csv")))
+    except GoldenImportError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    source = SourceDocument.model_validate_json(Path(args.source).read_text(encoding="utf-8"))
+    text = to_csv(suggest(rows, source, lang=args.lang, top=args.top, with_text=args.with_text))
+    if args.out:
+        Path(args.out).write_text(text, encoding="utf-8")
+        print(f"{len(rows)} checks -> {args.out}", file=sys.stderr)
+    else:
+        print(text, end="")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rulebook", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -110,7 +132,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     golden.add_argument("csv", help="Path to the golden-set CSV")
     golden.add_argument("--out-dir", default="data/catalogs")
     golden.add_argument("--name", help="Catalog name (default: CSV file name without .csv)")
-    golden.add_argument("--version", default="1.0.0", help="Semantic version (default 1.0.0)")
+    golden.add_argument("--version", help="Semantic version (default: VERSION in settings)")
     golden.add_argument("--groups", help="Groups CSV (default: <name>.groups.csv beside the CSV)")
     golden.add_argument(
         "--settings", help="Settings TOML with SOURCE_DATE (default: <name>.settings.toml)"
@@ -151,8 +173,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--check", action="store_true", help="Write nothing; exit 1 if *.meta.json is stale"
     )
     sub.add_parser("source-schema", help="Print the source-document JSON Schema")
+    sug = sub.add_parser(
+        "suggest-source-clauses",
+        help="Propose source clauses for each golden-set check (review CSV; nothing applied)",
+    )
+    sug.add_argument("golden", help="Golden-set CSV")
+    sug.add_argument("--source", required=True, help="Full source-document JSON (with text)")
+    sug.add_argument("--lang", choices=["en", "fr"], default="en")
+    sug.add_argument("--top", type=int, default=3)
+    sug.add_argument(
+        "--with-text",
+        action="store_true",
+        help="Include clause text excerpts (keep the output out of git for official text)",
+    )
+    sug.add_argument("--out", help="Write here (default: stdout)")
 
     args = parser.parse_args(argv)
+    if args.command == "suggest-source-clauses":
+        return _suggest(args)
     if args.command == "import-source":
         return _import_source(args)
     if args.command == "source-schema":
@@ -161,15 +199,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json_schema(), end="")
         return 0
     if args.command == "check-source-date":
-        from rulebook.source_date_check import GOLDEN_DIR
+        from rulebook.source_date_check import discover
         from rulebook.source_date_check import main as check_main
 
         repo = Path(args.repo)
-        names = args.name or sorted(
-            p.name.removesuffix(".settings.toml")
-            for p in (repo / GOLDEN_DIR).glob("*.settings.toml")
-        )
-        return check_main(repo, args.base or None, args.head, names)
+        sets = [g for g in discover(repo) if not args.name or g.name in args.name]
+        return check_main(repo, args.base or None, args.head, sets)
     if args.command == "resolve-profile":
         return _resolve_profile(args)
     if args.command == "import-golden":

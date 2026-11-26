@@ -34,8 +34,13 @@ jobs:
       - run: make lint
       - run: make typecheck
       - run: make test
-      - name: Committed catalogs match the golden-set CSV
-        run: uv run rulebook import-golden data/golden/dadm-section6.csv --check
+      - name: Committed catalogs match the golden-set CSVs
+        run: |
+          uv run rulebook import-golden data/golden/dadm-section6.csv --check
+          uv run rulebook import-golden data/demo/golden/example-widgets.csv \
+            --out-dir data/demo/catalogs --check
+      - name: Committed source metadata matches the synthetic source files
+        run: uv run rulebook import-source --check data/demo/sources/*.txt data/demo/sources/*.html
 
   golden-set-hygiene:
     name: Golden set changes advance SOURCE_DATE
