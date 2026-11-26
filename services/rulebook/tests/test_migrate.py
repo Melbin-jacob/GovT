@@ -81,3 +81,12 @@ def test_upgrade_waits_for_the_lock(scratch_url: str) -> None:
         assert _head(scratch_url) == HEAD
     finally:
         holder.dispose()
+
+
+def test_every_table_is_truncated_between_tests() -> None:
+    """A table missing from conftest.TABLES leaks rows between tests."""
+    from conftest import TABLES
+
+    from rulebook.models import Base
+
+    assert set(Base.metadata.tables) <= set(TABLES)

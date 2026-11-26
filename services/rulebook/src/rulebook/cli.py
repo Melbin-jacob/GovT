@@ -114,6 +114,20 @@ def _suggest(args: argparse.Namespace) -> int:
     return 0
 
 
+def _inventory_json(args: argparse.Namespace) -> int:
+    from rulebook.inventory import InventoryError, parse_inventory_csv
+
+    path = Path(args.csv)
+    try:
+        inventory = parse_inventory_csv(path.read_text(encoding="utf-8"), source=path.name)
+    except InventoryError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    print(inventory.model_dump_json(indent=2))
+    print(f"{len(inventory.systems)} systems, hash {inventory.content_hash()}", file=sys.stderr)
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rulebook", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -188,7 +202,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     sug.add_argument("--out", help="Write here (default: stdout)")
 
+    invj = sub.add_parser(
+        "inventory-json", help="Validate an inventory CSV and print the PUT /inventory payload"
+    )
+    invj.add_argument("csv")
+
     args = parser.parse_args(argv)
+    if args.command == "inventory-json":
+        return _inventory_json(args)
     if args.command == "suggest-source-clauses":
         return _suggest(args)
     if args.command == "import-source":
