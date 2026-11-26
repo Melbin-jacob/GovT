@@ -81,15 +81,17 @@ jobs:
       - name: API smoke test (store golden catalogs, retire, diff)
         run: |
           set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("data/catalogs/dadm-section6.en.json"))["catalog"]["metadata"]["version"])')
+          next=$(python3 -c "v='$version'.split('.'); print(f'{v[0]}.{int(v[1]) + 1}.0')")
           for lang in en fr; do
             curl --fail -sS -X POST localhost:8000/catalogs -H 'content-type: application/json' \
               --data-binary @data/catalogs/dadm-section6.$lang.json
             echo
           done
           curl --fail -sS -X POST \
-            localhost:8000/catalogs/dadm-section6/versions/1.0.0/retire-control/DADM-6.3.5
+            "localhost:8000/catalogs/dadm-section6/versions/$version/retire-control/DADM-6.3.5"
           echo
-          curl --fail -sS "localhost:8000/catalogs/dadm-section6/diff?from=1.0.0&to=1.1.0" \
+          curl --fail -sS "localhost:8000/catalogs/dadm-section6/diff?from=$version&to=$next" \
             | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["summary"]); assert d["retired"] == ["DADM-6.3.5"]'
       - name: Example profile resolves inside the image
         run: >-
