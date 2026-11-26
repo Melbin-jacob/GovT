@@ -13,9 +13,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from govhub_shared.oscal import OscalValidationError, ProfileResolutionError, resolve_profile
 from rulebook import store
 from rulebook.db import get_session
 from rulebook.diff import CatalogDiff
+from rulebook.profiles import store_loader
 
 app = FastAPI(
     title="Canadian AI Governance Hub - Rulebook",
@@ -186,6 +188,35 @@ def diff_get(
 ) -> CatalogDiff:
     """Read-only alias of ``POST /catalogs/{name}/diff``."""
     return _diff(name, session, from_version, to_version, lang)
+
+
+# --- profiles --------------------------------------------------------------------------
+
+
+class ResolvedProfileOut(BaseModel):
+    control_ids: list[str]
+    warnings: list[str]
+    catalog: dict[str, Any]
+
+
+@app.post("/profiles/resolve", tags=["profiles"], response_model=ResolvedProfileOut)
+def resolve_profile_endpoint(
+    session: Annotated[Session, Depends(get_session)],
+    profile: Annotated[dict[str, Any], Body(description="OSCAL 1.1.3 profile document")],
+) -> Any:
+    """Resolve a profile into a flat catalog. Import hrefs must name stored catalog
+    versions: ``/catalogs/{name}/versions/{version}?lang=en``."""
+    try:
+        result = resolve_profile(profile, store_loader(session))
+    except OscalValidationError as exc:
+        raise store.InvalidCatalogError("profile does not validate", exc.errors) from exc
+    except ProfileResolutionError as exc:
+        raise store.InvalidCatalogError("profile could not be resolved", exc.errors) from exc
+    return {
+        "control_ids": result.control_ids,
+        "warnings": result.warnings,
+        "catalog": result.catalog,
+    }
 
 
 # --- controls --------------------------------------------------------------------------

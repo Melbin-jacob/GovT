@@ -124,4 +124,28 @@ The changed control carries `"flags": ["obligation-change"]`, with `obligations_
 and `obligations_after: ["must"]`. Obligation words: EN must, shall, should, may, required;
 FR doit, doivent, peut, peuvent, est tenu(e).
 
-<!-- TODO(milestone-1): profiles (commit 6). -->
+## Profiles
+
+An OSCAL profile selects and tailors controls; resolving it gives a flat catalog that the
+assessment engine will evaluate. `data/profiles/dadm-level-ii-plus.json` is an
+**illustrative** Level II+ baseline that selects controls by ID (impact-level selection waits
+for the Appendix C mapping):
+
+```bash
+uv run rulebook resolve-profile data/profiles/dadm-level-ii-plus.json --ids   # control IDs
+uv run rulebook resolve-profile data/profiles/dadm-level-ii-plus.json --out /tmp/resolved.json
+```
+
+Through the API, import hrefs name stored catalog versions:
+
+```bash
+jq '.profile.imports[0].href = "/catalogs/dadm-section6/versions/1.0.0?lang=fr"' \
+  data/profiles/dadm-level-ii-plus.json \
+  | curl -s -X POST localhost:8000/profiles/resolve -H 'content-type: application/json' \
+      --data-binary @- | jq .control_ids
+```
+
+Supported: `include-all`, `include-controls`/`exclude-controls` (`with-ids`, `matching`),
+`merge` as-is or flat, `modify.set-parameters`. Unsupported features (`alters`, custom
+merge, profile-to-profile imports) fail loudly. Withdrawn controls are never included.
+Resolution never fetches anything over the network.

@@ -13,21 +13,31 @@ from govhub_shared.oscal.documents import (
     stable_uuid,
     unwrap,
 )
+from govhub_shared.oscal.profile import (
+    CatalogLoader,
+    ProfileResolutionError,
+    ResolvedProfile,
+    resolve_profile,
+)
 from govhub_shared.oscal.schema import OscalValidationError, schema_dir, validate
 from govhub_shared.oscal.trestle_bridge import normalize
 from govhub_shared.oscal.views import ControlView, PartView, PropView, iter_controls
 
 __all__ = [
+    "CatalogLoader",
     "ControlView",
     "OscalKind",
     "OscalValidationError",
     "PartView",
+    "ProfileResolutionError",
     "PropView",
+    "ResolvedProfile",
     "canonical_bytes",
     "content_hash",
     "dump_json",
     "iter_controls",
     "normalize",
+    "resolve_profile",
     "schema_dir",
     "stable_uuid",
     "unwrap",

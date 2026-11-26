@@ -32,6 +32,34 @@ def _import_golden(args: argparse.Namespace) -> int:
     return 0
 
 
+def _resolve_profile(args: argparse.Namespace) -> int:
+    import json
+
+    from govhub_shared.oscal import ProfileResolutionError, dump_json, resolve_profile
+    from rulebook.profiles import file_loader
+
+    path = Path(args.profile)
+    try:
+        result = resolve_profile(
+            json.loads(path.read_text(encoding="utf-8")),
+            file_loader(path.parent),
+            source_href=path.name,
+        )
+    except ProfileResolutionError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    for warning in result.warnings:
+        print(f"warning: {warning}", file=sys.stderr)
+    if args.ids:
+        print("\n".join(result.control_ids))
+    elif args.out:
+        Path(args.out).write_text(dump_json(result.catalog), encoding="utf-8")
+        print(f"{len(result.control_ids)} controls -> {args.out}", file=sys.stderr)
+    else:
+        print(dump_json(result.catalog), end="")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rulebook", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -61,7 +89,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Write nothing; exit 1 if the committed catalogs are out of date",
     )
 
+    resolve = sub.add_parser(
+        "resolve-profile", help="Resolve an OSCAL profile (local files only) to a flat catalog"
+    )
+    resolve.add_argument("profile", help="Path to the profile JSON")
+    resolve.add_argument("--out", help="Write the resolved catalog here instead of stdout")
+    resolve.add_argument("--ids", action="store_true", help="Print only the control IDs")
+
     args = parser.parse_args(argv)
+    if args.command == "resolve-profile":
+        return _resolve_profile(args)
     if args.command == "import-golden":
         return _import_golden(args)
     if args.command == "migrate" or (args.command == "serve" and args.migrate):
