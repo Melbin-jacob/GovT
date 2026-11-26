@@ -50,6 +50,19 @@ jobs:
         run: >-
           docker compose exec -T rulebook python -c
           "from govhub_shared.oscal import schema_dir; print(schema_dir())"
+      - name: API smoke test (store golden catalogs, retire, diff)
+        run: |
+          set -euo pipefail
+          for lang in en fr; do
+            curl --fail -sS -X POST localhost:8000/catalogs -H 'content-type: application/json' \
+              --data-binary @data/catalogs/dadm-section6.$lang.json
+            echo
+          done
+          curl --fail -sS -X POST \
+            localhost:8000/catalogs/dadm-section6/versions/1.0.0/retire-control/DADM-6.3.5
+          echo
+          curl --fail -sS "localhost:8000/catalogs/dadm-section6/diff?from=1.0.0&to=1.1.0" \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["summary"]); assert d["retired"] == ["DADM-6.3.5"]'
       - name: Logs on failure
         if: failure()
         run: docker compose logs

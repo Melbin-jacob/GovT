@@ -21,4 +21,6 @@ RUN chgrp -R 0 /app && chmod -R g=u /app
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 USER 1001
 EXPOSE 8000
-CMD ["rulebook", "serve", "--host", "0.0.0.0", "--port", "8000"]
+# --migrate applies Alembic migrations at start-up (idempotent). On Kubernetes you may prefer
+# a separate `rulebook migrate` Job and drop the flag.
+CMD ["rulebook", "serve", "--migrate", "--host", "0.0.0.0", "--port", "8000"]

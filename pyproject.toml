@@ -50,6 +50,7 @@ plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 testpaths = ["shared/tests", "services/rulebook/tests"]
+pythonpath = ["services/rulebook/tests"]
 addopts = "-ra --import-mode=importlib"
 filterwarnings = [
     "error",

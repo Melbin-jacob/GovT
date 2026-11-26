@@ -39,6 +39,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     serve = sub.add_parser("serve", help="Run the rulebook API")
     serve.add_argument("--host", default="0.0.0.0")  # noqa: S104 - container entrypoint
     serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument(
+        "--migrate", action="store_true", help="Apply database migrations before serving"
+    )
+    sub.add_parser("migrate", help="Apply database migrations (alembic upgrade head)")
 
     golden = sub.add_parser(
         "import-golden", help="Import a golden-set CSV into EN and FR OSCAL catalogs"
@@ -60,6 +64,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "import-golden":
         return _import_golden(args)
+    if args.command == "migrate" or (args.command == "serve" and args.migrate):
+        from rulebook.migrate import upgrade
+
+        upgrade()
     if args.command == "serve":
         import uvicorn
 
