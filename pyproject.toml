@@ -23,6 +23,8 @@ dev = [
     "mypy>=1.13",
     "pytest>=8.3",
     "httpx>=0.28",
+    "types-regex>=2026.11.24.20261126",
+    "types-jsonschema>=4.26.0.20261006",
 ]
 
 [tool.ruff]

@@ -46,6 +46,10 @@ jobs:
         run: curl --fail --silent --show-error http://localhost:8000/health
       - name: Readiness (database reachable)
         run: curl --fail --silent --show-error http://localhost:8000/ready
+      - name: Vendored OSCAL schemas resolve inside the image
+        run: >-
+          docker compose exec -T rulebook python -c
+          "from govhub_shared.oscal import schema_dir; print(schema_dir())"
       - name: Logs on failure
         if: failure()
         run: docker compose logs
