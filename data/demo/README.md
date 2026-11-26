@@ -8,13 +8,13 @@ The two versions are built to exercise the clause diff:
 
 | Change (2023-01-01 → 2025-01-01) | Clauses |
 |---|---|
-| Unchanged | 6.1.1 (FR differs only in typography: œ/oe) |
+| Unchanged | 6.1.1 (FR differs only in typography: œ → oe) |
 | Wording change, no obligation change | 6.1.2 |
-| Added | 6.2.1, 6.2.2 |
+| Added | 6.2.1, 6.2.2 (new section 6.2) |
 | Renumbered + obligation change (should → must) | 6.2.1 → 6.3.1 |
-| Renumbered only (FR differs only in apostrophes) | 6.2.2 → 6.3.2, 6.2.3 → 6.3.3 |
-| Split | 6.3.1 → 6.4.1 + 6.4.2 |
+| Renumbered only (FR differs only in apostrophes) | 6.2.2 → 6.3.2, 6.2.3 → 6.3.3, 6.4.1 → 6.5.1 |
+| Split (obligations preserved across the parts) | 6.3.1 → 6.4.1 + 6.4.2 |
 | Removed | 6.3.2 |
-| Renumbered only | 6.4.1 → 6.5.1, 6.4.2 → 6.5.2 |
+| Renumbered + sentence added (nested bullet in the HTML) | 6.4.2 → 6.5.2 |
 
 The expected mapping is recorded in `expected-diff.json` and checked by the tests.

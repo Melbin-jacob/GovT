@@ -1,0 +1,18 @@
+{
+  "_comment": "Hand-written ground truth for the SYNTHETIC Directive on Example Widgets, 2023-01-01 -> 2025-01-01. Same mapping in EN and FR.",
+  "pairs": {
+    "6.1.1": ["6.1.1", "unchanged"],
+    "6.1.2": ["6.1.2", "changed"],
+    "6.2.1": ["6.3.1", "changed-renumbered"],
+    "6.2.2": ["6.3.2", "renumbered"],
+    "6.2.3": ["6.3.3", "renumbered"],
+    "6.3.1": ["6.4.2", "changed-renumbered"],
+    "6.4.1": ["6.5.1", "renumbered"],
+    "6.4.2": ["6.5.2", "changed-renumbered"]
+  },
+  "obligation_change": ["6.2.1"],
+  "splits": {"6.3.1": ["6.4.1", "6.4.2"]},
+  "added": ["6.2.1", "6.2.2"],
+  "removed": ["6.3.2"],
+  "typography_only_fr": ["6.1.1", "6.2.2", "6.2.3", "6.4.1"]
+}
