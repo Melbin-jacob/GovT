@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="RULEBOOK_")
 
     database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/rulebook"
+    # Relative paths resolve against the working directory (/app in the container).
+    due_dates_path: str = "data/config/due-dates.toml"
 
 
 @lru_cache

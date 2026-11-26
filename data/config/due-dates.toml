@@ -1,0 +1,15 @@
+# Reassessment due dates by AIA impact level, in days after the report's as_of date.
+#
+# PLACEHOLDER VALUES — NOT POLICY. Every entry is marked status = "PLACEHOLDER" and every
+# generated task repeats that marker. Replace with the deploying organization's policy
+# (see docs/decisions.md). Tenants can override any level.
+
+[default]
+level_4 = { days = 30, status = "PLACEHOLDER" }
+level_3 = { days = 45, status = "PLACEHOLDER" }
+level_2 = { days = 60, status = "PLACEHOLDER" }
+level_1 = { days = 90, status = "PLACEHOLDER" }
+
+# Example per-tenant override (fictional tenant).
+[tenants.office-fictional-permits]
+level_3 = { days = 30, status = "PLACEHOLDER" }
