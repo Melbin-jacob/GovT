@@ -97,6 +97,15 @@ jobs:
         run: >-
           docker compose exec -T rulebook
           rulebook resolve-profile data/profiles/dadm-level-ii-plus.json --ids
+      - name: Demo - policy diff to impact report (synthetic data)
+        run: scripts/demo-impact.sh http://localhost:8000 demo-output
+      - name: Keep demo output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-output
+          path: demo-output/
+          if-no-files-found: ignore
       - name: Logs on failure
         if: failure()
         run: docker compose logs

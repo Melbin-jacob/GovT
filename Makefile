@@ -1,4 +1,4 @@
-.PHONY: setup lint typecheck test up down check import-golden migrate
+.PHONY: setup lint typecheck test up down check import-golden migrate demo
 
 setup:  ## Install all workspace packages and dev tools
 	uv sync --all-packages --frozen
@@ -28,3 +28,6 @@ import-golden:  ## Regenerate catalogs from the golden-set CSVs (real and synthe
 
 migrate:  ## Apply database migrations to RULEBOOK_DATABASE_URL
 	uv run rulebook migrate
+
+demo:  ## Run the synthetic policy-diff -> impact-report demo against `make up`
+	scripts/demo-impact.sh http://localhost:8000 demo-output

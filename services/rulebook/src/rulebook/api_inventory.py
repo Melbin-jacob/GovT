@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Body, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -43,21 +43,44 @@ def get_profile(name: str, session: ReadSession) -> dict[str, Any]:
     return inv.get_profile(session, name)
 
 
-@router.put("/inventory", tags=["inventory"], status_code=201)
-def put_inventory(
+@router.put(
+    "/inventory",
+    tags=["inventory"],
+    status_code=201,
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {"schema": {"type": "object"}},
+                "text/csv": {"schema": {"type": "string"}},
+            },
+            "required": True,
+        }
+    },
+)
+async def put_inventory(
+    request: Request,
     session: Tx,
     user: User,
-    payload: Annotated[dict[str, Any], Body(description='{"source": ..., "systems": [...]}')],
+    source: Annotated[str, Query(description="Label for the snapshot (CSV uploads)")] = "csv",
 ) -> dict[str, Any]:
-    """Replace the current inventory with a new snapshot. Every profile a system names must
-    already be stored."""
-    try:
-        inventory = inv.Inventory.model_validate(payload)
-    except ValidationError as exc:
-        raise InvalidCatalogError(
-            "inventory is invalid",
-            [f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in exc.errors()],
-        ) from exc
+    """Replace the current inventory with a new snapshot. Send JSON
+    (``{"source": ..., "systems": [...]}``) or the inventory CSV itself with
+    ``Content-Type: text/csv``. Every profile a system names must already be stored."""
+    body = await request.body()
+    if request.headers.get("content-type", "").startswith("text/csv"):
+        try:
+            inventory = inv.parse_inventory_csv(body.decode("utf-8-sig"), source=source)
+        except (inv.InventoryError, UnicodeDecodeError) as exc:
+            errors = exc.errors if isinstance(exc, inv.InventoryError) else [str(exc)]
+            raise InvalidCatalogError("inventory CSV is invalid", errors) from exc
+    else:
+        try:
+            inventory = inv.Inventory.model_validate_json(body)
+        except ValidationError as exc:
+            raise InvalidCatalogError(
+                "inventory is invalid",
+                [f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in exc.errors()],
+            ) from exc
     return inv.store_inventory(session, inventory, user=user)
 
 

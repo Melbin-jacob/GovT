@@ -18,18 +18,24 @@ services/review-desk/        later: review queue, evidence vault, hash-chained l
 services/control-centre/     later: OIDC, roles, tenants, residency, bilingual UI
 shared/                      common models, OSCAL helpers, model-gateway interface (stub)
 data/golden/                 hand-mapped golden set (CSV) — the only source of check wording
+data/sources/                source-document registry + metadata-only JSON (raw/ is gitignored)
+data/inventory/              fictional AI-system inventory (CSV)
+data/config/                 due-date policy (PLACEHOLDER values)
+data/demo/                   SYNTHETIC demo: Directive on Example Widgets, its catalogs and profiles
 data/catalogs/               generated OSCAL catalogs (EN and FR)
 schemas/                     vendored NIST OSCAL 1.1.3 JSON schemas
 docs/                        design notes
 ```
 
-## Status: Milestone 1
+## Status: Milestones 1 and 2
 
 | Done | Item |
 |---|---|
 | ✅ | Golden-set importer → EN and FR OSCAL 1.1.3 catalogs, schema-validated, EN/FR parity, reproducible |
 | ✅ | Rulebook API: immutable versions in PostgreSQL, diff with `obligation-change`, retire, control lookup |
 | ✅ | Profiles: example Level II+ profile and resolver |
+| ✅ | **M2** Source documents: official text imported from local files (never committed), clause diff with renumbering, splits, obligation changes and EN/FR cross-check |
+| ✅ | **M2** Clause-to-control links, suggestion report, fictional inventory, impact report with ranked systems and ServiceNow-shaped tasks |
 | ⏳ later | connector-hub, assessment-engine, review-desk, control-centre (stubs + TODOs), OIDC auth, LLM drafting |
 
 Definition of done, checked in CI on every push: `make setup && make test` on a clean
@@ -138,7 +144,7 @@ The changed control carries `"flags": ["obligation-change"]`, with `obligations_
 and `obligations_after: ["must"]`. Obligation words: EN must, shall, should, may, required;
 FR doit, doivent, peut, peuvent, est tenu(e).
 
-## Profiles
+## Profiles (and stored profiles)
 
 An OSCAL profile selects and tailors controls; resolving it gives a flat catalog that the
 assessment engine will evaluate. `data/profiles/dadm-level-ii-plus.json` is an
@@ -163,3 +169,86 @@ Supported: `include-all`, `include-controls`/`exclude-controls` (`with-ids`, `ma
 `merge` as-is or flat, `modify.set-parameters`. Unsupported features (`alters`, custom
 merge, profile-to-profile imports) fail loudly. Withdrawn controls are never included.
 Resolution never fetches anything over the network.
+
+Stored profiles: `PUT /profiles/{name}` (the `profile-name` metadata prop must match),
+`GET /profiles`. Systems in the inventory refer to profiles by name.
+
+## Source documents (official policy text)
+
+Official policy text is supplied by the deploying organization; EGCS does not distribute it.
+**Never commit it.** Put pages saved from the Treasury Board site in `data/sources/raw/`
+(gitignored and excluded from Docker builds), named `<instrument>.<YYYY-MM-DD>.<en|fr>.html`,
+for example `dadm.2025-06-24.en.html`:
+
+```bash
+uv run rulebook import-source data/sources/raw/dadm.2025-06-24.en.html --retrieved 2026-11-27
+```
+
+This writes the full document (with text) beside the raw file, and a **metadata-only** file
+(`data/sources/dadm.2025-06-24.en.meta.json`: file hash, clause numbers and hashes, no text),
+which is the only part that may be committed. Real-text tests run locally and are skipped,
+with a message, when the raw files are absent. Load the full document into a deployment:
+
+```bash
+curl -s -X POST localhost:8000/sources -H 'content-type: application/json' \
+  --data-binary @data/sources/raw/dadm.2025-06-24.en.json
+```
+
+Clause diff between two versions (EN and FR, with an EN/FR cross-check):
+
+```bash
+curl -s "localhost:8000/sources/dadm/diff?from=2023-04-24&to=2025-06-24&lang=both" | jq .en.summary
+```
+
+Every pair reports its status (`unchanged`, `renumbered`, `changed`, `changed-renumbered`),
+the method (`exact`, `similarity`, `containment`), score and flags (`renumbered`,
+`text-changed`, `typography-only`, `obligation-change`, `split`, `merge`); splits, merges,
+added and removed clauses are listed separately. Each response states the matching method
+and thresholds (see `docs/decisions.md` #35–36). French typography (no-break spaces,
+guillemets, apostrophes, ligatures) is ignored for matching but never altered.
+
+## Linking checks to source clauses
+
+The golden-set column **"Source clauses"** lists the clause numbers (in the source version
+named by `SOURCE_VERSION` in the settings file) each check comes from, separated by `;`.
+Empty means "no links yet" and is listed in the import report. To help annotators, rank
+candidate clauses for each check (review CSV only; nothing is written back):
+
+```bash
+uv run rulebook suggest-source-clauses data/golden/dadm-section6.csv \
+  --source data/sources/raw/dadm.2025-06-24.en.json --top 3 --out data/sources/raw/suggestions.csv
+```
+
+## Inventory and impact report
+
+`data/inventory/systems.csv` is a **fictional** inventory (8 systems, 3 tenants, impact
+levels I–IV). Load it, then ask for an impact report from a source change, a catalog change
+(controls edited directly), or both:
+
+```bash
+curl -s -X PUT "localhost:8000/inventory?source=systems.csv" -H 'content-type: text/csv' \
+  --data-binary @data/inventory/systems.csv
+curl -s -X POST localhost:8000/impact-reports -H 'content-type: application/json' -d '{
+  "catalog": "example-widgets", "catalog_version": "1.0.0",
+  "source": {"instrument": "example-widgets", "from": "2023-01-01", "to": "2025-01-01"},
+  "as_of": "2026-12-01"}' | jq .summary
+```
+
+The report lists affected controls with reasons, systems ranked by impact level, one
+reassessment task per system shaped like a ServiceNow `sc_task` (returned, not sent), and
+rulebook maintenance items (renumbered references, unmapped clauses, EN/FR divergences,
+retired controls). Due dates come from `data/config/due-dates.toml`, whose values are
+**PLACEHOLDERS, not policy**. The same inputs always give the same report.
+
+## Demo: policy diff → impact report (synthetic)
+
+```bash
+make up
+make demo        # scripts/demo-impact.sh http://localhost:8000 demo-output
+```
+
+The demo loads the synthetic Directive on Example Widgets (two versions, EN/FR), its linked
+catalog, the profiles and the fictional inventory, then prints the clause diff (a renumbered
+block, a split and a should → must change) and the ranked impact report with its tasks.
+CI runs the same script on every push. Everything it uses is fictional; see
+`data/demo/README.md`.

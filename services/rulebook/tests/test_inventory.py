@@ -135,3 +135,21 @@ def test_inventory_api(client: TestClient) -> None:
     bad = payload()
     bad["systems"][0]["impact_level"] = 5
     assert client.put("/inventory", json=bad).status_code == 422
+
+
+def test_inventory_csv_upload(client: TestClient) -> None:
+    put_profiles(client)
+    resp = client.put(
+        "/inventory",
+        content=INVENTORY.read_bytes(),
+        headers={"content-type": "text/csv"},
+        params={"source": "systems.csv"},
+    )
+    assert resp.status_code == 201, resp.json()
+    assert resp.json()["systems"] == 8
+    assert resp.json()["content_hash"] == parse_inventory_csv(_csv()).content_hash()
+    bad = client.put(
+        "/inventory", content=b'"System ID"\n"x"\n', headers={"content-type": "text/csv"}
+    )
+    assert bad.status_code == 422
+    assert "missing column" in bad.json()["errors"][0]

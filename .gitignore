@@ -19,3 +19,6 @@ build/
 # Official policy text is supplied by the deploying organization and is never committed
 # (see docs/decisions.md). Only metadata JSON (*.meta.json) beside this folder is tracked.
 data/sources/raw/
+
+# Output of `make demo`
+demo-output/
