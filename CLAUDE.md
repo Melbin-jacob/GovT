@@ -1,0 +1,69 @@
+# CLAUDE.md — Canadian AI Governance Hub
+
+Conventions for anyone (human or AI) working in this repo. Read before changing code.
+Design decisions and their reasons are logged in `docs/decisions.md`.
+
+## What this is
+A prototype for the SSC AI governance challenge. It turns governance rules into versioned
+OSCAL checks, detects rule changes, flags affected AI systems, assesses them with five
+verdicts plus a confidence score, and logs every human decision in a hash-chained record.
+**An AI model only drafts; a human always decides.**
+
+## Stack (fixed)
+- Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 + Alembic, PostgreSQL 16.
+- uv workspace (`uv.lock` is committed; use `uv sync --all-packages --frozen`).
+- ruff (lint + format), mypy **strict** for `shared` and `rulebook`, pytest.
+- Docker Compose for local dev only. Everything must run as plain containers on
+  Kubernetes/OpenShift: no cloud-specific services, non-root images that work under an
+  arbitrary UID, and **no outbound network calls at runtime**.
+
+## Layout
+- `services/<name>/` — one folder per service: connector-hub, rulebook, assessment-engine,
+  review-desk, control-centre. Only `rulebook` is implemented (Milestone 1).
+- `shared/` — `govhub_shared`: constants, OSCAL helpers, model-gateway interface.
+- `data/golden/` — hand-mapped golden set CSVs. `data/catalogs/` — generated catalogs.
+  `data/profiles/` — OSCAL profiles.
+- `schemas/` — vendored NIST OSCAL JSON schemas (see `schemas/oscal-1.1.3/SOURCE.md`).
+- `docs/` — design notes and the decision log.
+
+## OSCAL rules
+- **OSCAL version is pinned to 1.1.3** (`govhub_shared.OSCAL_VERSION`). Use
+  compliance-trestle **3.12.4** exactly; trestle 4.x/5.x target OSCAL 1.2.1.
+- Every OSCAL artifact we write is validated against the vendored NIST 1.1.3 JSON schema.
+  A validation error is a failure, never a warning.
+- Custom props always carry `ns: "https://egcsgroup.com/ns/oscal"` (`govhub_shared.OSCAL_NS`).
+- **Trestle boundary:** trestle's models use the `pydantic.v1` compatibility layer. They are
+  used only inside `shared/src/govhub_shared/oscal/`. That package converts to plain dicts or
+  our own Pydantic v2 models before returning. No `trestle` or `pydantic.v1` import anywhere
+  else.
+- Document UUIDs: control/part identity is deterministic; the catalog's top-level `uuid` is
+  derived from a hash of its content, so identical content gives an identical uuid and any
+  change gives a new one.
+
+## Policy content rules
+- **Never invent policy text.** The golden-set CSV is the only source of check wording.
+  Do not paraphrase, translate or "fix" it in code. If text is missing, omit the field.
+- **English and French are separate catalogs with identical control IDs.** The parity check
+  fails if a control exists in one language and not the other.
+- French guidance, assessment objective and reviewed statement come only from the optional
+  CSV columns `S'applique lorsque`, `Preuves attendues`, `Libellé final convenu`. If absent,
+  the FR fields are omitted (never filled with English).
+- Review status: a control is `reviewed` only when that language's agreed-wording column is
+  filled (EN: `Agreed final wording`; FR: `Libellé final convenu`); otherwise `draft`.
+- **Control IDs are frozen once published.** Never regenerate or renumber them. Reusing an
+  ID for a different clause label must raise a warning.
+- **Removing a control is an explicit retire**: a new minor version in which the control
+  stays, with prop `status = withdrawn`. Never a silent delete. Stored versions are immutable.
+- Clause labels are stored as-is (e.g. `6.3.9 or 6.3.10`); do not normalize them.
+
+## AI usage
+- All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes
+  **no LLM calls** (`NullGateway` only). Self-hosted by default when added.
+
+## Working rules
+- Small commits with clear messages. Never put model identifiers in commits or code.
+- Before saying something is done, run `make lint typecheck test` and report the results.
+- Leave `TODO(<service>)` markers and interface stubs for out-of-scope work rather than
+  half-implementing it (connectors, UI, auth, assessments).
+- pytest runs with `filterwarnings = error`; filter a specific warning only with a comment
+  explaining why.

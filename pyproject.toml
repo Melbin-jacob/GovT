@@ -49,3 +49,10 @@ plugins = ["pydantic.mypy"]
 [tool.pytest.ini_options]
 testpaths = ["shared/tests", "services/rulebook/tests"]
 addopts = "-ra --import-mode=importlib"
+filterwarnings = [
+    "error",
+    # Starlette >= 1.10 warns that its TestClient will move from `httpx` to the new
+    # `httpx2` package. Suppressed (only this message) until the switch is reviewed and
+    # approved; see docs/decisions.md. Every other warning fails the test run.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
