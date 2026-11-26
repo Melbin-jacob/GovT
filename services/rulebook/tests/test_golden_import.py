@@ -16,6 +16,8 @@ from govhub_shared import OSCAL_NS
 from govhub_shared.oscal import iter_controls, validate
 from rulebook.cli import main
 from rulebook.golden import (
+    CHECK_TYPE_CODES,
+    NUMBERING_STATUS_CODES,
     GoldenImportError,
     import_golden,
     parse_numbering,
@@ -26,6 +28,7 @@ from rulebook.parity import ParityError, check_parity, require_parity
 REPO = Path(__file__).resolve().parents[3]
 GOLDEN = REPO / "data" / "golden" / "dadm-section6.csv"
 GROUPS = REPO / "data" / "golden" / "dadm-section6.groups.csv"
+SETTINGS = REPO / "data" / "golden" / "dadm-section6.settings.toml"
 COMMITTED = REPO / "data" / "catalogs"
 FIXED = datetime(2026, 11, 26, 12, 0, tzinfo=UTC)
 
@@ -47,6 +50,7 @@ def _write_variant(
         writer.writeheader()
         writer.writerows(rows)
     shutil.copy(GROUPS, tmp_path / "dadm-section6.groups.csv")
+    shutil.copy(SETTINGS, tmp_path / "dadm-section6.settings.toml")
     return path
 
 
@@ -58,7 +62,7 @@ def _by_id(doc: dict[str, Any]) -> dict[str, Any]:
 
 
 def test_real_golden_set_imports(tmp_path: Path) -> None:
-    result = import_golden(GOLDEN, tmp_path, last_modified=FIXED)
+    result = import_golden(GOLDEN, tmp_path, source_date=FIXED)
     assert len(result.rows) == 39
     assert Counter(r.group for r in result.rows) == {
         "6.1": 6,
@@ -68,9 +72,14 @@ def test_real_golden_set_imports(tmp_path: Path) -> None:
         "6.5": 3,
     }
     assert Counter(r.numbering_status for r in result.rows) == {
-        "Confirmed": 6,
-        "Likely": 14,
-        "Verify": 19,
+        "confirmed": 6,
+        "likely": 14,
+        "verify": 19,
+    }
+    assert Counter(r.check_type for r in result.rows) == {
+        "judgment": 23,
+        "rule-based": 15,
+        "rule-based-roll-up": 1,
     }
     for lang in ("en", "fr"):
         on_disk = json.loads((tmp_path / f"dadm-section6.{lang}.json").read_text("utf-8"))
@@ -95,7 +104,7 @@ def test_committed_catalogs_are_up_to_date_and_valid() -> None:
 
 def test_round_trip_matches_csv_cells(tmp_path: Path) -> None:
     """Every text field in the catalogs is copied verbatim from the CSV."""
-    result = import_golden(GOLDEN, tmp_path, last_modified=FIXED)
+    result = import_golden(GOLDEN, tmp_path, source_date=FIXED)
     en, fr = _by_id(result.catalogs["en"]), _by_id(result.catalogs["fr"])
     _, rows = _csv_rows()
     assert [r["Check ID"] for r in rows] == list(en)  # order preserved within the CSV
@@ -104,9 +113,10 @@ def test_round_trip_matches_csv_cells(tmp_path: Path) -> None:
         status, note = parse_numbering(row["Numbering"])
         for control in (en[cid], fr[cid]):
             assert control.prop("label") == row["Clause (draft numbering)"]
-            assert control.hub_prop("check-type") == row["Check type"]
-            assert control.hub_prop("numbering-status") == status
+            assert control.hub_prop("check-type") == CHECK_TYPE_CODES[row["Check type"]]
+            assert control.hub_prop("numbering-status") == NUMBERING_STATUS_CODES[status]
             assert control.hub_prop("numbering-note") == note
+            assert control.hub_prop("numbering-note-lang") == ("en" if note else None)
             assert control.hub_prop("review-status") == "draft"
             assert control.title == cid
         assert en[cid].part("statement") == row["Check (EN)"]
@@ -118,7 +128,7 @@ def test_round_trip_matches_csv_cells(tmp_path: Path) -> None:
 
 
 def test_custom_props_are_namespaced(tmp_path: Path) -> None:
-    result = import_golden(GOLDEN, tmp_path, last_modified=FIXED)
+    result = import_golden(GOLDEN, tmp_path, source_date=FIXED)
     for control in iter_controls(result.catalogs["en"]):
         for prop in control.props:
             assert prop.ns == (None if prop.name == "label" else OSCAL_NS)
@@ -157,8 +167,37 @@ def test_parse_numbering(value: str, expected: tuple[str, str | None]) -> None:
     assert parse_numbering(value) == expected
 
 
+def test_group_ids_and_titles(tmp_path: Path) -> None:
+    result = import_golden(GOLDEN, tmp_path, source_date=FIXED)
+    for lang, titles in (
+        (
+            "en",
+            [
+                "Algorithmic Impact Assessment",
+                "Transparency",
+                "Quality assurance",
+                "Recourse",
+                "Reporting",
+            ],
+        ),
+        (
+            "fr",
+            [
+                "Évaluation de l'incidence algorithmique",
+                "Transparence",
+                "Assurance de la qualité",
+                "Recours",
+                "Établissement de rapports",
+            ],
+        ),
+    ):
+        groups = result.catalogs[lang]["catalog"]["groups"]
+        assert [g["id"] for g in groups] == [f"dadm-6.{i}" for i in range(1, 6)]
+        assert [g["title"] for g in groups] == titles
+
+
 def test_rows_without_section_in_id_are_grouped_by_clause(tmp_path: Path) -> None:
-    result = import_golden(GOLDEN, tmp_path, last_modified=FIXED)
+    result = import_golden(GOLDEN, tmp_path, source_date=FIXED)
     groups = {
         c.id: c.group_id
         for c in iter_controls(result.catalogs["en"])
@@ -172,37 +211,56 @@ def test_rows_without_section_in_id_are_grouped_by_clause(tmp_path: Path) -> Non
 # --- determinism and document identity -------------------------------------------------
 
 
+def test_fresh_import_into_empty_folder_matches_committed_files(tmp_path: Path) -> None:
+    """No clock involved: a clean import reproduces the committed catalogs byte for byte."""
+    import_golden(GOLDEN, tmp_path)
+    for lang in ("en", "fr"):
+        name = f"dadm-section6.{lang}.json"
+        assert (tmp_path / name).read_bytes() == (COMMITTED / name).read_bytes()
+
+
 def test_rerun_is_byte_identical(tmp_path: Path) -> None:
-    import_golden(GOLDEN, tmp_path)  # timestamp "now"
+    import_golden(GOLDEN, tmp_path)
     first = {p.name: p.read_bytes() for p in tmp_path.glob("*.json")}
-    result = import_golden(GOLDEN, tmp_path)  # later "now": unchanged content keeps the stamp
+    result = import_golden(GOLDEN, tmp_path)
     assert result.changed == {"en": False, "fr": False}
     assert {p.name: p.read_bytes() for p in tmp_path.glob("*.json")} == first
 
 
+def test_last_modified_comes_from_source_date(tmp_path: Path) -> None:
+    result = import_golden(GOLDEN, tmp_path)
+    for lang in ("en", "fr"):
+        stamp = result.catalogs[lang]["catalog"]["metadata"]["last-modified"]
+        assert datetime.fromisoformat(stamp) == datetime(2026, 11, 26, tzinfo=UTC)
+
+
+@pytest.mark.parametrize(
+    ("content", "message"),
+    [
+        ("", "SOURCE_DATE must be"),
+        ('SOURCE_DATE = "26 Nov 2026"', "not ISO 8601"),
+        ('SOURCE_DATE = "2026-11-26T00:00:00"', "needs a UTC offset"),
+        ("SOURCE_DATE = [", "invalid TOML"),
+    ],
+)
+def test_bad_settings_fail(tmp_path: Path, content: str, message: str) -> None:
+    header, rows = _csv_rows()
+    path = _write_variant(tmp_path, rows, header)
+    (tmp_path / "dadm-section6.settings.toml").write_text(content, encoding="utf-8")
+    with pytest.raises(GoldenImportError, match=re.escape(message)):
+        import_golden(path, tmp_path / "o")
+
+
 def test_same_content_same_uuid_changed_content_new_uuid(tmp_path: Path) -> None:
-    a = import_golden(GOLDEN, tmp_path / "a", last_modified=FIXED)
-    b = import_golden(GOLDEN, tmp_path / "b", last_modified=FIXED)
+    a = import_golden(GOLDEN, tmp_path / "a", source_date=FIXED)
+    b = import_golden(GOLDEN, tmp_path / "b", source_date=FIXED)
     assert a.catalogs == b.catalogs
 
     header, rows = _csv_rows()
     rows[0]["Check (EN)"] += " (edited)"
-    c = import_golden(_write_variant(tmp_path, rows, header), tmp_path / "c", last_modified=FIXED)
+    c = import_golden(_write_variant(tmp_path, rows, header), tmp_path / "c", source_date=FIXED)
     assert c.catalogs["en"]["catalog"]["uuid"] != a.catalogs["en"]["catalog"]["uuid"]
     assert c.catalogs["fr"]["catalog"]["uuid"] == a.catalogs["fr"]["catalog"]["uuid"]
-
-
-def test_content_change_updates_last_modified(tmp_path: Path) -> None:
-    out = tmp_path / "out"
-    import_golden(GOLDEN, out, last_modified=FIXED)
-    header, rows = _csv_rows()
-    rows[0]["Check (EN)"] += " (edited)"
-    result = import_golden(_write_variant(tmp_path, rows, header), out)
-    assert result.changed == {"en": True, "fr": False}
-    en_meta = result.catalogs["en"]["catalog"]["metadata"]
-    fr_meta = result.catalogs["fr"]["catalog"]["metadata"]
-    assert datetime.fromisoformat(en_meta["last-modified"]) > FIXED
-    assert datetime.fromisoformat(fr_meta["last-modified"]) == FIXED
 
 
 # --- review status and optional French columns ------------------------------------------
@@ -255,6 +313,9 @@ def test_optional_french_columns_are_used_when_present(tmp_path: Path) -> None:
         (lambda rows: rows[3].update({"Clause (draft numbering)": "Appendix C"}), "no section"),
         (lambda rows: rows[3].update({"Clause (draft numbering)": "7.1.1"}), "groups file"),
         (lambda rows: rows[3].update({"Numbering": "Maybe"}), "Numbering status"),
+        (lambda rows: rows[3].update({"Numbering": "verify"}), "Numbering status"),
+        (lambda rows: rows[3].update({"Check type": "Heuristic"}), "Check type"),
+        (lambda rows: rows[3].update({"Check type": ""}), "Check type"),
         (lambda rows: rows[3].update({"Contrôle (FR)": ""}), "blank Contrôle (FR)"),
         (lambda rows: rows[3].update({"Check (EN)": " "}), "blank Check (EN)"),
         (lambda rows: rows[3].update({"Check ID": "6.1.1"}), "not a valid OSCAL token"),
@@ -278,7 +339,7 @@ def test_missing_required_column_fails(tmp_path: Path) -> None:
 
 
 def test_parity_fails_when_a_control_is_missing(tmp_path: Path) -> None:
-    result = import_golden(GOLDEN, tmp_path, last_modified=FIXED)
+    result = import_golden(GOLDEN, tmp_path, source_date=FIXED)
     fr = copy.deepcopy(result.catalogs["fr"])
     fr["catalog"]["groups"][0]["controls"].pop(0)
     report = check_parity(result.catalogs["en"], fr)

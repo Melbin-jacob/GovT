@@ -55,13 +55,15 @@ make import-golden
 ```
 
 Outputs: `data/catalogs/dadm-section6.en.json` and `data/catalogs/dadm-section6.fr.json`.
-Group titles come from `data/golden/dadm-section6.groups.csv`. Options: `--version`
-(semantic version, default `1.0.0`), `--out-dir`, `--name`, `--groups`, and `--check`
-(write nothing; exit 1 if the committed catalogs are out of date). Re-running on an unchanged
-CSV produces byte-identical files; any content change gives the catalog a new `uuid`.
+Group titles come from `data/golden/dadm-section6.groups.csv`; `last-modified` comes from
+`SOURCE_DATE` in `data/golden/dadm-section6.settings.toml` (bump it when the CSV changes).
+Options: `--version` (semantic version, default `1.0.0`), `--out-dir`, `--name`, `--groups`,
+`--settings`, and `--check` (write nothing; exit 1 if the committed catalogs are out of date).
+The output never depends on the clock: a fresh import reproduces the committed files byte for
+byte, and any content change gives the catalog a new `uuid`.
 
 The importer fails, listing every problem, on: missing columns, blank or duplicate IDs,
-IDs that are not OSCAL tokens, blank EN/FR check text, unknown numbering status, or a Clause
+IDs that are not OSCAL tokens, blank EN/FR check text, an unknown Numbering status or Check type, or a Clause
 with no section number. Rows marked `Verify` and non-numeric clause labels are reported as
 warnings.
 

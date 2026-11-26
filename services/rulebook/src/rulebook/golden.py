@@ -6,20 +6,24 @@ translates or "fixes" policy text. Missing optional text is omitted, not filled 
 Mapping (one CSV row -> one control in each language catalog, identical IDs):
 
 - ``id`` = Check ID; ``title`` = Check ID (the CSV has no title column)
-- props: ``label`` = Clause (as-is); namespaced ``check-type``, ``numbering-status``,
-  ``numbering-note`` (if any), ``review-status`` (``reviewed`` | ``draft``)
+- props: ``label`` = Clause (as-is); namespaced ``check-type`` and ``numbering-status``
+  (language-neutral codes, see ``CHECK_TYPE_CODES``/``NUMBERING_STATUS_CODES``),
+  ``numbering-note`` + ``numbering-note-lang`` (if any),
+  ``review-status`` (``reviewed`` | ``draft``)
 - parts: ``statement`` = agreed wording if filled, else Check (EN) / Contrôle (FR);
   ``guidance`` = Applies when; ``assessment-objective`` = Evidence that would satisfy it.
   French guidance/objective/agreed wording come only from the optional columns
   ``S'applique lorsque``, ``Preuves attendues``, ``Libellé final convenu``.
-- groups: first ``N.N`` section number found in the Clause column (``6.3.9 or 6.3.10`` -> 6.3)
+- groups: first ``N.N`` section number found in the Clause column (``6.3.9 or 6.3.10`` -> 6.3),
+  id ``dadm-6.3``
+- ``last-modified`` = ``SOURCE_DATE`` from ``<name>.settings.toml`` (never the clock)
 """
 
 from __future__ import annotations
 
 import csv
-import json
 import re
+import tomllib
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -70,7 +74,18 @@ COL_APPLIES_FR = "S'applique lorsque"
 COL_EVIDENCE_FR = "Preuves attendues"
 COL_AGREED_FR = "Libellé final convenu"
 
-NUMBERING_STATUSES = frozenset({"Confirmed", "Likely", "Verify"})
+# Controlled vocabularies: CSV display value -> language-neutral code stored in both catalogs.
+NUMBERING_STATUS_CODES: dict[str, str] = {
+    "Confirmed": "confirmed",
+    "Likely": "likely",
+    "Verify": "verify",
+}
+CHECK_TYPE_CODES: dict[str, str] = {
+    "Rule-based": "rule-based",
+    "Rule-based (roll-up)": "rule-based-roll-up",
+    "Judgment": "judgment",
+}
+NOTE_LANG = "en"  # numbering notes are written by the (English-language) annotators
 _SECTION_RE = re.compile(r"(\d+)\.(\d+)")
 _SINGLE_CLAUSE_RE = re.compile(r"^\d+(?:\.\d+)+$")
 _ID_CLAUSE_RE = re.compile(r"\d+(?:\.\d+)+")
@@ -225,16 +240,21 @@ def read_rows(
             elif section not in groups:
                 row_errors.append(f"{where}: section {section} has no entry in the groups file")
 
-            status, note = parse_numbering(_cell(record, COL_NUMBERING))
-            if status not in NUMBERING_STATUSES:
+            status_label, note = parse_numbering(_cell(record, COL_NUMBERING))
+            status = NUMBERING_STATUS_CODES.get(status_label)
+            if status is None:
                 row_errors.append(
-                    f"{where}: Numbering status {status!r} is not one of "
-                    f"{sorted(NUMBERING_STATUSES)}"
+                    f"{where}: Numbering status {status_label!r} is not one of "
+                    f"{list(NUMBERING_STATUS_CODES)}"
                 )
 
-            check_type = _cell(record, COL_CHECK_TYPE)
-            if not check_type:
-                row_errors.append(f"{where}: blank Check type")
+            check_type_label = _cell(record, COL_CHECK_TYPE)
+            check_type = CHECK_TYPE_CODES.get(check_type_label)
+            if check_type is None:
+                row_errors.append(
+                    f"{where}: Check type {check_type_label!r} is not one of "
+                    f"{list(CHECK_TYPE_CODES)}"
+                )
 
             check_en, check_fr = _cell(record, COL_CHECK_EN), _cell(record, COL_CHECK_FR)
             if not check_en:
@@ -243,10 +263,10 @@ def read_rows(
                 row_errors.append(f"{where}: blank Contrôle (FR)")
 
             errors.extend(row_errors)
-            if row_errors or section is None:
+            if row_errors or section is None or status is None or check_type is None:
                 continue
 
-            if status == "Verify":
+            if status == "verify":
                 warnings.append(
                     f"{check_id}: numbering marked Verify" + (f": {note}" if note else "")
                 )
@@ -302,6 +322,7 @@ def _control(row: GoldenRow, lang: Lang) -> dict[str, Any]:
     ]
     if row.numbering_note:
         props.append(_hub_prop("numbering-note", row.numbering_note))
+        props.append(_hub_prop("numbering-note-lang", NOTE_LANG))
     props.append(_hub_prop("review-status", "reviewed" if row.reviewed[lang] else "draft"))
 
     parts: list[dict[str, str]] = [
@@ -375,17 +396,28 @@ def build_catalog(
     return final
 
 
-def _existing_last_modified(path: Path, digest: str) -> datetime | None:
-    """Reuse the on-disk last-modified when the content is unchanged (keeps re-runs identical)."""
-    if not path.is_file():
-        return None
+def read_settings(path: Path) -> datetime:
+    """Read ``SOURCE_DATE`` (ISO 8601 with a UTC offset) from the golden-set settings file.
+
+    It becomes every catalog's ``last-modified``, so output never depends on the clock.
+    Bump it whenever the CSV or groups file changes.
+    """
     try:
-        existing = json.loads(path.read_text(encoding="utf-8"))
-        if content_hash(existing, "catalog") != digest:
-            return None
-        return datetime.fromisoformat(existing["catalog"]["metadata"]["last-modified"])
-    except (ValueError, KeyError, TypeError):
-        return None
+        settings = tomllib.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise GoldenImportError([f"settings file not found: {path}"]) from None
+    except tomllib.TOMLDecodeError as exc:
+        raise GoldenImportError([f"{path}: invalid TOML: {exc}"]) from None
+    raw = settings.get("SOURCE_DATE")
+    if not isinstance(raw, str):
+        raise GoldenImportError([f"{path}: SOURCE_DATE must be an ISO 8601 string"])
+    try:
+        value = datetime.fromisoformat(raw)
+    except ValueError:
+        raise GoldenImportError([f"{path}: SOURCE_DATE {raw!r} is not ISO 8601"]) from None
+    if value.tzinfo is None:
+        raise GoldenImportError([f"{path}: SOURCE_DATE {raw!r} needs a UTC offset (e.g. Z)"])
+    return value.astimezone(UTC).replace(microsecond=0)
 
 
 def import_golden(
@@ -395,7 +427,8 @@ def import_golden(
     name: str | None = None,
     version: str = "1.0.0",
     groups_path: Path | None = None,
-    last_modified: datetime | None = None,
+    settings_path: Path | None = None,
+    source_date: datetime | None = None,
     write: bool = True,
 ) -> ImportResult:
     """Import a golden-set CSV into EN and FR catalogs (validated, parity-checked)."""
@@ -407,31 +440,26 @@ def import_golden(
         raise GoldenImportError([f"groups file not found: {groups_path}"])
     groups = read_groups(groups_path)
     rows, warnings = read_rows(csv_path, groups)
-    now = (last_modified or datetime.now(UTC)).replace(microsecond=0)
+    if source_date is None:
+        source_date = read_settings(settings_path or csv_path.with_name(f"{name}.settings.toml"))
 
-    catalogs: dict[Lang, dict[str, Any]] = {}
+    kwargs: dict[str, Any] = {"name": name, "version": version, "source_name": csv_path.name}
+    catalogs: dict[Lang, dict[str, Any]] = {
+        lang: build_catalog(rows, groups, lang, last_modified=source_date, **kwargs)
+        for lang in LANGS
+    }
+    require_parity(catalogs["en"], catalogs["fr"])
+
     paths: dict[Lang, Path] = {}
     changed: dict[Lang, bool] = {}
     for lang in LANGS:
-        path = out_dir / f"{name}.{lang}.json"
-        kwargs: dict[str, Any] = {"name": name, "version": version, "source_name": csv_path.name}
-        probe = build_catalog(rows, groups, lang, last_modified=now, **kwargs)
-        stamp = (
-            None if last_modified else _existing_last_modified(path, content_hash(probe, "catalog"))
-        )
-        catalog = (
-            probe
-            if stamp is None
-            else build_catalog(rows, groups, lang, last_modified=stamp, **kwargs)
-        )
-        catalogs[lang], paths[lang] = catalog, path
-        text = dump_json(catalog)
+        path = paths[lang] = out_dir / f"{name}.{lang}.json"
+        text = dump_json(catalogs[lang])
         changed[lang] = not path.is_file() or path.read_text(encoding="utf-8") != text
         if write and changed[lang]:
             out_dir.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
 
-    require_parity(catalogs["en"], catalogs["fr"])
     return ImportResult(
         name=name,
         version=version,

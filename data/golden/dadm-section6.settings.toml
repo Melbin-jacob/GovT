@@ -1,0 +1,6 @@
+# Import settings for dadm-section6.csv (read by `rulebook import-golden`).
+
+# Becomes `metadata.last-modified` of both generated catalogs. ISO 8601 with a UTC offset.
+# The importer never uses the current time, so output is reproducible from a clean clone.
+# Bump this whenever dadm-section6.csv or dadm-section6.groups.csv changes.
+SOURCE_DATE = "2026-11-26T00:00:00Z"

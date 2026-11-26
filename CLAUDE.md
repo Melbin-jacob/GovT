@@ -39,6 +39,7 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Document UUIDs: control/part identity is deterministic; the catalog's top-level `uuid` is
   derived from a hash of its content, so identical content gives an identical uuid and any
   change gives a new one.
+- Group IDs are `dadm-6.1` … `dadm-6.5` (OSCAL tokens may contain dots but not start with a digit).
 
 ## Policy content rules
 - **Never invent policy text.** The golden-set CSV is the only source of check wording.
@@ -55,6 +56,10 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - **Removing a control is an explicit retire**: a new minor version in which the control
   stays, with prop `status = withdrawn`. Never a silent delete. Stored versions are immutable.
 - Clause labels are stored as-is (e.g. `6.3.9 or 6.3.10`); do not normalize them.
+- Controlled-vocabulary props (`check-type`, `numbering-status`, `review-status`) hold
+  language-neutral codes in both catalogs; unknown CSV values fail the import.
+- Generated files never depend on the clock: `last-modified` comes from `SOURCE_DATE` in the
+  golden set's `.settings.toml`.
 
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes

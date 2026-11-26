@@ -18,6 +18,7 @@ def _import_golden(args: argparse.Namespace) -> int:
             name=args.name,
             version=args.version,
             groups_path=Path(args.groups) if args.groups else None,
+            settings_path=Path(args.settings) if args.settings else None,
             write=not args.check,
         )
     except GoldenImportError as exc:
@@ -47,6 +48,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     golden.add_argument("--name", help="Catalog name (default: CSV file name without .csv)")
     golden.add_argument("--version", default="1.0.0", help="Semantic version (default 1.0.0)")
     golden.add_argument("--groups", help="Groups CSV (default: <name>.groups.csv beside the CSV)")
+    golden.add_argument(
+        "--settings", help="Settings TOML with SOURCE_DATE (default: <name>.settings.toml)"
+    )
     golden.add_argument(
         "--check",
         action="store_true",
