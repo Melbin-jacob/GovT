@@ -96,7 +96,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     resolve.add_argument("--out", help="Write the resolved catalog here instead of stdout")
     resolve.add_argument("--ids", action="store_true", help="Print only the control IDs")
 
+    guard = sub.add_parser(
+        "check-source-date",
+        help="Fail if a commit changed a golden-set CSV without advancing SOURCE_DATE",
+    )
+    guard.add_argument("--base", help="Exclusive base revision (default: whole history)")
+    guard.add_argument("--head", default="HEAD")
+    guard.add_argument("--repo", default=".")
+    guard.add_argument("--name", action="append", help="Golden-set name (default: all)")
+
     args = parser.parse_args(argv)
+    if args.command == "check-source-date":
+        from rulebook.source_date_check import GOLDEN_DIR
+        from rulebook.source_date_check import main as check_main
+
+        repo = Path(args.repo)
+        names = args.name or sorted(
+            p.name.removesuffix(".settings.toml")
+            for p in (repo / GOLDEN_DIR).glob("*.settings.toml")
+        )
+        return check_main(repo, args.base or None, args.head, names)
     if args.command == "resolve-profile":
         return _resolve_profile(args)
     if args.command == "import-golden":

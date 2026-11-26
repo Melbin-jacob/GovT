@@ -59,12 +59,14 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Controlled-vocabulary props (`check-type`, `numbering-status`, `review-status`) hold
   language-neutral codes in both catalogs; unknown CSV values fail the import.
 - Generated files never depend on the clock: `last-modified` comes from `SOURCE_DATE` in the
-  golden set's `.settings.toml`.
+  golden set's `.settings.toml`. Any commit that changes the golden-set CSV or groups file
+  must advance `SOURCE_DATE` (CI: `rulebook check-source-date`).
 
 ## Rulebook service rules
 - A catalog version is (name, semantic version, language). Stored versions are immutable:
   the API returns 409 for changed content and a DB trigger refuses UPDATE/DELETE. Schema
-  changes go through a new Alembic migration in `services/rulebook/src/rulebook/migrations`.
+  changes go through a new Alembic migration in `services/rulebook/src/rulebook/migrations`;
+  always run them via `rulebook.migrate` (it holds an advisory lock for multi-replica safety).
 - New versions must be newer than the latest; a control may not disappear (422) — retire it;
   an ID reused with a different clause label returns a warning.
 - Obligation words are detected by plain code (`rulebook/obligations.py`), never by a model.
