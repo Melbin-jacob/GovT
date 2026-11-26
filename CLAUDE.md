@@ -61,6 +61,20 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Generated files never depend on the clock: `last-modified` comes from `SOURCE_DATE` in the
   golden set's `.settings.toml`.
 
+## Rulebook service rules
+- A catalog version is (name, semantic version, language). Stored versions are immutable:
+  the API returns 409 for changed content and a DB trigger refuses UPDATE/DELETE. Schema
+  changes go through a new Alembic migration in `services/rulebook/src/rulebook/migrations`.
+- New versions must be newer than the latest; a control may not disappear (422) — retire it;
+  an ID reused with a different clause label returns a warning.
+- Obligation words are detected by plain code (`rulebook/obligations.py`), never by a model.
+- Profile resolution is local only (`govhub_shared.oscal.profile`); unsupported profile
+  features must fail loudly. Withdrawn controls are never resolved into a baseline.
+- Tests that need PostgreSQL use `RULEBOOK_TEST_DATABASE_URL` (default: Compose DB on
+  localhost); `make test` starts the Compose database if the variable is unset.
+- Text written by an assistant that is not from the CSV (titles, remarks, example profile)
+  is listed in `docs/decisions.md` as unverified.
+
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes
   **no LLM calls** (`NullGateway` only). Self-hosted by default when added.

@@ -23,6 +23,20 @@ schemas/                     vendored NIST OSCAL 1.1.3 JSON schemas
 docs/                        design notes
 ```
 
+## Status: Milestone 1
+
+| Done | Item |
+|---|---|
+| ✅ | Golden-set importer → EN and FR OSCAL 1.1.3 catalogs, schema-validated, EN/FR parity, reproducible |
+| ✅ | Rulebook API: immutable versions in PostgreSQL, diff with `obligation-change`, retire, control lookup |
+| ✅ | Profiles: example Level II+ profile and resolver |
+| ⏳ later | connector-hub, assessment-engine, review-desk, control-centre (stubs + TODOs), OIDC auth, LLM drafting |
+
+Definition of done, checked in CI on every push: `make setup && make test` on a clean
+checkout, both catalogs validate, committed catalogs match the CSV, and `make up` serves the
+API (the container job builds the image, starts it with PostgreSQL, stores the catalogs,
+retires a control, diffs and resolves the example profile).
+
 ## Prerequisites
 
 - [uv](https://docs.astral.sh/uv/) 0.11+ (installs Python 3.12 if needed)
