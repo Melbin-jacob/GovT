@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -84,3 +86,24 @@ class CatalogControl(Base):
     position: Mapped[int] = mapped_column(Integer)
 
     version: Mapped[CatalogVersion] = relationship(back_populates="controls")
+
+
+class SourceVersion(Base):
+    """One immutable source document (instrument, effective date, language) with its text."""
+
+    __tablename__ = "source_versions"
+    __table_args__ = (
+        UniqueConstraint("instrument", "effective_date", "lang", name="uq_source_version_lang"),
+        CheckConstraint("lang IN ('en', 'fr')", name="ck_source_versions_lang"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    instrument: Mapped[str] = mapped_column(String(100))
+    effective_date: Mapped[date] = mapped_column(Date)
+    lang: Mapped[str] = mapped_column(String(2))
+    document: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    file_sha256: Mapped[str] = mapped_column(String(64))
+    synthetic: Mapped[bool] = mapped_column(Boolean)
+    created_by: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

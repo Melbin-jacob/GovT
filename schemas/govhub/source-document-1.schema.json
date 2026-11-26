@@ -1,0 +1,180 @@
+{
+  "$defs": {
+    "Clause": {
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Nearest preceding heading (full documents only)",
+          "title": "Heading"
+        },
+        "match_sha256": {
+          "description": "SHA-256 of the normalized text (typography-insensitive)",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Match Sha256",
+          "type": "string"
+        },
+        "number": {
+          "description": "Clause number, e.g. 6.2.1",
+          "pattern": "^\\d+(\\.\\d+)+$",
+          "title": "Number",
+          "type": "string"
+        },
+        "section": {
+          "description": "First two levels of the number, e.g. 6.2",
+          "title": "Section",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Official clause text, as published",
+          "title": "Text"
+        },
+        "text_sha256": {
+          "description": "SHA-256 of `text`",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "number",
+        "section",
+        "text_sha256",
+        "match_sha256"
+      ],
+      "title": "Clause",
+      "type": "object"
+    },
+    "SourceFile": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "File name the document was extracted from",
+          "title": "Name",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "sha256"
+      ],
+      "title": "SourceFile",
+      "type": "object"
+    }
+  },
+  "$id": "https://egcsgroup.com/ns/govhub/source-document-1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "clauses": {
+      "items": {
+        "$ref": "#/$defs/Clause"
+      },
+      "title": "Clauses",
+      "type": "array"
+    },
+    "content": {
+      "enum": [
+        "full",
+        "metadata-only"
+      ],
+      "title": "Content",
+      "type": "string"
+    },
+    "effective_date": {
+      "format": "date",
+      "title": "Effective Date",
+      "type": "string"
+    },
+    "file": {
+      "$ref": "#/$defs/SourceFile"
+    },
+    "format": {
+      "const": "govhub-source-document/1",
+      "default": "govhub-source-document/1",
+      "title": "Format",
+      "type": "string"
+    },
+    "instrument": {
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "title": "Instrument",
+      "type": "string"
+    },
+    "lang": {
+      "enum": [
+        "en",
+        "fr"
+      ],
+      "title": "Lang",
+      "type": "string"
+    },
+    "retrieved": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Retrieved"
+    },
+    "source_url": {
+      "title": "Source Url",
+      "type": "string"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "warnings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "content",
+    "instrument",
+    "title",
+    "effective_date",
+    "lang",
+    "source_url",
+    "synthetic",
+    "file",
+    "clauses"
+  ],
+  "title": "SourceDocument",
+  "type": "object"
+}

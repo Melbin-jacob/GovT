@@ -1,0 +1,71 @@
+{
+  "format": "govhub-source-document/1",
+  "content": "metadata-only",
+  "instrument": "example-widgets",
+  "title": "Directive on Example Widgets (synthetic)",
+  "effective_date": "2023-01-01",
+  "lang": "en",
+  "source_url": "https://example.invalid/directive-on-example-widgets",
+  "synthetic": true,
+  "file": {
+    "name": "example-widgets.2023-01-01.en.txt",
+    "sha256": "b4434f2d033478eaf24a6cdda9ba973226b8dc92aad0600847c26e2230e4c61f"
+  },
+  "clauses": [
+    {
+      "number": "6.1.1",
+      "section": "6.1",
+      "text_sha256": "9ec4ee35feee6ef87d5dce231de1f51c8bc0b9908c63b35543342e9a71aa02f1",
+      "match_sha256": "52d97b9c14e894d727486040cefc0879c314edfb04abb8f78591fe776a719d73"
+    },
+    {
+      "number": "6.1.2",
+      "section": "6.1",
+      "text_sha256": "dab64cf8d8a28c579cb5130276648f62d3ec58f4cad14a109756e3ba1297f998",
+      "match_sha256": "f00c506c7f25132c9e4aa4cddf57fd4efb2e39601bfdb5ba028ddd18795bd8cd"
+    },
+    {
+      "number": "6.2.1",
+      "section": "6.2",
+      "text_sha256": "73583d865f1cb8ff15f359d9ab652a64747b9acd0c8283ead785114aa102ed6d",
+      "match_sha256": "9c084256c17f6373a92ef54f615f120bf663f50bc9e03e3526607b88b58042b3"
+    },
+    {
+      "number": "6.2.2",
+      "section": "6.2",
+      "text_sha256": "a5172ac41efb3d839b29761810d82b08e0ec4077357a4c5b4637e1ccbf71c10e",
+      "match_sha256": "e40a5106437881d503482fbe589b22d47795ca600de5fdb7d3a25c8072415f8e"
+    },
+    {
+      "number": "6.2.3",
+      "section": "6.2",
+      "text_sha256": "d7d7112b688ee0f83b6e1b4afbd8a90ba5f1faacd6094c14d074fb6c63263149",
+      "match_sha256": "860eda34deee3edfd0dd5eb43ec205b3aafe29992f790a0e8f8dc7e2488a6093"
+    },
+    {
+      "number": "6.3.1",
+      "section": "6.3",
+      "text_sha256": "e78fef1835305d6508bb9ea55b8af4149f5cf43e1ab734714b7b00747451e327",
+      "match_sha256": "147e5542537fb1e77e309ff2f6a7140fe99b9a49d8df7efb8c23c71eed65dc48"
+    },
+    {
+      "number": "6.3.2",
+      "section": "6.3",
+      "text_sha256": "638d368a46323f997a90d657eb6587a5d228e23f7ba92d7ad6d6d9f0f5be021d",
+      "match_sha256": "8f31b11c97817eab7e520084a9da72764ecc96730ab3917c56aa8d209ac855d0"
+    },
+    {
+      "number": "6.4.1",
+      "section": "6.4",
+      "text_sha256": "23aa1805cf71420da5f796976d0e41f93a2693a4a0cc9292644d1cad084e5719",
+      "match_sha256": "6c7fc7c5c99f6b2d9964179136360ee61e7e00b1d1ffbbdcb733d74a415d1869"
+    },
+    {
+      "number": "6.4.2",
+      "section": "6.4",
+      "text_sha256": "368b3793f64ba5e9753dde1f0018175b13e9b8cff2fcdcc5051353f540351a21",
+      "match_sha256": "8eb5637180ebacd28ae75f064bd5b440c1e0355937ce241e161a35ee72c55c65"
+    }
+  ],
+  "warnings": []
+}

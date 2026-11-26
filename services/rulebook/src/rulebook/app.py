@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import asdict
 from typing import Annotated, Any, Literal
 
@@ -15,7 +14,9 @@ from sqlalchemy.orm import Session
 
 from govhub_shared.oscal import OscalValidationError, ProfileResolutionError, resolve_profile
 from rulebook import store
+from rulebook.api_sources import router as sources_router
 from rulebook.db import get_session
+from rulebook.deps import LangParam, Tx, User
 from rulebook.diff import CatalogDiff
 from rulebook.profiles import store_loader
 
@@ -25,32 +26,8 @@ app = FastAPI(
     description="Versioned OSCAL 1.1.3 catalogs and profiles, rule-change diffs.",
 )
 
-LangParam = Annotated[Literal["en", "fr"], Query(description="Catalog language")]
 
-
-def current_user() -> str:
-    """Placeholder identity.
-
-    TODO(control-centre): replace with OIDC (Entra ID compatible) authentication and
-    central role checks. Milestone 1 has no authentication.
-    """
-    return "anonymous"
-
-
-User = Annotated[str, Depends(current_user)]
-
-
-def transaction(session: Annotated[Session, Depends(get_session)]) -> Iterator[Session]:
-    """A session that commits on success and rolls back on any error."""
-    try:
-        yield session
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
-Tx = Annotated[Session, Depends(transaction)]
+app.include_router(sources_router)
 
 
 @app.exception_handler(store.StoreError)

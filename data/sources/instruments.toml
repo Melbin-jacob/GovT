@@ -1,0 +1,18 @@
+# Registry of policy instruments the rulebook can import as source documents.
+# File names follow <instrument>.<effective-date>.<en|fr>.<html|txt>.
+# Titles and URLs are descriptive metadata, not policy text.
+
+[dadm]
+title_en = "Directive on Automated Decision-Making"
+title_fr = "Directive sur la prise de décisions automatisée"
+url_en = "https://www.tbs-sct.canada.ca/pol/doc-eng.aspx?id=32592"
+url_fr = "https://www.tbs-sct.canada.ca/pol/doc-fra.aspx?id=32592"
+synthetic = false
+
+[example-widgets]
+# SYNTHETIC test and demo instrument. Not a real policy. Text written as test data.
+title_en = "Directive on Example Widgets (synthetic)"
+title_fr = "Directive sur les widgets d'exemple (synthétique)"
+url_en = "https://example.invalid/directive-on-example-widgets"
+url_fr = "https://example.invalid/directive-sur-les-widgets"
+synthetic = true

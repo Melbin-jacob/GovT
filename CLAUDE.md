@@ -62,6 +62,14 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   golden set's `.settings.toml`. Any commit that changes the golden-set CSV or groups file
   must advance `SOURCE_DATE` (CI: `rulebook check-source-date`).
 
+## Official policy text (source documents)
+- Official text is supplied by the deploying organization; EGCS does not distribute it.
+  It lives only in `data/sources/raw/` (gitignored, excluded from Docker builds) and in a
+  deployment's database. Commit only `*.meta.json` (numbers and hashes), never text.
+- CI and tests use the synthetic "Directive on Example Widgets" under `data/demo/`. Tests
+  on real text must skip with a clear message when the raw files are absent.
+- Matching normalizes typography (`rulebook/sources/normalize.py`); stored text never is.
+
 ## Rulebook service rules
 - A catalog version is (name, semantic version, language). Stored versions are immutable:
   the API returns 409 for changed content and a DB trigger refuses UPDATE/DELETE. Schema

@@ -6,3 +6,5 @@
 **/.pytest_cache
 **/tests
 docs
+# Official policy text never goes into an image (docs/decisions.md #29).
+data/sources/raw

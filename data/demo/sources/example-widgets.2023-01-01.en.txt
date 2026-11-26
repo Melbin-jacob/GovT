@@ -1,0 +1,27 @@
+# SYNTHETIC TEST DATA — Directive on Example Widgets (not a real policy)
+# 6. Requirements
+# 6.1 Registration
+
+6.1.1 Each department must register every widget before it is put into service.
+
+6.1.2 The register must record the owner, the location and the model of each widget.
+
+# 6.2 Calibration
+
+6.2.1 Widgets should be calibrated at least once a year.
+
+6.2.2 Calibration results must be reviewed by a qualified technician.
+
+6.2.3 Faulty widgets must be removed from service until they are repaired.
+
+# 6.3 Records
+
+6.3.1 Operators must log every calibration and must retain the log for two years.
+
+6.3.2 The widget register may be published on the department's website.
+
+# 6.4 Transparency and reporting
+
+6.4.1 Clients are informed when a widget is used to process their request.
+
+6.4.2 Departments report annually on the number of widgets in service.

@@ -40,7 +40,8 @@ ignore = []
 known-first-party = ["govhub_shared", "rulebook"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101", "S603", "S607"]  # tests drive git via subprocess
+# Tests drive git via subprocess and contain French text with typographic characters.
+"**/tests/**" = ["S101", "S603", "S607", "RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 python_version = "3.12"

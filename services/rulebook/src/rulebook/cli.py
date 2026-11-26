@@ -60,6 +60,38 @@ def _resolve_profile(args: argparse.Namespace) -> int:
     return 0
 
 
+def _import_source(args: argparse.Namespace) -> int:
+    import json
+    from datetime import date
+
+    from rulebook.sources.importer import SourceImportError, import_source_file
+
+    status = 0
+    for name in args.files:
+        path = Path(name)
+        try:
+            doc, summary = import_source_file(
+                path,
+                registry_path=Path(args.registry),
+                retrieved=date.fromisoformat(args.retrieved) if args.retrieved else None,
+                write=not args.check and not args.stdout,
+            )
+        except (SourceImportError, OSError, ValueError) as exc:
+            print(f"{path.name}: {exc}", file=sys.stderr)
+            status = 2
+            continue
+        if args.stdout:
+            print(doc.to_json(), end="")
+            continue
+        if args.check:
+            meta = Path(summary["metadata"])
+            if not meta.is_file() or meta.read_text("utf-8") != doc.metadata_only().to_json():
+                print(f"{meta}: out of date (re-run without --check)", file=sys.stderr)
+                status = max(status, 1)
+        print(json.dumps(summary, ensure_ascii=False), file=sys.stderr)
+    return status
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rulebook", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -105,7 +137,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     guard.add_argument("--repo", default=".")
     guard.add_argument("--name", action="append", help="Golden-set name (default: all)")
 
+    src = sub.add_parser(
+        "import-source",
+        help="Extract clauses from a local copy of a policy instrument (no network)",
+    )
+    src.add_argument("files", nargs="+", help="<instrument>.<YYYY-MM-DD>.<en|fr>.<html|txt>")
+    src.add_argument("--registry", default="data/sources/instruments.toml")
+    src.add_argument("--retrieved", help="Date the page was saved (YYYY-MM-DD)")
+    src.add_argument(
+        "--stdout", action="store_true", help="Print the full document instead of writing files"
+    )
+    src.add_argument(
+        "--check", action="store_true", help="Write nothing; exit 1 if *.meta.json is stale"
+    )
+    sub.add_parser("source-schema", help="Print the source-document JSON Schema")
+
     args = parser.parse_args(argv)
+    if args.command == "import-source":
+        return _import_source(args)
+    if args.command == "source-schema":
+        from rulebook.sources.model import json_schema
+
+        print(json_schema(), end="")
+        return 0
     if args.command == "check-source-date":
         from rulebook.source_date_check import GOLDEN_DIR
         from rulebook.source_date_check import main as check_main

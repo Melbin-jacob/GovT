@@ -26,6 +26,7 @@ from rulebook.migrate import downgrade, upgrade
 
 REPO = Path(__file__).resolve().parents[3]
 CATALOGS = REPO / "data" / "catalogs"
+TABLES = ("catalogs", "catalog_versions", "catalog_controls", "source_versions")
 DEFAULT_URL = "postgresql+psycopg://govhub:govhub@localhost:5432/rulebook_test"
 
 
@@ -69,7 +70,9 @@ def engine(database_url: str) -> Iterator[Engine]:
 @pytest.fixture
 def db(engine: Engine) -> Iterator[Session]:
     with engine.begin() as conn:
-        conn.execute(text("TRUNCATE catalogs, catalog_versions, catalog_controls CASCADE"))
+        conn.execute(
+            text("TRUNCATE catalogs, catalog_versions, catalog_controls, source_versions CASCADE")
+        )
     with sessionmaker(bind=engine, expire_on_commit=False)() as session:
         yield session
 
