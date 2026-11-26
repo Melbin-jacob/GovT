@@ -42,4 +42,27 @@ make down
 Health checks: `GET /health` (process up) and `GET /ready` (database reachable).
 Interactive API docs: http://localhost:8000/docs.
 
-<!-- TODO(milestone-1): importing the golden set and running a diff (commits 4–5). -->
+## Import the golden set
+
+`data/golden/dadm-section6.csv` is the hand-mapped golden set for section 6 of the
+Directive on Automated Decision-Making. The importer turns it into two OSCAL 1.1.3 catalogs
+with identical control IDs, validates both against the vendored NIST schema and checks
+EN/FR parity:
+
+```bash
+make import-golden
+# same as: uv run rulebook import-golden data/golden/dadm-section6.csv
+```
+
+Outputs: `data/catalogs/dadm-section6.en.json` and `data/catalogs/dadm-section6.fr.json`.
+Group titles come from `data/golden/dadm-section6.groups.csv`. Options: `--version`
+(semantic version, default `1.0.0`), `--out-dir`, `--name`, `--groups`, and `--check`
+(write nothing; exit 1 if the committed catalogs are out of date). Re-running on an unchanged
+CSV produces byte-identical files; any content change gives the catalog a new `uuid`.
+
+The importer fails, listing every problem, on: missing columns, blank or duplicate IDs,
+IDs that are not OSCAL tokens, blank EN/FR check text, unknown numbering status, or a Clause
+with no section number. Rows marked `Verify` and non-numeric clause labels are reported as
+warnings.
+
+<!-- TODO(milestone-1): running a diff (commit 5). -->

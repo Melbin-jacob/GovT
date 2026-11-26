@@ -1,4 +1,4 @@
-.PHONY: setup lint typecheck test up down check
+.PHONY: setup lint typecheck test up down check import-golden
 
 setup:  ## Install all workspace packages and dev tools
 	uv sync --all-packages --frozen
@@ -20,3 +20,6 @@ up:  ## Build and start postgres + rulebook (API on http://localhost:8000)
 
 down:  ## Stop the stack
 	docker compose down
+
+import-golden:  ## Regenerate data/catalogs from the golden-set CSV
+	uv run rulebook import-golden data/golden/dadm-section6.csv
