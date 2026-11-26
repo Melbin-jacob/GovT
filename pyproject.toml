@@ -1,0 +1,51 @@
+[project]
+name = "govhub"
+version = "0.1.0"
+description = "Canadian AI Governance Hub (workspace root)"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["shared", "services/rulebook"]
+
+[tool.uv.sources]
+govhub-shared = { workspace = true }
+govhub-rulebook = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "govhub-shared",
+    "govhub-rulebook",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "httpx>=0.28",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["schemas"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "S"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["govhub_shared", "rulebook"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["govhub_shared", "rulebook"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["shared/tests", "services/rulebook/tests"]
+addopts = "-ra --import-mode=importlib"

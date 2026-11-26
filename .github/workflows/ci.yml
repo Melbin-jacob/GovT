@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: govhub
+          POSTGRES_PASSWORD: govhub
+          POSTGRES_DB: rulebook_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U govhub -d rulebook_test"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      RULEBOOK_TEST_DATABASE_URL: postgresql+psycopg://govhub:govhub@localhost:5432/rulebook_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.32"
+      - run: make setup
+      - run: make lint
+      - run: make typecheck
+      - run: make test
+
+  container:
+    name: Build image and serve via Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the stack
+        run: make up
+      - name: Liveness
+        run: curl --fail --silent --show-error http://localhost:8000/health
+      - name: Readiness (database reachable)
+        run: curl --fail --silent --show-error http://localhost:8000/ready
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
