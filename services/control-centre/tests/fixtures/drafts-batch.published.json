@@ -1,0 +1,1019 @@
+{
+ "id": "75e803c6-e4aa-4ac3-852f-c9e88a5e1d2e",
+ "catalog": "example-widgets",
+ "base_version": "1.0.0",
+ "source_change": {
+  "instrument": "example-widgets",
+  "from": "2023-01-01",
+  "to": "2025-01-01"
+ },
+ "status": "published",
+ "new_version": "1.1.0",
+ "plan": {
+  "clauses": {
+   "en": {
+    "new": {
+     "6.1.2": "The register must record the owner, the location, the model and the firmware version of each widget.",
+     "6.2.1": "Departments must complete a widget risk assessment before a widget is put into service.",
+     "6.2.2": "The widget risk assessment must be updated when the purpose of the widget changes.",
+     "6.3.1": "Widgets must be calibrated at least once a year.",
+     "6.3.2": "Calibration results must be reviewed by a qualified technician.",
+     "6.3.3": "Faulty widgets must be removed from service until they are repaired.",
+     "6.4.1": "Operators must log every calibration.",
+     "6.4.2": "Operators must retain the calibration log for two years.",
+     "6.5.1": "Clients are informed when a widget is used to process their request.",
+     "6.5.2": "Departments report annually on the number of widgets in service. The report covers the fiscal year."
+    },
+    "old": {
+     "6.1.2": "The register must record the owner, the location and the model of each widget.",
+     "6.2.1": "Widgets should be calibrated at least once a year.",
+     "6.2.2": "Calibration results must be reviewed by a qualified technician.",
+     "6.2.3": "Faulty widgets must be removed from service until they are repaired.",
+     "6.3.1": "Operators must log every calibration and must retain the log for two years.",
+     "6.3.2": "The widget register may be published on the department's website.",
+     "6.4.1": "Clients are informed when a widget is used to process their request.",
+     "6.4.2": "Departments report annually on the number of widgets in service."
+    }
+   },
+   "fr": {
+    "new": {
+     "6.1.2": "Le registre doit consigner le propriétaire, l’emplacement, le modèle et la version du micrologiciel de chaque widget.",
+     "6.2.1": "Les ministères doivent réaliser une évaluation des risques du widget avant sa mise en service.",
+     "6.2.2": "L’évaluation des risques du widget doit être mise à jour lorsque l’objet du widget change.",
+     "6.3.1": "Les widgets doivent être étalonnés au moins une fois par année.",
+     "6.3.2": "Les résultats d’étalonnage doivent être examinés par un technicien qualifié.",
+     "6.3.3": "Les widgets défectueux doivent être retirés du service jusqu’à leur réparation.",
+     "6.4.1": "Les opérateurs doivent consigner chaque étalonnage.",
+     "6.4.2": "Les opérateurs doivent conserver le journal d’étalonnage pendant deux ans.",
+     "6.5.1": "Les clients sont informés lorsqu’un widget sert à traiter leur demande.",
+     "6.5.2": "Les ministères font rapport chaque année sur le nombre de widgets en service. Le rapport porte sur l’exercice financier."
+    },
+    "old": {
+     "6.1.2": "Le registre doit consigner le propriétaire, l'emplacement et le modèle de chaque widget.",
+     "6.2.1": "Les widgets devraient être étalonnés au moins une fois par année.",
+     "6.2.2": "Les résultats d'étalonnage doivent être examinés par un technicien qualifié.",
+     "6.2.3": "Les widgets défectueux doivent être retirés du service jusqu'à leur réparation.",
+     "6.3.1": "Les opérateurs doivent consigner chaque étalonnage et doivent conserver le journal pendant deux ans.",
+     "6.3.2": "Le registre des widgets peut être publié sur le site Web du ministère.",
+     "6.4.1": "Les clients sont informés lorsqu'un widget sert à traiter leur demande.",
+     "6.4.2": "Les ministères font rapport chaque année sur le nombre de widgets en service."
+    }
+   }
+  },
+  "id_prefix": "WID",
+  "new_links": {
+   "WID-6.1.1": [
+    "6.1.1"
+   ],
+   "WID-6.1.2": [
+    "6.1.2"
+   ],
+   "WID-6.2.1": [
+    "6.3.1"
+   ],
+   "WID-6.2.2": [
+    "6.3.2"
+   ],
+   "WID-6.2.3": [
+    "6.3.3"
+   ],
+   "WID-6.3.1": [
+    "6.4.1",
+    "6.4.2"
+   ],
+   "WID-6.4.1": [
+    "6.5.1"
+   ],
+   "WID-6.4.2": [
+    "6.5.2"
+   ]
+  },
+  "change_set": {
+   "batch": "75e803c6-e4aa-4ac3-852f-c9e88a5e1d2e",
+   "format": "govhub-draft-change-set/1",
+   "catalog": "example-widgets",
+   "changes": [
+    {
+     "kind": "edit",
+     "guidance": {
+      "en": null,
+      "fr": null
+     },
+     "no_change": false,
+     "objective": {
+      "en": null,
+      "fr": null
+     },
+     "statement": {
+      "en": "The register records the owner, location, model and firmware version of each widget.",
+      "fr": "Le registre consigne le propriétaire, l'emplacement, le modèle et la version du micrologiciel de chaque widget."
+     },
+     "check_type": "rule-based",
+     "control_id": "WID-6.1.2",
+     "drafted_by": "en: model scripted-fake-v1, prompt draft-v1; fr: model scripted-fake-v1, prompt draft-v1",
+     "obligation": "must",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.1.2"
+     ],
+     "approval_record": "approval-log seq 16 sha256:31098be1c0dc91862f0fc25dda1fb2947d4e4006d1e749b900130a64845dbe90"
+    },
+    {
+     "kind": "edit",
+     "guidance": {
+      "en": null,
+      "fr": null
+     },
+     "no_change": true,
+     "objective": {
+      "en": null,
+      "fr": null
+     },
+     "statement": {
+      "en": "Widgets are calibrated at least once a year.",
+      "fr": "Les widgets sont étalonnés au moins une fois par année."
+     },
+     "check_type": "rule-based",
+     "control_id": "WID-6.2.1",
+     "drafted_by": "en: model scripted-fake-v1, prompt draft-v1; fr: model scripted-fake-v1, prompt draft-v1",
+     "obligation": "must",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.3.1"
+     ],
+     "approval_record": "approval-log seq 17 sha256:0fcf7e1490572e4b06dbceae99e352ac38028c76f77e2617476e4e09defa9cd4"
+    },
+    {
+     "kind": "reference",
+     "control_id": "WID-6.2.2",
+     "drafted_by": "rulebook clause diff (plain code)",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.3.2"
+     ],
+     "approval_record": "approval-log seq 18 sha256:7dc255f6df0c8c2d4fbcdde483e811c83b9869889da7855aea525a9463f709c0"
+    },
+    {
+     "kind": "reference",
+     "control_id": "WID-6.2.3",
+     "drafted_by": "rulebook clause diff (plain code)",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.3.3"
+     ],
+     "approval_record": "approval-log seq 19 sha256:9589d007330b450c5e0598990d89312a47b5378970a9b0739427b5fb891a8b5e"
+    },
+    {
+     "kind": "reference",
+     "control_id": "WID-6.4.1",
+     "drafted_by": "rulebook clause diff (plain code)",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.5.1"
+     ],
+     "approval_record": "approval-log seq 20 sha256:32bfff557e7ffe10fcddccba533abccf7bb4d3bbdbedd9f03e1c849fefcf978f"
+    },
+    {
+     "kind": "edit",
+     "guidance": {
+      "en": null,
+      "fr": null
+     },
+     "no_change": false,
+     "objective": {
+      "en": null,
+      "fr": null
+     },
+     "statement": {
+      "en": "Departments report annually, for the fiscal year, on widgets in service.",
+      "fr": "Les ministères font rapport chaque année, pour l'exercice, sur les widgets en service."
+     },
+     "check_type": "rule-based",
+     "control_id": "WID-6.4.2",
+     "drafted_by": "en: model scripted-fake-v1, prompt draft-v1; fr: model scripted-fake-v1, prompt draft-v1, edited by demo-reviewer-01",
+     "obligation": "must",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.5.2"
+     ],
+     "approval_record": "approval-log seq 21 sha256:9198978c1c472a428d7a5dfb40f7d3ee94318b797d047304728fe9e05286b86a"
+    },
+    {
+     "kind": "edit",
+     "guidance": {
+      "en": null,
+      "fr": null
+     },
+     "no_change": false,
+     "objective": {
+      "en": null,
+      "fr": null
+     },
+     "statement": {
+      "en": "Every calibration is logged, and the calibration log is kept for two years.",
+      "fr": "Chaque étalonnage est consigné, et le registre d'étalonnage est conservé deux ans."
+     },
+     "check_type": "rule-based",
+     "control_id": "WID-6.3.1",
+     "drafted_by": "en: model scripted-fake-v1, prompt draft-v1; fr: model scripted-fake-v1, prompt draft-v1",
+     "obligation": "must",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.4.1",
+      "6.4.2"
+     ],
+     "approval_record": "approval-log seq 22 sha256:eddca8efba552186a0358b808270bcb571cdd833b7567ca4594f2ae7ce1267c4"
+    },
+    {
+     "kind": "retire",
+     "control_id": "WID-6.3.2",
+     "drafted_by": "rulebook clause diff (plain code)",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [],
+     "approval_record": "approval-log seq 23 sha256:a0e9ac8c580b611cb7824d4b444873d13a48293d38594fded1284e8bbb8efd74"
+    },
+    {
+     "kind": "new",
+     "group": "6.2@2025-01-01",
+     "clause": "6.2.1",
+     "guidance": {
+      "en": null,
+      "fr": null
+     },
+     "no_change": false,
+     "objective": {
+      "en": null,
+      "fr": null
+     },
+     "statement": {
+      "en": "A widget risk assessment is completed before the widget is put into service.",
+      "fr": "Une évaluation des risques du widget est réalisée avant sa mise en service."
+     },
+     "check_type": "rule-based",
+     "control_id": "WID-C001",
+     "drafted_by": "en: model scripted-fake-v1, prompt draft-v1; fr: model scripted-fake-v1, prompt draft-v1",
+     "obligation": "must",
+     "approved_by": "demo-officer-01",
+     "source_clauses": [
+      "6.2.1"
+     ],
+     "approval_record": "approval-log seq 24 sha256:c3986aba90f8688e2110355ecefcc742f481799830d2163af6d293d0b947e7d7"
+    },
+    {
+     "kind": "new",
+     "group": "6.2@2025-01-01",
+     "clause": "6.2.2",
+     "guidance": {
+      "en": null,
+      "fr": null
+     },
+     "no_change": false,
+     "objective": {
+      "en": null,
+      "fr": null
+     },
+     "statement": {
+      "en": "The widget risk assessment is updated whenever the purpose of the widget changes.",
+      "fr": "L'évaluation des risques du widget est mise à jour lorsque sa fin change."
+     },
+     "check_type": "judgment",
+     "control_id": "WID-C002",
+     "drafted_by": "en: model scripted-fake-v1, prompt draft-v1, edited by demo-officer-01; fr: model scripted-fake-v1, prompt draft-v1",
+     "obligation": "must",
+     "approved_by": "demo-officer-02",
+     "source_clauses": [
+      "6.2.2"
+     ],
+     "approval_record": "approval-log seq 25 sha256:4886ebb723cfb0672c4f78554d645f29e94d709b190f8b162dcda064d2d5bd0f"
+    }
+   ],
+   "new_groups": {
+    "widgets-G01": {
+     "key": "6.2@2025-01-01",
+     "title": {
+      "en": "Risk assessment",
+      "fr": "Évaluation des risques"
+     },
+     "section": "6.2"
+    }
+   },
+   "new_version": "1.1.0",
+   "source_date": "2026-11-29T00:00:00Z",
+   "base_version": "1.0.0",
+   "source_hashes": {
+    "en": "84a87f7b68d193078f043c423bbeb8bd590c926d5804c2704d4cce713b172071",
+    "fr": "4aea3ccd6b2c32026dbff0cb98c85af417dc096db29a0a25ec975de6aeea6922"
+   },
+   "source_version": "2025-01-01",
+   "approval_log_head": "seq 25 sha256:4886ebb723cfb0672c4f78554d645f29e94d709b190f8b162dcda064d2d5bd0f",
+   "source_instrument": "example-widgets"
+  },
+  "new_groups": {
+   "widgets-G01": {
+    "key": "6.2@2025-01-01",
+    "title": {
+     "en": "Risk assessment",
+     "fr": "Évaluation des risques"
+    },
+    "section": "6.2"
+   }
+  },
+  "diff_summary": {
+   "added": 2,
+   "merges": 0,
+   "splits": 1,
+   "removed": 1,
+   "unchanged": 1,
+   "renumbered": 6,
+   "text-changed": 4,
+   "obligation-change": 1
+  },
+  "proposed_version": "1.1.0"
+ },
+ "current_controls": {
+  "WID-6.1.2": {
+   "en": {
+    "statement": "The register records the owner, location and model of each widget.",
+    "guidance": "All widgets",
+    "objective": "Register fields populated",
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.1.2",
+    "source_clauses": [
+     "6.1.2"
+    ]
+   },
+   "fr": {
+    "statement": "Le registre consigne le propriétaire, l'emplacement et le modèle de chaque widget.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.1.2",
+    "source_clauses": [
+     "6.1.2"
+    ]
+   }
+  },
+  "WID-6.2.1": {
+   "en": {
+    "statement": "Widgets are calibrated at least once a year.",
+    "guidance": "Widgets in service",
+    "objective": "Calibration dates within the last 12 months",
+    "check_type": "rule-based",
+    "obligation": "should",
+    "label": "6.2.1",
+    "source_clauses": [
+     "6.2.1"
+    ]
+   },
+   "fr": {
+    "statement": "Les widgets sont étalonnés au moins une fois par année.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "should",
+    "label": "6.2.1",
+    "source_clauses": [
+     "6.2.1"
+    ]
+   }
+  },
+  "WID-6.2.2": {
+   "en": {
+    "statement": "A qualified technician reviews calibration results.",
+    "guidance": "After each calibration",
+    "objective": "Review sign-off by a qualified technician",
+    "check_type": "judgment",
+    "obligation": "must",
+    "label": "6.2.2",
+    "source_clauses": [
+     "6.2.2"
+    ]
+   },
+   "fr": {
+    "statement": "Un technicien qualifié examine les résultats d'étalonnage.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "judgment",
+    "obligation": "must",
+    "label": "6.2.2",
+    "source_clauses": [
+     "6.2.2"
+    ]
+   }
+  },
+  "WID-6.2.3": {
+   "en": {
+    "statement": "Faulty widgets are removed from service until repaired.",
+    "guidance": "When a fault is found",
+    "objective": "Fault log and out-of-service records",
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.2.3",
+    "source_clauses": [
+     "6.2.3"
+    ]
+   },
+   "fr": {
+    "statement": "Les widgets défectueux sont retirés du service jusqu'à leur réparation.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.2.3",
+    "source_clauses": [
+     "6.2.3"
+    ]
+   }
+  },
+  "WID-6.4.1": {
+   "en": {
+    "statement": "Clients are told when a widget processes their request.",
+    "guidance": "All client requests",
+    "objective": "Client notice text",
+    "check_type": "judgment",
+    "obligation": null,
+    "label": "6.4.1",
+    "source_clauses": [
+     "6.4.1"
+    ]
+   },
+   "fr": {
+    "statement": "Les clients sont informés lorsqu'un widget traite leur demande.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "judgment",
+    "obligation": null,
+    "label": "6.4.1",
+    "source_clauses": [
+     "6.4.1"
+    ]
+   }
+  },
+  "WID-6.4.2": {
+   "en": {
+    "statement": "Departments report annually on widgets in service.",
+    "guidance": "Annually",
+    "objective": "Published annual report",
+    "check_type": "rule-based",
+    "obligation": null,
+    "label": "6.4.2",
+    "source_clauses": [
+     "6.4.2"
+    ]
+   },
+   "fr": {
+    "statement": "Les ministères font rapport chaque année sur les widgets en service.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": null,
+    "label": "6.4.2",
+    "source_clauses": [
+     "6.4.2"
+    ]
+   }
+  },
+  "WID-6.3.1": {
+   "en": {
+    "statement": "Every calibration is logged and the log is kept for two years.",
+    "guidance": "All calibrations",
+    "objective": "Calibration log covering two years",
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.3.1",
+    "source_clauses": [
+     "6.3.1"
+    ]
+   },
+   "fr": {
+    "statement": "Chaque étalonnage est consigné et le journal est conservé deux ans.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.3.1",
+    "source_clauses": [
+     "6.3.1"
+    ]
+   }
+  },
+  "WID-6.3.2": {
+   "en": {
+    "statement": "The widget register is published when the department chooses to.",
+    "guidance": "Optional",
+    "objective": "Link to the published register",
+    "check_type": "judgment",
+    "obligation": "may",
+    "label": "6.3.2",
+    "source_clauses": [
+     "6.3.2"
+    ]
+   },
+   "fr": {
+    "statement": "Le registre des widgets est publié lorsque le ministère le choisit.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "judgment",
+    "obligation": "may",
+    "label": "6.3.2",
+    "source_clauses": [
+     "6.3.2"
+    ]
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "9f61a200-dae5-4b6e-9a56-511118438e9b",
+   "seq": 1,
+   "kind": "edit",
+   "old_clauses": [
+    "6.1.2"
+   ],
+   "new_clauses": [
+    "6.1.2"
+   ],
+   "target_control": "WID-6.1.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [],
+   "drafts": {
+    "en": {
+     "flags": [
+      "obligation-mismatch"
+     ],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "The register records the owner, location, model and firmware version of each widget.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "The register must record the owner, the location, the model and the firmware version of each widget.",
+     "prompt_version": "draft-v1"
+    },
+    "fr": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Le registre consigne le propriétaire, l'emplacement, le modèle et la version du micrologiciel de chaque widget.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Le registre doit consigner le propriétaire, l’emplacement, le modèle et la version du micrologiciel de chaque widget.",
+     "prompt_version": "draft-v1"
+    },
+    "_decision": {
+     "seq": 16,
+     "hash": "sha256:31098be1c0dc91862f0fc25dda1fb2947d4e4006d1e749b900130a64845dbe90"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "8db07f8e-41e6-4c80-9f63-6cc8d473a491",
+   "seq": 2,
+   "kind": "edit",
+   "old_clauses": [
+    "6.2.1"
+   ],
+   "new_clauses": [
+    "6.3.1"
+   ],
+   "target_control": "WID-6.2.1",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "obligation-change",
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": true,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Widgets are calibrated at least once a year.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Widgets must be calibrated at least once a year.",
+     "prompt_version": "draft-v1"
+    },
+    "fr": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": true,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Les widgets sont étalonnés au moins une fois par année.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Les widgets doivent être étalonnés au moins une fois par année.",
+     "prompt_version": "draft-v1"
+    },
+    "_decision": {
+     "seq": 17,
+     "hash": "sha256:0fcf7e1490572e4b06dbceae99e352ac38028c76f77e2617476e4e09defa9cd4"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "a24509e1-874f-4be3-beaa-2d2a58a15c7e",
+   "seq": 3,
+   "kind": "reference",
+   "old_clauses": [
+    "6.2.2"
+   ],
+   "new_clauses": [
+    "6.3.2"
+   ],
+   "target_control": "WID-6.2.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "ready"
+    },
+    "fr": {
+     "status": "ready"
+    },
+    "_decision": {
+     "seq": 18,
+     "hash": "sha256:7dc255f6df0c8c2d4fbcdde483e811c83b9869889da7855aea525a9463f709c0"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "8d5c5e28-31ba-4912-bd61-2e4ccfa8f000",
+   "seq": 4,
+   "kind": "reference",
+   "old_clauses": [
+    "6.2.3"
+   ],
+   "new_clauses": [
+    "6.3.3"
+   ],
+   "target_control": "WID-6.2.3",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "ready"
+    },
+    "fr": {
+     "status": "ready"
+    },
+    "_decision": {
+     "seq": 19,
+     "hash": "sha256:9589d007330b450c5e0598990d89312a47b5378970a9b0739427b5fb891a8b5e"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "0c1ac93b-160a-41ff-8e86-46961148a55b",
+   "seq": 5,
+   "kind": "reference",
+   "old_clauses": [
+    "6.4.1"
+   ],
+   "new_clauses": [
+    "6.5.1"
+   ],
+   "target_control": "WID-6.4.1",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "ready"
+    },
+    "fr": {
+     "status": "ready"
+    },
+    "_decision": {
+     "seq": 20,
+     "hash": "sha256:32bfff557e7ffe10fcddccba533abccf7bb4d3bbdbedd9f03e1c849fefcf978f"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "c5ea8167-a883-432f-bc1d-a61293b01583",
+   "seq": 6,
+   "kind": "edit",
+   "old_clauses": [
+    "6.4.2"
+   ],
+   "new_clauses": [
+    "6.5.2"
+   ],
+   "target_control": "WID-6.4.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Departments report annually, for the fiscal year, on widgets in service.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Departments report annually on the number of widgets in service. The report covers the fiscal year.",
+     "prompt_version": "draft-v1"
+    },
+    "fr": {
+     "flags": [],
+     "reason": "low-confidence",
+     "source": "person",
+     "status": "edited",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "edited_by": "demo-reviewer-01",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Les ministères font rapport chaque année, pour l'exercice, sur les widgets en service.",
+     "check_type": "rule-based",
+     "confidence": 0.41,
+     "obligation": "must",
+     "cited_clause": "Les ministères font rapport chaque année sur le nombre de widgets en service. Le rapport porte sur l’exercice financier.",
+     "prompt_version": "draft-v1",
+     "model_suggestion": "Les ministères font rapport chaque année, pour l'exercice, sur les widgets en service."
+    },
+    "_decision": {
+     "seq": 21,
+     "hash": "sha256:9198978c1c472a428d7a5dfb40f7d3ee94318b797d047304728fe9e05286b86a"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": "demo-reviewer-01",
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "e2c464eb-f1f2-4ab8-9212-2d9f105a795b",
+   "seq": 7,
+   "kind": "edit",
+   "old_clauses": [
+    "6.3.1"
+   ],
+   "new_clauses": [
+    "6.4.1",
+    "6.4.2"
+   ],
+   "target_control": "WID-6.3.1",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "split"
+   ],
+   "drafts": {
+    "en": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Every calibration is logged, and the calibration log is kept for two years.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Operators must log every calibration.",
+     "prompt_version": "draft-v1"
+    },
+    "fr": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Chaque étalonnage est consigné, et le registre d'étalonnage est conservé deux ans.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Les opérateurs doivent consigner chaque étalonnage.",
+     "prompt_version": "draft-v1"
+    },
+    "_decision": {
+     "seq": 22,
+     "hash": "sha256:eddca8efba552186a0358b808270bcb571cdd833b7567ca4594f2ae7ce1267c4"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "84ee27cf-2e2e-40a7-a88d-0f6d732e577f",
+   "seq": 8,
+   "kind": "retire",
+   "old_clauses": [
+    "6.3.2"
+   ],
+   "new_clauses": [],
+   "target_control": "WID-6.3.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "removed"
+   ],
+   "drafts": {
+    "en": {
+     "status": "ready"
+    },
+    "fr": {
+     "status": "ready"
+    },
+    "_decision": {
+     "seq": 23,
+     "hash": "sha256:a0e9ac8c580b611cb7824d4b444873d13a48293d38594fded1284e8bbb8efd74"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "a4681e63-5c42-49a3-a04b-decc1613fd7d",
+   "seq": 9,
+   "kind": "new",
+   "old_clauses": [],
+   "new_clauses": [
+    "6.2.1"
+   ],
+   "target_control": null,
+   "proposed_id": "WID-C001",
+   "group": "widgets-G01",
+   "flags": [
+    "added"
+   ],
+   "drafts": {
+    "en": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "A widget risk assessment is completed before the widget is put into service.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Departments must complete a widget risk assessment before a widget is put into service.",
+     "prompt_version": "draft-v1"
+    },
+    "fr": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "Une évaluation des risques du widget est réalisée avant sa mise en service.",
+     "check_type": "rule-based",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "Les ministères doivent réaliser une évaluation des risques du widget avant sa mise en service.",
+     "prompt_version": "draft-v1"
+    },
+    "_decision": {
+     "seq": 24,
+     "hash": "sha256:c3986aba90f8688e2110355ecefcc742f481799830d2163af6d293d0b947e7d7"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": null,
+   "decided_by": "demo-officer-01"
+  },
+  {
+   "id": "571060a2-2739-48fd-af4b-938440ef52e4",
+   "seq": 10,
+   "kind": "new",
+   "old_clauses": [],
+   "new_clauses": [
+    "6.2.2"
+   ],
+   "target_control": null,
+   "proposed_id": "WID-C002",
+   "group": "widgets-G01",
+   "flags": [
+    "added"
+   ],
+   "drafts": {
+    "en": {
+     "flags": [],
+     "reason": null,
+     "source": "person",
+     "status": "edited",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "edited_by": "demo-officer-01",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "The widget risk assessment is updated whenever the purpose of the widget changes.",
+     "check_type": "judgment",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "The widget risk assessment must be updated when the purpose of the widget changes.",
+     "prompt_version": "draft-v1",
+     "model_suggestion": "The widget risk assessment is updated when the widget's purpose changes."
+    },
+    "fr": {
+     "flags": [],
+     "reason": null,
+     "source": "model",
+     "status": "drafted",
+     "guidance": null,
+     "model_id": "scripted-fake-v1",
+     "no_change": false,
+     "objective": null,
+     "reasoning": "Scripted synthetic draft.",
+     "statement": "L'évaluation des risques du widget est mise à jour lorsque sa fin change.",
+     "check_type": "judgment",
+     "confidence": 0.9,
+     "obligation": "must",
+     "cited_clause": "L’évaluation des risques du widget doit être mise à jour lorsque l’objet du widget change.",
+     "prompt_version": "draft-v1"
+    },
+    "_decision": {
+     "seq": 25,
+     "hash": "sha256:4886ebb723cfb0672c4f78554d645f29e94d709b190f8b162dcda064d2d5bd0f"
+    }
+   },
+   "status": "approved",
+   "last_edited_by": "demo-officer-01",
+   "decided_by": "demo-officer-02"
+  }
+ ],
+ "created_by": "demo-officer-01",
+ "created_at": "2026-11-27T22:47:35.673738+00:00"
+}

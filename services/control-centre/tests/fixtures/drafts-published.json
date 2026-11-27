@@ -1,0 +1,11 @@
+{
+ "catalog": "example-widgets",
+ "version": "1.1.0",
+ "source_date": "2026-11-29T00:00:00Z",
+ "approval_log_head": "seq 25 sha256:4886ebb723cfb0672c4f78554d645f29e94d709b190f8b162dcda064d2d5bd0f",
+ "published_record": {
+  "seq": 26,
+  "hash": "sha256:2e86925e1ce48773e2f010ba3605ba4e392726c0cb34fcf53206ca9742ff455e"
+ },
+ "checkpoint": "written"
+}

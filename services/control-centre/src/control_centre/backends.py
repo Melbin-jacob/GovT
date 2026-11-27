@@ -40,8 +40,13 @@ class Service:
     def get(self, path: str, **params: Any) -> Any:
         return self.call("GET", path, params=params or None).json()
 
-    def post(self, path: str, body: Any, **params: Any) -> Any:
-        return self.call("POST", path, json=body, params=params or None).json()
+    def post(
+        self, path: str, body: Any, headers: dict[str, str] | None = None, **params: Any
+    ) -> Any:
+        return self.call("POST", path, json=body, params=params or None, headers=headers).json()
+
+    def put(self, path: str, body: Any, headers: dict[str, str] | None = None) -> Any:
+        return self.call("PUT", path, json=body, headers=headers).json()
 
     def text(self, path: str) -> str:
         return self.call("GET", path).text

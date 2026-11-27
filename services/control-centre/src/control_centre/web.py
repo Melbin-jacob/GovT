@@ -49,6 +49,7 @@ SCREENS: list[tuple[str, str, str]] = [
     ("review", "review", "nav.review"),
     ("log", "decision-log", "nav.log"),
     ("inventory", "inventory", "nav.inventory"),
+    ("drafts", "drafts", "nav.drafts"),
 ]
 
 _backends: Backends | None = None

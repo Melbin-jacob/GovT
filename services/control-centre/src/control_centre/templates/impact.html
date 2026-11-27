@@ -40,7 +40,13 @@
   <div class="field"><button type="submit">{{ t('impact.show') }}</button></div>
 </form>
 
-{% if versions is defined and from_version == to_version %}
+{% if catalog_from is defined %}
+<p class="alert alert-ok" role="status" data-trigger="catalog">{{ t('impact.catalog_change', catalog=catalog, old=catalog_from, new=catalog_to) }}
+  <a href="/{{ lang }}/impact?catalog={{ catalog }}">{{ t('impact.back_to_source') }}</a></p>
+{% if report and report.triggers.get('catalog', {}).get('not_reassessed') %}
+<p>{{ t('impact.not_reassessed', ids=report.triggers.catalog.not_reassessed|join(', ')) }}</p>
+{% endif %}
+{% elif versions is defined and from_version == to_version %}
 <p class="alert alert-warn">{{ t('policy.same_version') }}</p>
 {% endif %}
 
