@@ -74,6 +74,11 @@ jobs:
         run: curl --fail --silent --show-error http://localhost:8000/health
       - name: Readiness (database reachable)
         run: curl --fail --silent --show-error http://localhost:8000/ready
+      - name: Connector hub, mock ServiceNow and review desk are up (localhost only)
+        run: |
+          curl --fail -sS http://127.0.0.1:8001/health
+          curl --fail -sS http://127.0.0.1:8002/ready
+          curl --fail -sS http://127.0.0.1:8003/__mock/health
       - name: Vendored OSCAL schemas resolve inside the image
         run: >-
           docker compose exec -T rulebook python -c

@@ -12,6 +12,7 @@ from typing import Any
 
 from trestle.oscal import OSCAL_VERSION as TRESTLE_OSCAL_VERSION
 from trestle.oscal.catalog import Catalog
+from trestle.oscal.poam import PlanOfActionAndMilestones
 from trestle.oscal.profile import Profile
 
 from govhub_shared import OSCAL_VERSION
@@ -23,7 +24,11 @@ if TRESTLE_OSCAL_VERSION != OSCAL_VERSION:  # pragma: no cover - guards a bad up
         f"but this repo is pinned to {OSCAL_VERSION}"
     )
 
-_MODELS: dict[OscalKind, Any] = {"catalog": Catalog, "profile": Profile}
+_MODELS: dict[OscalKind, Any] = {
+    "catalog": Catalog,
+    "profile": Profile,
+    "plan-of-action-and-milestones": PlanOfActionAndMilestones,
+}
 
 
 def normalize(doc: Mapping[str, Any], kind: OscalKind) -> dict[str, Any]:

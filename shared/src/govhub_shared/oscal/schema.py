@@ -71,7 +71,8 @@ _OscalValidator = validators.extend(  # type: ignore[no-untyped-call]
 
 @cache
 def _validator(kind: OscalKind) -> Any:
-    path = schema_dir() / f"oscal_{kind}_schema.json"
+    filename = {"plan-of-action-and-milestones": "poam"}.get(kind, kind)
+    path = schema_dir() / f"oscal_{filename}_schema.json"
     schema = json.loads(path.read_text(encoding="utf-8"))
     return _OscalValidator(schema, format_checker=Draft7Validator.FORMAT_CHECKER)
 

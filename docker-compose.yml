@@ -1,4 +1,8 @@
 # Local development only. Production runs the same images on Kubernetes/OpenShift.
+#
+# Ports: the rulebook API is published on localhost:8000. connector-hub, review-desk and
+# the mock ServiceNow are published on 127.0.0.1 ONLY: review-desk trusts placeholder
+# identity headers until control-centre exists and must never be reachable from outside.
 services:
   postgres:
     image: postgres:16
@@ -7,7 +11,7 @@ services:
       POSTGRES_PASSWORD: govhub  # local dev only
       POSTGRES_DB: rulebook
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U govhub -d rulebook"]
       interval: 2s
@@ -15,6 +19,7 @@ services:
       retries: 30
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
 
   rulebook:
     build:
@@ -26,6 +31,66 @@ services:
       - "8000:8000"
     depends_on:
       postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Mock ServiceNow (Table API subset) seeded with the fictional demo records. CI and the
+  # demo use this; a real instance is configured with SERVICENOW_* variables instead.
+  mock-servicenow:
+    build:
+      context: .
+      dockerfile: services/connector-hub/Dockerfile
+    command: ["connector-hub", "mock-servicenow", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "127.0.0.1:8003:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/__mock/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  connector-hub:
+    build:
+      context: .
+      dockerfile: services/connector-hub/Dockerfile
+    environment:
+      SERVICENOW_INSTANCE_URL: http://mock-servicenow:8000
+      SERVICENOW_USERNAME: govhub.integration
+      SERVICENOW_PASSWORD: mock-only-password  # mock instance only
+      CONNECTOR_ALLOWED_HOSTS: mock-servicenow
+      CONNECTOR_ALLOW_INSECURE_HTTP: "1"  # the mock speaks plain HTTP; never for a real instance
+      RULEBOOK_URL: http://rulebook:8000
+    ports:
+      - "127.0.0.1:8001:8000"
+    depends_on:
+      mock-servicenow:
+        condition: service_healthy
+      rulebook:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  review-desk:
+    build:
+      context: .
+      dockerfile: services/review-desk/Dockerfile
+    command: ["review-desk", "serve", "--migrate", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      REVIEW_DESK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/review_desk
+      CONNECTOR_HUB_URL: http://connector-hub:8000
+    ports:
+      - "127.0.0.1:8002:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      connector-hub:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]

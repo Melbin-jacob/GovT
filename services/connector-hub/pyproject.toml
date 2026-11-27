@@ -1,0 +1,26 @@
+[project]
+name = "govhub-connector-hub"
+version = "0.1.0"
+description = "Connector hub: ServiceNow (Table API) inventory and task sync; mock ServiceNow for tests"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "govhub-shared",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "httpx>=0.28",
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.6",
+]
+
+[project.scripts]
+connector-hub = "connector_hub.cli:main"
+
+[tool.uv.sources]
+govhub-shared = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/connector_hub"]

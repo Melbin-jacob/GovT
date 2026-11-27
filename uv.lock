@@ -5,6 +5,8 @@ requires-python = "==3.12.*"
 [manifest]
 members = [
     "govhub",
+    "govhub-connector-hub",
+    "govhub-review-desk",
     "govhub-rulebook",
     "govhub-shared",
 ]
@@ -432,6 +434,8 @@ source = { virtual = "." }
 
 [package.dev-dependencies]
 dev = [
+    { name = "govhub-connector-hub" },
+    { name = "govhub-review-desk" },
     { name = "govhub-rulebook" },
     { name = "govhub-shared" },
     { name = "httpx" },
@@ -446,6 +450,8 @@ dev = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "govhub-connector-hub", editable = "services/connector-hub" },
+    { name = "govhub-review-desk", editable = "services/review-desk" },
     { name = "govhub-rulebook", editable = "services/rulebook" },
     { name = "govhub-shared", editable = "shared" },
     { name = "httpx", specifier = ">=0.28" },
@@ -454,6 +460,58 @@ dev = [
     { name = "ruff", specifier = ">=0.8" },
     { name = "types-jsonschema", specifier = ">=4.26.0.20261006" },
     { name = "types-regex", specifier = ">=2026.11.24.20261126" },
+]
+
+[[package]]
+name = "govhub-connector-hub"
+version = "0.1.0"
+source = { editable = "services/connector-hub" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "govhub-shared" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "govhub-shared", editable = "shared" },
+    { name = "httpx", specifier = ">=0.28" },
+    { name = "pydantic", specifier = ">=2.9,<3" },
+    { name = "pydantic-settings", specifier = ">=2.6" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
+]
+
+[[package]]
+name = "govhub-review-desk"
+version = "0.1.0"
+source = { editable = "services/review-desk" }
+dependencies = [
+    { name = "alembic" },
+    { name = "fastapi" },
+    { name = "govhub-shared" },
+    { name = "httpx" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "sqlalchemy" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "alembic", specifier = ">=1.14" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "govhub-shared", editable = "shared" },
+    { name = "httpx", specifier = ">=0.28" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
+    { name = "pydantic", specifier = ">=2.9,<3" },
+    { name = "pydantic-settings", specifier = ">=2.6" },
+    { name = "sqlalchemy", specifier = ">=2.0.36,<2.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
 
 [[package]]

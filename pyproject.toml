@@ -9,16 +9,20 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["shared", "services/rulebook"]
+members = ["shared", "services/rulebook", "services/connector-hub", "services/review-desk"]
 
 [tool.uv.sources]
 govhub-shared = { workspace = true }
 govhub-rulebook = { workspace = true }
+govhub-connector-hub = { workspace = true }
+govhub-review-desk = { workspace = true }
 
 [dependency-groups]
 dev = [
     "govhub-shared",
     "govhub-rulebook",
+    "govhub-connector-hub",
+    "govhub-review-desk",
     "ruff>=0.8",
     "mypy>=1.13",
     "pytest>=8.3",
@@ -37,7 +41,7 @@ select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "S"]
 ignore = []
 
 [tool.ruff.lint.isort]
-known-first-party = ["govhub_shared", "rulebook"]
+known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests drive git via subprocess and contain French text with typographic characters.
@@ -46,11 +50,16 @@ known-first-party = ["govhub_shared", "rulebook"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["govhub_shared", "rulebook"]
+packages = ["govhub_shared", "rulebook", "connector_hub", "review_desk"]
 plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
-testpaths = ["shared/tests", "services/rulebook/tests"]
+testpaths = [
+    "shared/tests",
+    "services/rulebook/tests",
+    "services/connector-hub/tests",
+    "services/review-desk/tests",
+]
 pythonpath = ["services/rulebook/tests"]
 addopts = "-ra --import-mode=importlib"
 filterwarnings = [
