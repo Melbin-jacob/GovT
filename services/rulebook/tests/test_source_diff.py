@@ -297,3 +297,21 @@ def test_diff_endpoint(client: TestClient) -> None:
         ).status_code
         == 404
     )
+
+
+@pytest.mark.parametrize(
+    ("before", "after"),
+    [
+        ("Widgets must be calibrated every year.", "Widgets must not be calibrated every year."),
+        ("Les widgets doivent être étalonnés.", "Les widgets ne doivent pas être étalonnés."),
+    ],
+)
+def test_negation_only_change_is_an_obligation_change(before: str, after: str) -> None:
+    old = make_doc([("6.1.1", before)], "2023-01-01")
+    new = make_doc([("6.1.1", after)])
+    lang = "fr" if "widgets doivent" in before.lower() else "en"
+    old = old.model_copy(update={"lang": lang})
+    new = new.model_copy(update={"lang": lang})
+    (pair,) = diff_sources(old, new).pairs
+    assert "obligation-change" in pair.flags
+    assert pair.obligations_before != pair.obligations_after

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -221,3 +222,38 @@ def test_due_date_config_validation(tmp_path: Path) -> None:
     bad.write_text('[default]\nlevel_4 = { days = 30, status = "PLACEHOLDER" }\n', "utf-8")
     with pytest.raises(ValueError, match="missing level"):
         load_due_dates(bad)
+
+
+def test_tenant_override_applies_only_to_that_tenant(client: TestClient) -> None:
+    """The fictional override (office-fictional-permits, level III = 30 days) must not leak:
+    same-level systems elsewhere keep the default 45 days, and the overriding tenant keeps
+    the defaults for every other level."""
+    seed(client)
+    tasks = report(client)["tasks"]
+    level_iii = {t["system_id"]: t for t in tasks if t["impact_level"] == "III"}
+    assert set(level_iii) == {"SYS-002", "SYS-005"}  # both level III, different tenants
+    overridden = level_iii["SYS-002"]  # office-fictional-permits
+    default = level_iii["SYS-005"]  # agency-sample-benefits
+    assert overridden["assignment_group"] == "office-fictional-permits"
+    assert overridden["due_date"] == "2026-12-31"  # 30 days
+    assert default["assignment_group"] == "agency-sample-benefits"
+    assert default["due_date"] == "2027-01-15"  # 45 days
+    assert "override" not in default["due_date_basis"]
+    # Same tenant, other level (SYS-007 is level II in office-fictional-permits): default.
+    (sys7,) = [t for t in tasks if t["system_id"] == "SYS-007"]
+    assert sys7["due_date"] == "2027-01-30"  # 60 days
+    assert sys7["due_date_basis"] == "PLACEHOLDER: level II = 60 days (default)"
+    # Only one task in the whole report uses the override.
+    assert [t["system_id"] for t in tasks if "override" in t["due_date_basis"]] == ["SYS-002"]
+
+
+def test_due_date_policy_lookup() -> None:
+    policy = load_due_dates(REPO / "data" / "config" / "due-dates.toml")
+    as_of = date(2026, 12, 1)
+    for level, days in ((4, 30), (3, 45), (2, 60), (1, 90)):
+        due, basis = policy.due("some-other-tenant", level, as_of)
+        assert (due - as_of).days == days
+        assert basis.endswith("(default)")
+    for level, days in ((4, 30), (3, 30), (2, 60), (1, 90)):
+        due, _ = policy.due("office-fictional-permits", level, as_of)
+        assert (due - as_of).days == days
