@@ -591,6 +591,7 @@ version = "0.1.0"
 source = { editable = "shared" }
 dependencies = [
     { name = "compliance-trestle" },
+    { name = "httpx" },
     { name = "jsonschema", extra = ["format-nongpl"] },
     { name = "pydantic" },
     { name = "regex" },
@@ -599,6 +600,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "compliance-trestle", specifier = "==3.12.4" },
+    { name = "httpx", specifier = ">=0.28" },
     { name = "jsonschema", extras = ["format-nongpl"], specifier = ">=4.23" },
     { name = "pydantic", specifier = ">=2.9,<3" },
     { name = "regex", specifier = ">=2024.11" },

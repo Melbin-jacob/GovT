@@ -17,7 +17,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   Kubernetes/OpenShift: no cloud-specific services, non-root images that work under an
   arbitrary UID. **Only connector-hub may make outbound calls, and only to hosts listed in
   its configuration; nothing else ever calls out.** (Calls between hub services inside the
-  deployment are internal.)
+  deployment are internal.) The model server is also internal to the deployment: the
+  assessment engine reaches it only through `govhub_shared.model_gateway`, and only hosts
+  listed in `MODEL_GATEWAY_ALLOWED_HOSTS` (approved).
 
 ## Layout
 - `services/<name>/` — one folder per service: connector-hub, rulebook, assessment-engine,
@@ -123,8 +125,12 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - `make demo-ui` (Playwright + axe) must pass with zero axe violations.
 
 ## AI usage
-- All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes
-  **no LLM calls** (`NullGateway` only). Self-hosted by default when added.
+- All model access goes through `govhub_shared.model_gateway` (`OpenAIGateway` to a
+  self-hosted OpenAI-compatible server; `RecordedGateway` replays recorded replies).
+  **CI and tests never run a real model**: they use recordings made on synthetic evidence.
+- Never log prompts, evidence passages or model replies (evidence may be personal or
+  Protected information). Log task, model, token counts and timings only.
+- The model drafts verdicts; it never closes a finding. A human decides.
 
 ## Working rules
 - Small commits with clear messages. Never put model identifiers in commits or code.
