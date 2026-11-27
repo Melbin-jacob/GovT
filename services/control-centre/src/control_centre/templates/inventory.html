@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block notes %}
+{% if settings.fictional_inventory %}{{ m.note('fictional', t) }}{% endif %}
+{% endblock %}
+{% block content %}
+<p class="lead">{{ t('inventory.intro') }}</p>
+<ul class="summary">
+  <li>{{ t('inventory.n_systems') }}: <strong>{{ systems|length }}</strong></li>
+  <li>{{ t('inventory.n_gaps') }}: <strong>{{ with_gaps }}</strong></li>
+  <li>{{ t('inventory.source') }}: <code>{{ inventory.source }}</code> ({{ t('inventory.snapshot', n=inventory.snapshot) }})</li>
+</ul>
+{% if with_gaps %}<p>{{ t('inventory.gaps_hint') }}</p>{% endif %}
+<table data-table="inventory">
+  <caption>{{ t('inventory.caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('impact.system') }}</th>
+    <th scope="col">{{ t('impact.tenant') }}</th>
+    <th scope="col">{{ t('inventory.owner') }}</th>
+    <th scope="col">{{ t('impact.level') }}</th>
+    <th scope="col">{{ t('impact.lifecycle') }}</th>
+    <th scope="col">{{ t('inventory.profiles') }}</th>
+    <th scope="col">{{ t('inventory.gaps') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for s in systems %}
+    <tr{% if s.data_gaps %} class="highlight"{% endif %} data-system="{{ s.system_id }}">
+      <th scope="row">{{ s.name }}<br><span class="muted">{{ s.system_id }}</span></th>
+      <td>{{ s.tenant }}<br><span class="muted">{{ s.department }}</span></td>
+      <td>{{ s.owner }}{% if s.owner_email %}<br><span class="muted">{{ s.owner_email }}</span>{% endif %}</td>
+      <td>{{ s.impact_level|roman if s.impact_level else t('impact.level_unknown') }}</td>
+      <td>{{ t('lifecycle.' ~ s.lifecycle) }}</td>
+      <td>{{ s.profiles|join(', ') or t('policy.none') }}</td>
+      <td>{% for g in s.data_gaps %}{{ m.gap(g, t) }} {% else %}{{ t('inventory.complete') }}{% endfor %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -101,3 +101,13 @@ def stub_review(hub: FakeHub) -> dict[str, Any]:
 
     hub.rulebook.on("GET", "/controls/WID-6.1.2", control)
     return dict(finding)
+
+
+def stub_log(hub: FakeHub) -> None:
+    hub.desk.on("GET", "/decision-log/export", (FIXTURES / "decision-log.jsonl").read_text("utf-8"))
+    hub.desk.on("GET", "/decision-log/checkpoint-status", fixture("checkpoint-status.json"))
+    hub.desk.on("GET", "/decision-log/verify", fixture("verify.json"))
+
+
+def stub_inventory(hub: FakeHub) -> None:
+    hub.rulebook.on("GET", "/inventory", fixture("inventory.json"))

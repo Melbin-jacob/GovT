@@ -20,6 +20,15 @@ env = Environment(
     lstrip_blocks=True,
 )
 
+
+def roman(level: object) -> str:
+    """Impact level 1-4 as I-IV (values already in roman numerals pass through)."""
+    numerals = {1: "I", 2: "II", 3: "III", 4: "IV"}
+    return numerals[level] if isinstance(level, int) and level in numerals else str(level)
+
+
+env.filters["roman"] = roman
+
 # (key in the navigation, path below /{lang}/, string key of its label)
 SCREENS: list[tuple[str, str, str]] = [
     ("policy", "policy-change", "nav.policy"),

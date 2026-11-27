@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block notes %}
+{% if settings.synthetic_data %}{{ m.note('synthetic', t) }}{% endif %}
+{% if settings.fictional_inventory %}{{ m.note('fictional', t) }}{% endif %}
+{% endblock %}
+{% block content %}
+<p class="lead">{{ t('log.intro') }}</p>
+
+<h2>{{ t('log.verify_heading') }}</h2>
+<form method="get" action="/{{ lang }}/decision-log">
+  <input type="hidden" name="verify" value="true">
+  <fieldset>
+    <legend>{{ t('log.trust_legend') }}</legend>
+    <div class="choice">
+      <input type="checkbox" id="trust-file" name="trust" value="file"{% if 'file' in trusted %} checked{% endif %}>
+      <label for="trust-file">{{ t('log.source.file') }}</label>
+    </div>
+    <div class="choice">
+      <input type="checkbox" id="trust-servicenow" name="trust" value="servicenow"{% if 'servicenow' in trusted %} checked{% endif %}>
+      <label for="trust-servicenow">{{ t('log.source.servicenow') }}</label>
+    </div>
+  </fieldset>
+  <button type="submit">{{ t('log.verify') }}</button>
+</form>
+
+{% if result %}
+{% if result.ok %}
+<div class="alert alert-ok" role="status" id="verify-result" data-ok="true">
+  <p><strong>{{ t('log.verified') }}</strong> {{ t('log.verified_detail', records=result.records, checkpoints=result.checkpoints_checked) }}</p>
+</div>
+{% else %}
+<div class="alert alert-error" role="alert" id="verify-result" data-ok="false">
+  <p><strong>{{ t('log.not_verified') }}</strong></p>
+  <ul>{% for p in result.problems %}<li lang="en">{{ p }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% endif %}
+
+<h2>{{ t('log.checkpoints') }}</h2>
+<p>{{ t('log.checkpoints_intro', every=status.every) }}</p>
+<table data-table="checkpoints">
+  <caption>{{ t('log.checkpoints_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('log.source') }}</th>
+    <th scope="col" class="num">{{ t('log.latest_seq') }}</th>
+    <th scope="col">{{ t('log.latest_hash') }}</th>
+    <th scope="col">{{ t('log.state') }}</th>
+  </tr></thead>
+  <tbody>
+    <tr>
+      <th scope="row">{{ t('log.source.database') }}</th>
+      <td class="num">{{ status.database_head.head_seq }}</td>
+      <td><code class="hash">{{ status.database_head.head_hash }}</code></td>
+      <td>{{ t('log.records', n=status.database_head.records) }}</td>
+    </tr>
+    {% for name in ['file', 'servicenow'] %}
+    {% set src = status[name] %}
+    <tr{% if sources[name] == 'ahead' %} class="highlight"{% endif %} data-source="{{ name }}" data-state="{{ sources[name] }}">
+      <th scope="row">{{ t('log.source.' ~ name) }}</th>
+      <td class="num">{{ src.latest_seq if src.latest_seq is not none else t('policy.none') }}</td>
+      <td>{% if src.latest_hash %}<code class="hash">{{ src.latest_hash }}</code>{% else %}{{ t('policy.none') }}{% endif %}</td>
+      <td>{{ t('log.state.' ~ sources[name], n=src.behind_database|abs if src.behind_database is not none else 0) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>{{ t('log.records_heading') }}</h2>
+<p>{{ t('log.records_intro', shown=records|length, total=total) }}</p>
+{% if records %}
+<table data-table="records">
+  <caption>{{ t('log.records_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('log.seq') }}</th>
+    <th scope="col">{{ t('log.when') }}</th>
+    <th scope="col">{{ t('log.reviewer') }}</th>
+    <th scope="col">{{ t('log.finding') }}</th>
+    <th scope="col">{{ t('decide.action') }}</th>
+    <th scope="col">{{ t('finding.verdict') }}</th>
+    <th scope="col">{{ t('log.hashes') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for d in records %}
+    <tr>
+      <th scope="row" class="num">{{ d.seq }}</th>
+      <td>{{ d.timestamp[:19]|replace('T', ' ') }} UTC</td>
+      <td>{{ d.reviewer.id }}</td>
+      <td><a href="/{{ lang }}/review/{{ d['finding-uuid'] }}">{{ d['control-id'] }} · {{ d['system-id'] }}</a></td>
+      <td>{{ t('action.' ~ d.action) }}</td>
+      <td>{{ t('verdict.' ~ d['verdict-before']) }} → {{ t('verdict.' ~ d['verdict-after']) }}</td>
+      <td><span class="muted">{{ t('log.this') }}</span> <code class="hash">{{ d['record-hash'][:19] }}…</code><br>
+        <span class="muted">{{ t('log.previous') }}</span> <code class="hash">{{ d['previous-record-hash'][:19] }}…</code></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}
