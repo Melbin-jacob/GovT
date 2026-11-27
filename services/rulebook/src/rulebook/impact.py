@@ -458,6 +458,7 @@ def build_report(
                 "owner": system.owner,
                 "impact_level": system.impact_label,
                 "lifecycle": system.lifecycle,
+                "data_gaps": list(system.data_gaps),
                 "controls_in_scope": len(in_scope),
                 "findings_to_review": len(hits),
                 "obligation_changes": sum(
@@ -468,7 +469,7 @@ def build_report(
             }
         )
     ranked.sort(
-        key=lambda s: (-inv.ROMAN[s["impact_level"]], -s["findings_to_review"], s["system_id"])
+        key=lambda s: (-inv.RANK[s["impact_level"]], -s["findings_to_review"], s["system_id"])
     )
 
     trigger_text = " and ".join(
@@ -496,7 +497,11 @@ def build_report(
     for rank, entry in enumerate(ranked, start=1):
         record: inv.SystemRecord = entry.pop("_record")
         entry["rank"] = rank
-        due, basis = due_dates.due(record.tenant, record.impact_level, request.as_of)
+        # Unknown impact level: treated as level IV (strictest) until the owner sets it.
+        level = record.impact_level or 4
+        due, basis = due_dates.due(record.tenant, level, request.as_of)
+        if record.impact_level is None:
+            basis = f"impact level unknown, treated as IV; {basis}"
         task_controls = []
         for cid in entry["controls"]:
             control = by_id.get(cid)
@@ -530,7 +535,7 @@ def build_report(
                 "description": "\n".join(lines),
                 "assignment_group": record.tenant,
                 "assigned_to": record.owner_email,
-                "priority": PRIORITY[record.impact_level],
+                "priority": PRIORITY[level],
                 "due_date": due.isoformat(),
                 "due_date_basis": basis,
                 "system_id": record.system_id,
@@ -560,7 +565,7 @@ def build_report(
             "affected_systems": len(ranked),
             "findings_to_review": sum(s["findings_to_review"] for s in ranked),
             "findings_by_impact_level": dict(
-                sorted(by_level.items(), key=lambda kv: -inv.ROMAN[kv[0]])
+                sorted(by_level.items(), key=lambda kv: -inv.RANK[kv[0]])
             ),
             "obligation_changes": sum(c["obligation_change"] for c in affected_controls),
             "maintenance_items": len(maintenance),

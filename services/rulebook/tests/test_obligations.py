@@ -115,3 +115,27 @@ def test_obligation_changed(before: str, after: str, lang: str) -> None:
 )
 def test_obligation_unchanged(before: str, after: str, lang: str) -> None:
     assert not obligation_changed(before, after, lang)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Il ne doit que publier le rapport.", {"ne doit que": 1}),
+        ("Ils ne doivent qu’informer le client.", {"ne doivent que": 1}),
+        ("Il ne le peut qu'avec l'accord du client.", {"ne peut que": 1}),
+        # "que" must never be bridged into a negation by the three-word gap
+        ("Il ne peut que constater pas moins de deux erreurs.", {"ne peut que": 1}),
+        ("Elle ne devrait que les publier, pas les commenter.", {"ne devrait que": 1}),
+    ],
+)
+def test_ne_que_is_a_restriction_not_a_negation(text: str, expected: dict[str, int]) -> None:
+    terms = obligation_terms(text, "fr")
+    assert dict(terms) == expected
+    assert not any(t.endswith((" pas", " plus", " jamais")) for t in terms)
+
+
+def test_restriction_is_its_own_value() -> None:
+    # "must" -> "must only" changes the obligation; "must only" -> "must not" too.
+    assert obligation_changed("Il doit publier.", "Il ne doit que publier.", "fr")
+    assert obligation_changed("Il ne doit que publier.", "Il ne doit pas publier.", "fr")
+    assert not obligation_changed("Il ne doit que publier.", "Il ne doit qu’publier.", "fr")

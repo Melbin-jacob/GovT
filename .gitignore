@@ -12,6 +12,7 @@ build/
 .env
 .env.*
 !.env.example
+!.env.servicenow.example
 .DS_Store
 .idea/
 .vscode/
@@ -22,3 +23,4 @@ data/sources/raw/
 
 # Output of `make demo`
 demo-output/
+demo-review-output/

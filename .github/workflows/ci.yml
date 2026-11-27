@@ -25,6 +25,7 @@ jobs:
           --health-interval 2s --health-timeout 3s --health-retries 30
     env:
       RULEBOOK_TEST_DATABASE_URL: postgresql+psycopg://govhub:govhub@localhost:5432/rulebook_test
+      REVIEW_DESK_TEST_DATABASE_URL: postgresql+psycopg://govhub:govhub@localhost:5432/review_desk_test
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -74,6 +75,11 @@ jobs:
         run: curl --fail --silent --show-error http://localhost:8000/health
       - name: Readiness (database reachable)
         run: curl --fail --silent --show-error http://localhost:8000/ready
+      - name: Connector hub, mock ServiceNow and review desk are up (localhost only)
+        run: |
+          curl --fail -sS http://127.0.0.1:8001/health
+          curl --fail -sS http://127.0.0.1:8002/ready
+          curl --fail -sS http://127.0.0.1:8003/__mock/health
       - name: Vendored OSCAL schemas resolve inside the image
         run: >-
           docker compose exec -T rulebook python -c
@@ -99,12 +105,16 @@ jobs:
           rulebook resolve-profile data/profiles/dadm-level-ii-plus.json --ids
       - name: Demo - policy diff to impact report (synthetic data)
         run: scripts/demo-impact.sh http://localhost:8000 demo-output
+      - name: Demo - task to human decision (mock ServiceNow, synthetic data)
+        run: scripts/demo-review.sh demo-review-output
       - name: Keep demo output
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: demo-output
-          path: demo-output/
+          path: |
+            demo-output/
+            demo-review-output/
           if-no-files-found: ignore
       - name: Logs on failure
         if: failure()

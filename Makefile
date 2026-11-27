@@ -1,4 +1,4 @@
-.PHONY: setup lint typecheck test up down check import-golden migrate demo
+.PHONY: setup lint typecheck test up down check import-golden migrate demo demo-review servicenow-check
 
 setup:  ## Install all workspace packages and dev tools
 	uv sync --all-packages --frozen
@@ -31,3 +31,9 @@ migrate:  ## Apply database migrations to RULEBOOK_DATABASE_URL
 
 demo:  ## Run the synthetic policy-diff -> impact-report demo against `make up`
 	scripts/demo-impact.sh http://localhost:8000 demo-output
+
+demo-review:  ## Run the task -> decision -> verified log -> POA&M demo against `make up`
+	scripts/demo-review.sh demo-review-output
+
+servicenow-check:  ## Check a REAL ServiceNow instance (.env.servicenow); never run in CI
+	uv run connector-hub check-servicenow

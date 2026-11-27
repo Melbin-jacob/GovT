@@ -156,10 +156,11 @@ class AISystem(Base):
     tenant: Mapped[str] = mapped_column(String(100), index=True)
     department: Mapped[str] = mapped_column(String(300))
     owner: Mapped[str] = mapped_column(String(300))
-    owner_email: Mapped[str] = mapped_column(String(300))
-    impact_level: Mapped[int] = mapped_column(Integer)
+    owner_email: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    impact_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
     lifecycle: Mapped[str] = mapped_column(String(20))
     profiles: Mapped[list[str]] = mapped_column(ARRAY(String(200)))
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    data_gaps: Mapped[list[str]] = mapped_column(ARRAY(String(100)), default=list)
 
     snapshot: Mapped[InventorySnapshot] = relationship(back_populates="systems")

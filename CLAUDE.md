@@ -15,11 +15,13 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - ruff (lint + format), mypy **strict** for `shared` and `rulebook`, pytest.
 - Docker Compose for local dev only. Everything must run as plain containers on
   Kubernetes/OpenShift: no cloud-specific services, non-root images that work under an
-  arbitrary UID, and **no outbound network calls at runtime**.
+  arbitrary UID. **Only connector-hub may make outbound calls, and only to hosts listed in
+  its configuration; nothing else ever calls out.** (Calls between hub services inside the
+  deployment are internal.)
 
 ## Layout
 - `services/<name>/` — one folder per service: connector-hub, rulebook, assessment-engine,
-  review-desk, control-centre. Only `rulebook` is implemented (Milestone 1).
+  review-desk, control-centre. Implemented: rulebook (M1–2), connector-hub and review-desk (M3).
 - `shared/` — `govhub_shared`: constants, OSCAL helpers, model-gateway interface.
 - `data/golden/` — hand-mapped golden set CSVs. `data/catalogs/` — generated catalogs.
   `data/profiles/` — OSCAL profiles.
@@ -93,6 +95,14 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Renumbering or typography alone never triggers re-review; substance changes do.
 - Tasks are returned as ServiceNow-shaped `sc_task` JSON, never incidents, and are not sent
   until connector-hub exists. Due-date values are PLACEHOLDERS until the organization sets them.
+
+## Connectors and review desk
+- ServiceNow credentials come from environment variables or a gitignored `.env.servicenow`;
+  never commit them. CI and tests use the mock ServiceNow only.
+- Hub tasks go to the custom table `u_govhub_task` (extends `task`), never `incident`.
+- review-desk trusts placeholder identity headers until control-centre exists: bind it to
+  localhost or the internal network only, never expose it.
+- The decision log is append-only and hash-chained; never update or delete its rows.
 
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes

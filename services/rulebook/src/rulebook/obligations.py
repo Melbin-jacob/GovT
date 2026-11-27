@@ -18,6 +18,10 @@ between ``ne`` and the verb and between the verb and the negator, e.g. "ne le do
 "ne peut toutefois pas"), and "n'est pas tenu(e)" / "ne sont pas tenu(e)s".
 Punctuation ends a match. A negated form is reported as ``ne <verb> <negator>``,
 e.g. ``ne doit pas``.
+
+"ne <verb> que" (e.g. "ne doit que" = "must only") is a **restriction, not a negation**:
+it is reported as its own value ``ne <verb> que``, and "que" never fills a negation gap,
+so "ne peut que constater pas moins de deux erreurs" is not read as "ne peut pas".
 """
 
 from __future__ import annotations
@@ -45,12 +49,20 @@ NEGATED_TERMS: dict[Lang, tuple[str, ...]] = {
         "n'est pas tenu",
     ),
 }
+RESTRICTION_TERMS: tuple[str, ...] = tuple(
+    f"ne {verb} que" for verb in ("doit", "doivent", "peut", "peuvent", "devrait", "devraient")
+)
 
-_WORD = r"[^\W\d][\w'-]*"  # a word, without crossing punctuation
+# A word, without crossing punctuation. "que"/"qu'" never fills a gap: "ne ... que" is a
+# restriction ("ne doit que" = "must only"), and must not be bridged into a negation.
+_WORD = r"(?!qu(?:e\b|'))[^\W\d][\w'-]*"
 _GAP = rf"(?:{_WORD}\s+){{0,3}}?"  # up to three words, each followed by whitespace
 _GAP_AFTER = rf"(?:\s+{_WORD}){{0,3}}?"
 _FR_VERBS = r"doit|doivent|peut|peuvent|devrait|devraient"
 _FR_NEGATORS = r"pas|plus|jamais|aucunement|nullement|en\s+aucun\s+cas"
+
+# "ne <verb> que" / "ne <verb> qu'": a restriction, never a negation. Its own value.
+_FR_RESTRICTION = re.compile(rf"(?:\bne\s+|\bn')({_GAP})?\b({_FR_VERBS})\s+qu(?:e\b|')")
 
 _NEGATED: dict[Lang, list[re.Pattern[str]]] = {
     "en": [
@@ -85,6 +97,10 @@ def obligation_terms(text: str | None, lang: Lang) -> Counter[str]:
     normalized = normalize_for_match(text)
     terms: Counter[str] = Counter()
     negated_spans: list[tuple[int, int]] = []
+    if lang == "fr":
+        for match in _FR_RESTRICTION.finditer(normalized):
+            negated_spans.append(match.span())
+            terms[f"ne {match.group(2)} que"] += 1
     for pattern in _NEGATED[lang]:
         for match in pattern.finditer(normalized):
             if any(s <= match.start() < e for s, e in negated_spans):

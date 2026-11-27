@@ -1,0 +1,14 @@
+# Reviewer-hours forecast settings.
+#
+# PLACEHOLDER VALUES - NOT MEASURED, NOT POLICY. The review rate is replaced automatically
+# by the median of timed decisions once at least `min_samples` exist. Capacities are
+# placeholders until each department sets its own (docs/decisions.md).
+
+[rate]
+minutes_per_finding = 20      # approved placeholder rate
+status = "PLACEHOLDER"
+min_samples = 20              # timed decisions needed before the measured median is used
+
+[capacity.default]
+hours_per_week = 10           # chosen by Claude Code; replace per department
+status = "PLACEHOLDER"

@@ -36,7 +36,8 @@ docs/                        design notes
 | ✅ | Profiles: example Level II+ profile and resolver |
 | ✅ | **M2** Source documents: official text imported from local files (never committed), clause diff with renumbering, splits, obligation changes and EN/FR cross-check |
 | ✅ | **M2** Clause-to-control links, suggestion report, fictional inventory, impact report with ranked systems and ServiceNow-shaped tasks |
-| ⏳ later | connector-hub, assessment-engine, review-desk, control-centre (stubs + TODOs), OIDC auth, LLM drafting |
+| ✅ | **M3** connector-hub (ServiceNow inventory and tasks, mock ServiceNow), review-desk (ranked queue, five decisions, hash-chained log, OSCAL POA&M, forecast) |
+| ⏳ later | assessment-engine (findings are placeholders until then), control-centre (OIDC, tenants), LLM drafting |
 
 Definition of done, checked in CI on every push: `make setup && make test` on a clean
 checkout, both catalogs validate, committed catalogs match the CSV, and `make up` serves the
@@ -252,3 +253,63 @@ catalog, the profiles and the fictional inventory, then prints the clause diff (
 block, a split and a should → must change) and the ranked impact report with its tasks.
 CI runs the same script on every push. Everything it uses is fictional; see
 `data/demo/README.md`.
+
+## Milestone 3: from a task to a human decision
+
+| Service | Port (Compose) | Role |
+|---|---|---|
+| rulebook | `localhost:8000` | rules, sources, inventory, impact reports |
+| connector-hub | `127.0.0.1:8001` | the **only** service that calls out, and only to `CONNECTOR_ALLOWED_HOSTS` |
+| review-desk | `127.0.0.1:8002` | review queue, decisions, decision log, POA&M, forecast |
+| mock ServiceNow | `127.0.0.1:8003` | Table API stand-in for tests, CI and the demo |
+
+> **review-desk trusts placeholder identity headers** (`X-GovHub-User`, `X-GovHub-Role`)
+> until control-centre adds OIDC. Keep it on localhost or the internal network; never
+> expose it.
+
+```bash
+make up
+make demo          # rule change -> impact report (M2)
+make demo-review   # inventory from ServiceNow -> tasks -> decisions -> verified log -> POA&M -> forecast
+```
+
+### ServiceNow
+
+Set up your developer instance with `docs/servicenow-setup.md` (role
+`u_govhub_task_writer`, table `u_govhub_task` extending `task`, two fields on
+`cmdb_ci_business_app`, an integration user). Then, on your machine only:
+
+```bash
+cp .env.servicenow.example .env.servicenow    # gitignored; never commit credentials
+make servicenow-check                         # read inventory, create/update/close a smoke task
+uv run connector-hub sync-inventory --dry-run
+```
+
+`POST :8001/inventory/sync` pulls the AI systems (missing fields become data gaps and
+data-gap tasks, never errors); `POST :8001/tasks/sync-impact-report` creates or updates
+one task per impact-report task, matched by `correlation_id`, so re-running is safe.
+
+### Review desk
+
+- `POST /intake/impact-report`: one finding per affected system × control. Until the
+  assessment engine exists, every finding is a **placeholder** (`unable-to-determine`, no
+  confidence).
+- `GET /queue`: ranked by impact level, verdict severity, uncertainty, due date.
+- `POST /findings/{id}/open`, then `POST /findings/{id}/decisions` with `accept`,
+  `accept-with-remediation` (adds an OSCAL POA&M item and a remediation task),
+  `reject`, `request-more-evidence` (evidence task) or `override-verdict`.
+- Every decision is one record in an **append-only, hash-chained log**:
+
+```bash
+docker compose exec review-desk review-desk verify-log        # or GET :8002/decision-log/verify
+docker compose exec review-desk review-desk checkpoint        # keep (seq, hash) outside the hub
+docker compose exec review-desk review-desk export-log --out /tmp/log.jsonl
+```
+
+  `verify-log --file export.jsonl --expect-seq N --expect-head HASH` checks an export
+  and detects records removed from the end. The database refuses UPDATE, DELETE and
+  TRUNCATE on the log.
+- `GET /poam/{system}`: the system's OSCAL 1.1.3 POA&M (every version kept).
+- `POST /forecast` (impact report) or `GET /forecast` (open queue): reviewer hours per
+  tenant against weekly capacity. Until 20 timed decisions exist, the rate is the
+  **PLACEHOLDER** 20 minutes per finding (`data/config/review-rate.toml`).

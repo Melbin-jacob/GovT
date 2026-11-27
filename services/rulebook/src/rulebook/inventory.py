@@ -25,8 +25,11 @@ from rulebook.store import InvalidCatalogError, NotFoundError
 
 ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4}
 ROMAN_OF = {v: k for k, v in ROMAN.items()}
+UNKNOWN = "unknown"
+# Ranking key: an unknown impact level ranks above level IV until someone sets it.
+RANK = {**ROMAN, UNKNOWN: 5}
 _ID_PATTERN = r"^[A-Za-z_][A-Za-z0-9._-]*$"
-Lifecycle = Literal["development", "pilot", "production", "retired"]
+Lifecycle = Literal["development", "pilot", "production", "retired", "unknown"]
 CSV_COLUMNS = {
     "System ID": "system_id",
     "Name": "name",
@@ -51,11 +54,16 @@ class SystemRecord(BaseModel):
     tenant: str = Field(pattern=_ID_PATTERN)
     department: str = Field(min_length=1)
     owner: str = Field(min_length=1)
-    owner_email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-    impact_level: int = Field(ge=1, le=4, description="AIA impact level, 1-4 (I-IV)")
+    owner_email: str | None = Field(default=None, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    impact_level: int | None = Field(
+        default=None, ge=1, le=4, description="AIA impact level 1-4 (I-IV); None = unknown"
+    )
     lifecycle: Lifecycle
     profiles: list[str] = []
     notes: str | None = None
+    data_gaps: list[str] = Field(
+        default=[], description="Fields missing in the source system (reported, never blocking)"
+    )
 
     @field_validator("impact_level", mode="before")
     @classmethod
@@ -73,7 +81,7 @@ class SystemRecord(BaseModel):
 
     @property
     def impact_label(self) -> str:
-        return ROMAN_OF[self.impact_level]
+        return UNKNOWN if self.impact_level is None else ROMAN_OF[self.impact_level]
 
 
 class Inventory(BaseModel):
@@ -218,6 +226,7 @@ def current_inventory(session: Session) -> tuple[InventorySnapshot, list[SystemR
             owner_email=s.owner_email,
             impact_level=s.impact_level,
             lifecycle=s.lifecycle,
+            data_gaps=list(s.data_gaps or []),
             profiles=list(s.profiles),
             notes=s.notes,
         )
