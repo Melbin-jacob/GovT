@@ -25,6 +25,7 @@ jobs:
           --health-interval 2s --health-timeout 3s --health-retries 30
     env:
       RULEBOOK_TEST_DATABASE_URL: postgresql+psycopg://govhub:govhub@localhost:5432/rulebook_test
+      REVIEW_DESK_TEST_DATABASE_URL: postgresql+psycopg://govhub:govhub@localhost:5432/review_desk_test
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
