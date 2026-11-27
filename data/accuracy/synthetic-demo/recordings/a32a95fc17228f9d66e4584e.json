@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": false, \"statement\": \"Chaque étalonnage est consigné, et le journal d'étalonnage est conservé deux ans.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Les opérateurs doivent consigner chaque étalonnage.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.88}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": false, \"statement\": \"Chaque étalonnage est consigné, et le journal d'étalonnage est conservé deux ans.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.16251892949777494,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Les opérateurs doivent consigner chaque étalonnage.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.88}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 153,
+  "completion_tokens": 84,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

@@ -12,13 +12,8 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from rulebook.sources.diff import (
-    THRESHOLD,
-    cross_check,
-    diff_sources,
-    hungarian_max,
-    similarity,
-)
+from govhub_shared.matching import hungarian_max, similarity
+from rulebook.sources.diff import THRESHOLD, cross_check, diff_sources
 from rulebook.sources.model import Clause, SourceDocument, SourceFile
 from rulebook.sources.normalize import match_tokens, normalize_for_match, sha256_text
 

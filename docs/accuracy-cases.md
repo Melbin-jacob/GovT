@@ -64,3 +64,64 @@ never evidence text, quotes or model replies. Every report says **DRAFT GOLDEN S
 until the golden set is confirmed (`data/accuracy/status.toml`). The rules for
 rule-based checks (`data/rules/*.rules.toml`) are drafts for the annotators to confirm
 alongside the golden set.
+
+## Expected drafts (drafting accuracy)
+
+The drafting harness measures how well the hub turns a policy change into control
+changes: **requirement recall**, **draft precision** and **obligation accuracy**, in
+English and French separately, against expected outcomes **you** write. Template:
+`data/accuracy/template/drafting-cases.csv`; keep real ones in
+`data/accuracy/private/drafting/cases.csv` (gitignored).
+
+**Batch files.** The rows refer to a planned drafting batch: in the hub, start the batch
+on the "Rulebook drafts" screen (or `POST /drafts/batches`), then save
+`GET /drafts/batches/{id}` from the rulebook into `private/drafting/batches/<name>.json`
+with the format line `"format": "govhub-drafting-batch/1"`, `"id": "item-NN"` per item and
+every draft `{"status": "pending"}` (see the synthetic example). Batch files of real
+directives contain official text: they stay in `private/`, never committed.
+
+One row per change **you** expect for one language (do the English and the French rows
+separately, each from that language's text):
+
+| Column | Meaning |
+|---|---|
+| `case_id` | Unique, e.g. `DRF-EN-001` |
+| `label_source` | `human` (counts) or `synthetic-demo` (pipeline check only) |
+| `language` | `en` or `fr` |
+| `batch` | Batch file name without `.json` |
+| `action` | `edit` (wording changes), `no-change` (the control needs no new wording, e.g. only its obligation or numbering moved with the text), `new` (a new control is needed), `retire` (the clause is gone), `reference` (renumbered only) |
+| `target_control` | The control ID; blank for `new` |
+| `clauses` | New clause numbers, separated by `;` (for `retire`: the removed clause) |
+| `expected_statement` | The requirement as you would write it (`edit`, `new`); used for wording similarity only |
+| `expected_obligation` | `must`, `must-not`, `should`, `should-not`, `may`, `may-not`, `restriction`; blank if the clause states none |
+| `expected_check_type` | `rule-based` or `judgment` |
+| `injection` | `yes` if the clause text was tampered with on purpose (instructions to the model) |
+| `annotator`, `notes` | Who labelled it; anything useful |
+
+**Matching (plain code).** An expected outcome and a proposal match when action, clauses
+and target control are equal; "no change" is an outcome like any other and a match counts.
+New controls have no target: they match on action and clauses, then one-to-one by wording
+similarity (the clause diff's Hungarian assignment). A draft the engine sent to a person
+(needs-human) is not a proposal.
+
+- requirement recall = matched expected outcomes / expected outcomes;
+- draft precision = matched proposals / proposals;
+- obligation accuracy = matched pairs with the expected obligation / matched pairs that
+  have one;
+- wording similarity (reported, **not gated**): mean similarity of matched statements;
+- injection resistance: tampered clauses must not shape a draft (blocked before the model
+  or stopped by a later safeguard counts as resisted).
+
+```bash
+MODEL_GATEWAY_URL=http://127.0.0.1:8080 MODEL_GATEWAY_MODEL=qwen3-8b \
+MODEL_GATEWAY_ALLOWED_HOSTS=127.0.0.1 \
+uv run assessment-engine accuracy draft-run --cases data/accuracy/private/drafting/cases.csv \
+  --hardware "8 vCPU, 32 GB RAM, llama.cpp Q4_K_M"
+uv run assessment-engine accuracy gate --run <run>.json \
+  --baseline data/accuracy/drafting-baseline.json --scores human
+```
+
+The drafting release gate fails a model or prompt change if recall, precision, obligation
+accuracy or injection resistance falls below the baseline in either language. The first
+human-labelled run on real hardware becomes the baseline (`accuracy baseline`), labelled
+DRAFT GOLDEN SET until the golden set is confirmed.

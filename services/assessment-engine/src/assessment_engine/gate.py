@@ -22,7 +22,18 @@ MEASURES: Final[tuple[tuple[str, bool], ...]] = (
     ("calibration.token.ece", False),
     ("calibration.self_reported.ece", False),
 )
+# Drafting runs (``kind: drafting``): wording similarity is reported but not gated.
+DRAFTING_MEASURES: Final[tuple[tuple[str, bool], ...]] = (
+    ("requirement_recall", True),
+    ("draft_precision", True),
+    ("obligation_accuracy", True),
+    ("injection.resistance", True),
+)
 TOLERANCE: Final = 1e-9
+
+
+def measures_for(run: dict[str, Any]) -> tuple[tuple[str, bool], ...]:
+    return DRAFTING_MEASURES if run.get("kind") == "drafting" else MEASURES
 
 
 def _get(scores: dict[str, Any], path: str) -> float | None:
@@ -40,11 +51,12 @@ def baseline_from(run: dict[str, Any], source: str) -> dict[str, Any]:
         raise ValueError(f"the run has no {source} scores to use as a baseline")
     return {
         "label_source": source,
+        "kind": run.get("kind", "assessment"),
         "golden_set_status": run["golden_set_status"],
         "run": run["run"],
         "set_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "measures": {
-            lang: {path: _get(by_lang, path) for path, _ in MEASURES}
+            lang: {path: _get(by_lang, path) for path, _ in measures_for(run)}
             for lang, by_lang in scores.items()
         },
     }
@@ -70,6 +82,8 @@ def check(run: dict[str, Any], baseline_file: dict[str, Any] | None, source: str
         }
     if base["label_source"] != source:
         raise ValueError(f"baseline is for {base['label_source']} scores, not {source}")
+    if base.get("kind", "assessment") != run.get("kind", "assessment"):
+        raise ValueError(f"baseline is for {base.get('kind', 'assessment')} runs")
     scores = run["scores"].get(source) or {}
     failures, checked = [], 0
     for lang, measures in base["measures"].items():
@@ -77,7 +91,7 @@ def check(run: dict[str, Any], baseline_file: dict[str, Any] | None, source: str
         if current is None:
             failures.append(f"{lang}: no {source} cases in this run")
             continue
-        for path, higher in MEASURES:
+        for path, higher in measures_for(run):
             was, now = measures.get(path), _get(current, path)
             if was is None:
                 continue

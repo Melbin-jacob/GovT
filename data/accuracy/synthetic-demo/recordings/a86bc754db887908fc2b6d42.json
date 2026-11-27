@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": false, \"statement\": \"Le registre consigne le propriétaire, l'emplacement, le modèle et la version du micrologiciel de chaque widget.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Le registre doit consigner le propriétaire, l’emplacement, le modèle et la version du micrologiciel de chaque widget.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.9}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": false, \"statement\": \"Le registre consigne le propriétaire, l'emplacement, le modèle et la version du micrologiciel de chaque widget.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.13926206733350766,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Le registre doit consigner le propriétaire, l’emplacement, le modèle et la version du micrologiciel de chaque widget.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.9}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 136,
+  "completion_tokens": 108,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

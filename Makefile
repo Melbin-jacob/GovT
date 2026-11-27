@@ -44,6 +44,11 @@ accuracy:  ## Accuracy harness on the synthetic cases (recorded replies, no mode
 		--out accuracy-output --hardware "recorded replies, no model" --write-latest accuracy-output/latest.json
 	uv run assessment-engine accuracy gate --run accuracy-output/latest.json \
 		--baseline data/accuracy/synthetic-demo/baseline.json --scores synthetic-demo
+	MODEL_GATEWAY_RECORDINGS=data/accuracy/synthetic-demo/recordings MODEL_GATEWAY_MODEL=scripted-fake-v1 \
+		uv run assessment-engine accuracy draft-run --cases data/accuracy/synthetic-demo/drafting/cases.csv \
+		--out accuracy-output --hardware "recorded replies, no model" --write-latest accuracy-output/latest-drafting.json
+	uv run assessment-engine accuracy gate --run accuracy-output/latest-drafting.json \
+		--baseline data/accuracy/synthetic-demo/drafting/baseline.json --scores synthetic-demo
 
 demo-ui:  ## Click through the web UI (EN/FR) in Chromium with axe scans; after `make demo-review`
 	CONTROL_CENTRE_URL=$${CONTROL_CENTRE_URL:-http://127.0.0.1:8004} E2E_OUTPUT=e2e-output \

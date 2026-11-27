@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": false, \"statement\": \"Les ministères font rapport chaque année, pour l'exercice, sur les widgets en service.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Les ministères font rapport chaque année sur le nombre de widgets en service. Le rapport porte sur l’exercice financier.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.62}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": false, \"statement\": \"Les ministères font rapport chaque année, pour l'exercice, sur les widgets en service.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.8915981192837836,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Les ministères font rapport chaque année sur le nombre de widgets en service. Le rapport porte sur l’exercice financier.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.62}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 131,
+  "completion_tokens": 103,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

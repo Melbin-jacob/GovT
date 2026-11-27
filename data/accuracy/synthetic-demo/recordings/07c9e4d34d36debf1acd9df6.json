@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": true, \"statement\": \"Every calibration is logged and the log is kept for two years.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Operators must log every calibration.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.77}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": true, \"statement\": \"Every calibration is logged and the log is kept for two years.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.2876820724517809,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Operators must log every calibration.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.77}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 128,
+  "completion_tokens": 76,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

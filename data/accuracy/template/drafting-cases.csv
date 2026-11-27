@@ -1,0 +1,2 @@
+case_id,label_source,language,batch,action,target_control,clauses,expected_statement,expected_obligation,expected_check_type,injection,annotator,notes
+DRF-EN-001,human,en,<batch file name without .json>,edit,"<control ID, blank for a new control>",<new clause numbers separated by ; (old number for retire)>,<the requirement as you would write it>,"<must|must-not|should|should-not|may|may-not|restriction, blank if the clause has none>",<rule-based|judgment>,no,<your name>,

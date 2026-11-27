@@ -1,0 +1,515 @@
+{
+ "format": "govhub-drafting-batch/1",
+ "note": "SYNTHETIC: planned by the rulebook from the fictional Directive on Example Widgets (2023-01-01 -> 2025-01-01) and catalog example-widgets 1.0.0.",
+ "catalog": "example-widgets",
+ "base_version": "1.0.0",
+ "source_change": {
+  "instrument": "example-widgets",
+  "from": "2023-01-01",
+  "to": "2025-01-01"
+ },
+ "plan": {
+  "id_prefix": "WID",
+  "proposed_version": "1.1.0",
+  "new_groups": {
+   "widgets-G01": {
+    "key": "6.2@2025-01-01",
+    "section": "6.2",
+    "title": {
+     "en": "Risk assessment",
+     "fr": "Évaluation des risques"
+    }
+   }
+  },
+  "clauses": {
+   "en": {
+    "old": {
+     "6.1.2": "The register must record the owner, the location and the model of each widget.",
+     "6.2.1": "Widgets should be calibrated at least once a year.",
+     "6.2.2": "Calibration results must be reviewed by a qualified technician.",
+     "6.2.3": "Faulty widgets must be removed from service until they are repaired.",
+     "6.3.1": "Operators must log every calibration and must retain the log for two years.",
+     "6.3.2": "The widget register may be published on the department's website.",
+     "6.4.1": "Clients are informed when a widget is used to process their request.",
+     "6.4.2": "Departments report annually on the number of widgets in service."
+    },
+    "new": {
+     "6.1.2": "The register must record the owner, the location, the model and the firmware version of each widget.",
+     "6.2.1": "Departments must complete a widget risk assessment before a widget is put into service.",
+     "6.2.2": "The widget risk assessment must be updated when the purpose of the widget changes.",
+     "6.3.1": "Widgets must be calibrated at least once a year.",
+     "6.3.2": "Calibration results must be reviewed by a qualified technician.",
+     "6.3.3": "Faulty widgets must be removed from service until they are repaired.",
+     "6.4.1": "Operators must log every calibration.",
+     "6.4.2": "Operators must retain the calibration log for two years.",
+     "6.5.1": "Clients are informed when a widget is used to process their request.",
+     "6.5.2": "Departments report annually on the number of widgets in service. The report covers the fiscal year."
+    }
+   },
+   "fr": {
+    "old": {
+     "6.1.2": "Le registre doit consigner le propriétaire, l'emplacement et le modèle de chaque widget.",
+     "6.2.1": "Les widgets devraient être étalonnés au moins une fois par année.",
+     "6.2.2": "Les résultats d'étalonnage doivent être examinés par un technicien qualifié.",
+     "6.2.3": "Les widgets défectueux doivent être retirés du service jusqu'à leur réparation.",
+     "6.3.1": "Les opérateurs doivent consigner chaque étalonnage et doivent conserver le journal pendant deux ans.",
+     "6.3.2": "Le registre des widgets peut être publié sur le site Web du ministère.",
+     "6.4.1": "Les clients sont informés lorsqu'un widget sert à traiter leur demande.",
+     "6.4.2": "Les ministères font rapport chaque année sur le nombre de widgets en service."
+    },
+    "new": {
+     "6.1.2": "Le registre doit consigner le propriétaire, l’emplacement, le modèle et la version du micrologiciel de chaque widget.",
+     "6.2.1": "Les ministères doivent réaliser une évaluation des risques du widget avant sa mise en service.",
+     "6.2.2": "L’évaluation des risques du widget doit être mise à jour lorsque l’objet du widget change.",
+     "6.3.1": "Les widgets doivent être étalonnés au moins une fois par année.",
+     "6.3.2": "Les résultats d’étalonnage doivent être examinés par un technicien qualifié.",
+     "6.3.3": "Les widgets défectueux doivent être retirés du service jusqu’à leur réparation.",
+     "6.4.1": "Les opérateurs doivent consigner chaque étalonnage.",
+     "6.4.2": "Les opérateurs doivent conserver le journal d’étalonnage pendant deux ans.",
+     "6.5.1": "Les clients sont informés lorsqu’un widget sert à traiter leur demande.",
+     "6.5.2": "Les ministères font rapport chaque année sur le nombre de widgets en service. Le rapport porte sur l’exercice financier."
+    }
+   }
+  }
+ },
+ "current_controls": {
+  "WID-6.1.2": {
+   "en": {
+    "statement": "The register records the owner, location and model of each widget.",
+    "guidance": "All widgets",
+    "objective": "Register fields populated",
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.1.2",
+    "source_clauses": [
+     "6.1.2"
+    ]
+   },
+   "fr": {
+    "statement": "Le registre consigne le propriétaire, l'emplacement et le modèle de chaque widget.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.1.2",
+    "source_clauses": [
+     "6.1.2"
+    ]
+   }
+  },
+  "WID-6.2.1": {
+   "en": {
+    "statement": "Widgets are calibrated at least once a year.",
+    "guidance": "Widgets in service",
+    "objective": "Calibration dates within the last 12 months",
+    "check_type": "rule-based",
+    "obligation": "should",
+    "label": "6.2.1",
+    "source_clauses": [
+     "6.2.1"
+    ]
+   },
+   "fr": {
+    "statement": "Les widgets sont étalonnés au moins une fois par année.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "should",
+    "label": "6.2.1",
+    "source_clauses": [
+     "6.2.1"
+    ]
+   }
+  },
+  "WID-6.2.2": {
+   "en": {
+    "statement": "A qualified technician reviews calibration results.",
+    "guidance": "After each calibration",
+    "objective": "Review sign-off by a qualified technician",
+    "check_type": "judgment",
+    "obligation": "must",
+    "label": "6.2.2",
+    "source_clauses": [
+     "6.2.2"
+    ]
+   },
+   "fr": {
+    "statement": "Un technicien qualifié examine les résultats d'étalonnage.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "judgment",
+    "obligation": "must",
+    "label": "6.2.2",
+    "source_clauses": [
+     "6.2.2"
+    ]
+   }
+  },
+  "WID-6.2.3": {
+   "en": {
+    "statement": "Faulty widgets are removed from service until repaired.",
+    "guidance": "When a fault is found",
+    "objective": "Fault log and out-of-service records",
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.2.3",
+    "source_clauses": [
+     "6.2.3"
+    ]
+   },
+   "fr": {
+    "statement": "Les widgets défectueux sont retirés du service jusqu'à leur réparation.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.2.3",
+    "source_clauses": [
+     "6.2.3"
+    ]
+   }
+  },
+  "WID-6.4.1": {
+   "en": {
+    "statement": "Clients are told when a widget processes their request.",
+    "guidance": "All client requests",
+    "objective": "Client notice text",
+    "check_type": "judgment",
+    "obligation": null,
+    "label": "6.4.1",
+    "source_clauses": [
+     "6.4.1"
+    ]
+   },
+   "fr": {
+    "statement": "Les clients sont informés lorsqu'un widget traite leur demande.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "judgment",
+    "obligation": null,
+    "label": "6.4.1",
+    "source_clauses": [
+     "6.4.1"
+    ]
+   }
+  },
+  "WID-6.4.2": {
+   "en": {
+    "statement": "Departments report annually on widgets in service.",
+    "guidance": "Annually",
+    "objective": "Published annual report",
+    "check_type": "rule-based",
+    "obligation": null,
+    "label": "6.4.2",
+    "source_clauses": [
+     "6.4.2"
+    ]
+   },
+   "fr": {
+    "statement": "Les ministères font rapport chaque année sur les widgets en service.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": null,
+    "label": "6.4.2",
+    "source_clauses": [
+     "6.4.2"
+    ]
+   }
+  },
+  "WID-6.3.1": {
+   "en": {
+    "statement": "Every calibration is logged and the log is kept for two years.",
+    "guidance": "All calibrations",
+    "objective": "Calibration log covering two years",
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.3.1",
+    "source_clauses": [
+     "6.3.1"
+    ]
+   },
+   "fr": {
+    "statement": "Chaque étalonnage est consigné et le journal est conservé deux ans.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "rule-based",
+    "obligation": "must",
+    "label": "6.3.1",
+    "source_clauses": [
+     "6.3.1"
+    ]
+   }
+  },
+  "WID-6.3.2": {
+   "en": {
+    "statement": "The widget register is published when the department chooses to.",
+    "guidance": "Optional",
+    "objective": "Link to the published register",
+    "check_type": "judgment",
+    "obligation": "may",
+    "label": "6.3.2",
+    "source_clauses": [
+     "6.3.2"
+    ]
+   },
+   "fr": {
+    "statement": "Le registre des widgets est publié lorsque le ministère le choisit.",
+    "guidance": null,
+    "objective": null,
+    "check_type": "judgment",
+    "obligation": "may",
+    "label": "6.3.2",
+    "source_clauses": [
+     "6.3.2"
+    ]
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "item-01",
+   "seq": 1,
+   "kind": "edit",
+   "old_clauses": [
+    "6.1.2"
+   ],
+   "new_clauses": [
+    "6.1.2"
+   ],
+   "target_control": "WID-6.1.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-02",
+   "seq": 2,
+   "kind": "edit",
+   "old_clauses": [
+    "6.2.1"
+   ],
+   "new_clauses": [
+    "6.3.1"
+   ],
+   "target_control": "WID-6.2.1",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "obligation-change",
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-03",
+   "seq": 3,
+   "kind": "reference",
+   "old_clauses": [
+    "6.2.2"
+   ],
+   "new_clauses": [
+    "6.3.2"
+   ],
+   "target_control": "WID-6.2.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-04",
+   "seq": 4,
+   "kind": "reference",
+   "old_clauses": [
+    "6.2.3"
+   ],
+   "new_clauses": [
+    "6.3.3"
+   ],
+   "target_control": "WID-6.2.3",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-05",
+   "seq": 5,
+   "kind": "reference",
+   "old_clauses": [
+    "6.4.1"
+   ],
+   "new_clauses": [
+    "6.5.1"
+   ],
+   "target_control": "WID-6.4.1",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-06",
+   "seq": 6,
+   "kind": "edit",
+   "old_clauses": [
+    "6.4.2"
+   ],
+   "new_clauses": [
+    "6.5.2"
+   ],
+   "target_control": "WID-6.4.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "renumbered"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-07",
+   "seq": 7,
+   "kind": "edit",
+   "old_clauses": [
+    "6.3.1"
+   ],
+   "new_clauses": [
+    "6.4.1",
+    "6.4.2"
+   ],
+   "target_control": "WID-6.3.1",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "split"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-08",
+   "seq": 8,
+   "kind": "retire",
+   "old_clauses": [
+    "6.3.2"
+   ],
+   "new_clauses": [],
+   "target_control": "WID-6.3.2",
+   "proposed_id": null,
+   "group": null,
+   "flags": [
+    "removed"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-09",
+   "seq": 9,
+   "kind": "new",
+   "old_clauses": [],
+   "new_clauses": [
+    "6.2.1"
+   ],
+   "target_control": null,
+   "proposed_id": "WID-C001",
+   "group": "widgets-G01",
+   "flags": [
+    "added"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  },
+  {
+   "id": "item-10",
+   "seq": 10,
+   "kind": "new",
+   "old_clauses": [],
+   "new_clauses": [
+    "6.2.2"
+   ],
+   "target_control": null,
+   "proposed_id": "WID-C002",
+   "group": "widgets-G01",
+   "flags": [
+    "added"
+   ],
+   "drafts": {
+    "en": {
+     "status": "pending"
+    },
+    "fr": {
+     "status": "pending"
+    }
+   }
+  }
+ ]
+}
