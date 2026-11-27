@@ -16,3 +16,9 @@ min_quote_chars = 15    # a shorter quote cannot support a verdict
 
 [prompt]
 version = "assess-v1"   # assessment_engine/prompts/<version>.<lang>.md
+
+[drafting]
+# Drafted control changes below this confidence are marked "needs human drafting".
+threshold = 0.70
+status = "PLACEHOLDER"
+prompt_version = "draft-v1"   # assessment_engine/prompts/<version>.<lang>.md

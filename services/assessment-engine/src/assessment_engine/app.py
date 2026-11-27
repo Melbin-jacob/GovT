@@ -28,6 +28,7 @@ from assessment_engine.models import (
     SystemFact,
 )
 from assessment_engine.review_desk import HttpReviewDesk, ReviewDesk, draft_of
+from assessment_engine.rulebook_drafts import HttpRulebookDrafts, RulebookDrafts, draft_batch
 from assessment_engine.settings_file import AssessmentConfig, load_config
 from govhub_shared.model_gateway import ChatGateway, gateway_from_env
 
@@ -321,3 +322,22 @@ def assess_open_findings(
             }
         )
     return {"system_id": system_id, "findings": len(findings), "runs": runs}
+
+
+# --- drafting control changes ----------------------------------------------------------
+
+
+def get_rulebook_drafts() -> RulebookDrafts:
+    return HttpRulebookDrafts(get_settings().rulebook_url)
+
+
+@app.post("/drafting/batches/{batch_id}/draft", tags=["drafting"])
+def draft_rulebook_batch(
+    batch_id: str,
+    gateway: Annotated[ChatGateway, Depends(get_gateway)],
+    config: Annotated[AssessmentConfig, Depends(get_config)],
+    rulebook: Annotated[RulebookDrafts, Depends(get_rulebook_drafts)],
+) -> dict[str, Any]:
+    """Draft every pending edit and new control of a rulebook batch, in English and French
+    separately, and send the drafts to the rulebook. A person approves them there."""
+    return draft_batch(rulebook, gateway, batch_id, config)
