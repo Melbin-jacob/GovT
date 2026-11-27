@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-403 strings: 3 provided by the project owner, 400 unverified.
+404 strings: 3 provided by the project owner, 401 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -357,6 +357,7 @@ French half of ServiceNow task text. `{name}` marks a value filled in at run tim
 | `judgment.downgraded` | Le verdict proposé par le modèle ({model_verdict}) a été remplacé par « impossible à déterminer » : {reason} | The model's draft verdict ({model_verdict}) was set to unable to determine: {reason} | Unverified, written by Claude Code |
 | `judgment.drafted` | Ébauche rédigée par le modèle {model} (invite {prompt}); une personne décide. {reasoning} | Drafted by the model {model} (prompt {prompt}); a person decides. {reasoning} | Unverified, written by Claude Code |
 | `list.and` | et | and | Unverified, written by Claude Code |
+| `reason.flagged-in-context` | un texte ressemblant à des instructions a été trouvé dans les preuves fournies au modèle (injection d'invite possible); un verdict « respecté » n'est donc pas accepté. | instruction-like text was found in the evidence given to the model (possible prompt injection), so a "met" verdict is not accepted. | Unverified, written by Claude Code |
 | `reason.flagged-support` | le seul passage qui appuie « respecté » contient un texte ressemblant à des instructions (injection d'invite possible). | the only passage supporting "met" contains instruction-like text (possible prompt injection). | Unverified, written by Claude Code |
 | `reason.invalid-verdict` | le modèle a donné un verdict hors des cinq permis. | the model gave a verdict outside the five allowed. | Unverified, written by Claude Code |
 | `reason.low-confidence` | la confiance {confidence} est inférieure au seuil {threshold}. | the confidence {confidence} is below the threshold {threshold}. | Unverified, written by Claude Code |

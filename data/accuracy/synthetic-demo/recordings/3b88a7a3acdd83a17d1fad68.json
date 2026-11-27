@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"not-met\", \"confidence\": 0.88, \"cited_passage_id\": \"P1\", \"cited_quote\": \"The office does not tell clients that a widget is used to process their request.\", \"reasoning_en\": \"The office states it does not tell clients.\", \"reasoning_fr\": \"Le bureau indique qu'il n'informe pas les clients.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "not-met",
+    "logprob": -0.10536051565782628,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.88, \"cited_passage_id\": \"P1\", \"cited_quote\": \"The office does not tell clients that a widget is used to process their request.\", \"reasoning_en\": \"The office states it does not tell clients.\", \"reasoning_fr\": \"Le bureau indique qu'il n'informe pas les clients.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 118,
+  "completion_tokens": 75,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

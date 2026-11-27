@@ -12,7 +12,9 @@ verdict for the record and for the accuracy harness):
 3. Any verdict other than unable-to-determine must cite a provided passage and quote a
    sentence that appears in it word for word, compared with the clause diff's
    normalization (French typography: spaces, apostrophes, guillemets, ligatures).
-4. A passage flagged for instruction-like text cannot be the only support for "met".
+4. A passage flagged for instruction-like text cannot be the only support for "met";
+   stricter still, "met" is never accepted while any passage given to the model is
+   flagged, because an injection in one passage can steer a verdict that cites another.
 5. Confidence (from the verdict token's probability when the server returns it, else the
    model's own number) must reach the threshold for the evidence's language.
 
@@ -321,6 +323,8 @@ def assess_judgment(
         return outcome(utd, "quote-not-found")
     if verdict == "met" and passage.flags:
         return outcome(utd, "flagged-support")
+    if verdict == "met" and any(p.flags for p in passages):
+        return outcome(utd, "flagged-in-context")
     threshold = config.threshold_for(lang)
     confidence = said.confidence
     if confidence is None or confidence < threshold:

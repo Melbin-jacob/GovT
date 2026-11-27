@@ -145,4 +145,7 @@ def retrieve(session: Session, system_id: str, query: str, k: int = 5) -> list[R
         )
     )
     ranked = psg.bm25(query, [r.text for r in rows])
-    return [Retrieved(rows[s.index], s.score) for s in ranked[:k] if s.score > 0]
+    scores = {s.index: s.score for s in ranked}
+    hits = [s.index for s in ranked[:k] if s.score > 0]
+    keys = [(r.document_id, r.seq) for r in rows]
+    return [Retrieved(rows[i], scores[i]) for i in psg.with_neighbours(hits, keys, k)]

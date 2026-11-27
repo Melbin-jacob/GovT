@@ -42,6 +42,13 @@ def facts_of(session: Session, system_id: str) -> dict[str, rules.Fact]:
     return {r.name: rules.Fact(r.value, r.source) for r in rows}
 
 
+def retrieval_query(controls: dict[str, dict[str, ControlInfo]], control_id: str) -> str:
+    """Statement and expected evidence in both languages, so evidence in either language
+    is found even when one catalog lacks a field."""
+    texts = [controls[la][control_id] for la in ("en", "fr") if control_id in controls[la]]
+    return " ".join(f"{t.statement} {t.objective or ''}" for t in texts)
+
+
 def evidence_language(retrieved: list[evidence.Retrieved]) -> str:
     counts = Counter(r.passage.language for r in retrieved if r.passage.language in ("en", "fr"))
     return "fr" if counts["fr"] > counts["en"] else "en"
@@ -66,8 +73,7 @@ def assess_control(
     if info.check_type.startswith("rule-based"):
         outcome = rules.assess_rule(ruleset, control_id, facts, as_of)
         return "rule", outcome.verdict, outcome.confidence, "both", outcome.as_dict()
-    texts = [controls[la][control_id] for la in ("en", "fr") if control_id in controls[la]]
-    query = " ".join(f"{t.statement} {t.objective or ''}" for t in texts)
+    query = retrieval_query(controls, control_id)
     retrieved = evidence.retrieve(session, system_id, query, config.passages)
     lang = evidence_language(retrieved)
     text = controls[lang].get(control_id) or info

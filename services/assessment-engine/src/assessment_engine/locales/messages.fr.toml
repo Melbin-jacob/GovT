@@ -21,3 +21,4 @@
 "reason.quote-not-found" = "la phrase citée ne figure pas dans le passage cité."
 "reason.flagged-support" = "le seul passage qui appuie « respecté » contient un texte ressemblant à des instructions (injection d'invite possible)."
 "reason.low-confidence" = "la confiance {confidence} est inférieure au seuil {threshold}."
+"reason.flagged-in-context" = "un texte ressemblant à des instructions a été trouvé dans les preuves fournies au modèle (injection d'invite possible); un verdict « respecté » n'est donc pas accepté."

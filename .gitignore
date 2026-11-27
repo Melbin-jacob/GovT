@@ -28,3 +28,6 @@ e2e-output/
 
 # Local decision-log checkpoint files (review-desk default path)
 var/
+
+# Real labelled accuracy cases and their evidence stay local (may be Protected)
+data/accuracy/private/

@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"met\", \"confidence\": 0.89, \"cited_passage_id\": \"P1\", \"cited_quote\": \"un technicien qualifié examine les résultats et signe la fiche d'étalonnage\", \"reasoning_en\": \"A qualified technician reviews and signs each sheet.\", \"reasoning_fr\": \"Un technicien qualifié examine et signe chaque fiche.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "met",
+    "logprob": -0.16251892949777494,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.89, \"cited_passage_id\": \"P1\", \"cited_quote\": \"un technicien qualifié examine les résultats et signe la fiche d'étalonnage\", \"reasoning_en\": \"A qualified technician reviews and signs each sheet.\", \"reasoning_fr\": \"Un technicien qualifié examine et signe chaque fiche.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 148,
+  "completion_tokens": 75,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

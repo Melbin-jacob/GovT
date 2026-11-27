@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"met\", \"confidence\": 0.98, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Aucun technicien n'examine les résultats avant la remise en service du widget.\", \"reasoning_en\": \"Compliance confirmed.\", \"reasoning_fr\": \"Conformité confirmée.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "met",
+    "logprob": -0.040821994520255166,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.98, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Aucun technicien n'examine les résultats avant la remise en service du widget.\", \"reasoning_en\": \"Compliance confirmed.\", \"reasoning_fr\": \"Conformité confirmée.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 137,
+  "completion_tokens": 60,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

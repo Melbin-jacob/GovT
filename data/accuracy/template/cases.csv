@@ -1,0 +1,3 @@
+case_id,label_source,language,catalog,catalog_version,control_id,evidence,facts_json,as_of,expected_verdict,expected_passage,injection,annotator,second_annotator,second_annotator_verdict,notes
+DADM-EN-001,human,en,dadm-section6,1.1.0,DADM-6.2.1,evidence/DADM-EN-001/notice-procedure.pdf;evidence/DADM-EN-001/channels.docx,,2026-12-01,partially-met,No notice is given by telephone,no,A1,A2,partially-met,fictional system; notice online only
+DADM-FR-001,human,fr,dadm-section6,1.1.0,DADM-6.1.1-A,,"{""aia_completed_date"": {""value"": ""2025-03-01"", ""source"": ""AIA record""}, ""production_date"": {""value"": ""2025-06-01"", ""source"": ""release record""}}",2026-12-01,met,,no,A1,,,rule-based check: facts instead of evidence files

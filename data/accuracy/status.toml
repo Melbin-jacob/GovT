@@ -1,0 +1,5 @@
+# Status of the golden set the accuracy scores are measured against. Every report carries
+# it. Change to "CONFIRMED GOLDEN SET (YYYY-MM-DD)" only once two annotators have
+# confirmed the golden set and a third has resolved disagreements; then re-baseline and
+# keep both baselines in the run history (project owner's decision, 2026-11-27).
+golden_set = "DRAFT GOLDEN SET"

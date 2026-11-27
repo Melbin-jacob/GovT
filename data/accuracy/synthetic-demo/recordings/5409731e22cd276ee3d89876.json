@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"met\", \"confidence\": 0.91, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Clients are told that a widget processes their request on every channel we use.\", \"reasoning_en\": \"Notice is given online, by telephone and in person.\", \"reasoning_fr\": \"L'avis est donné en ligne, par téléphone et en personne.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "met",
+    "logprob": -0.12783337150988489,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.91, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Clients are told that a widget processes their request on every channel we use.\", \"reasoning_en\": \"Notice is given online, by telephone and in person.\", \"reasoning_fr\": \"L'avis est donné en ligne, par téléphone et en personne.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 162,
+  "completion_tokens": 77,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

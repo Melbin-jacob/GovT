@@ -87,6 +87,21 @@ def terms(text: str) -> list[str]:
     return out
 
 
+def with_neighbours(hits: list[int], keys: list[tuple[str, int]], k: int) -> list[int]:
+    """The best hits first, then the passages right before and after each hit in the same
+    document, up to k. Keeps a sentence's context (e.g. "no notice by telephone" next to
+    "notice online") even when it shares no word with the query."""
+    position = {key: i for i, key in enumerate(keys)}
+    chosen = list(dict.fromkeys(hits))[:k]
+    for i in list(chosen):
+        doc, seq = keys[i]
+        for near in (seq - 1, seq + 1):
+            j = position.get((doc, near))
+            if j is not None and j not in chosen and len(chosen) < k:
+                chosen.append(j)
+    return chosen
+
+
 @dataclass
 class Scored:
     index: int

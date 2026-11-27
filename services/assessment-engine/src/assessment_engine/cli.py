@@ -14,7 +14,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     serve.add_argument("--port", type=int, default=8005)
     serve.add_argument("--migrate", action="store_true", help="Apply migrations first")
     sub.add_parser("migrate", help="Apply database migrations")
+    acc = sub.add_parser("accuracy", help="Accuracy harness (Appendix B)")
+    acc_sub = acc.add_subparsers(dest="accuracy_command", required=True)
+    run = acc_sub.add_parser("run", help="Run labelled cases through the engine")
+    run.add_argument("--cases", required=True, help="Case CSV (see docs/accuracy-cases.md)")
+    run.add_argument("--out", default="data/accuracy/runs", help="Directory for the run files")
+    run.add_argument("--hardware", default="not described", help="e.g. '8 vCPU, 32 GB RAM'")
+    run.add_argument("--status-file", default="data/accuracy/status.toml")
+    run.add_argument("--catalogs", nargs="+", default=["data/catalogs", "data/demo/catalogs"])
+    run.add_argument("--rules", default="data/rules")
+    run.add_argument("--config", default="data/config/assessment.toml")
     args = parser.parse_args(argv)
+    if args.command == "accuracy":
+        from assessment_engine.harness_cli import accuracy
+
+        return accuracy(args)
     if args.command == "migrate" or (args.command == "serve" and args.migrate):
         from assessment_engine.migrate import upgrade
 

@@ -21,3 +21,4 @@
 "reason.quote-not-found" = "the quoted sentence is not in the cited passage."
 "reason.flagged-support" = "the only passage supporting \"met\" contains instruction-like text (possible prompt injection)."
 "reason.low-confidence" = "the confidence {confidence} is below the threshold {threshold}."
+"reason.flagged-in-context" = "instruction-like text was found in the evidence given to the model (possible prompt injection), so a \"met\" verdict is not accepted."
