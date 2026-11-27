@@ -35,6 +35,15 @@ def report_request(
     }
 
 
+def catalog_request(catalog: str, from_v: str, to_v: str, as_of: str, lang: str) -> dict[str, Any]:
+    return {
+        "catalog": catalog,
+        "catalog_change": {"from": from_v, "to": to_v},
+        "as_of": as_of,
+        "lang": lang,
+    }
+
+
 @router.get("/{lang}/impact", response_class=HTMLResponse)
 def impact(
     request: Request,
@@ -46,7 +55,11 @@ def impact(
     from_version: Annotated[str | None, Query(alias="from")] = None,
     to_version: Annotated[str | None, Query(alias="to")] = None,
     as_of: str | None = None,
+    catalog_from: str | None = None,
+    catalog_to: str | None = None,
 ) -> HTMLResponse:
+    """A source change (default), or a catalog change (``catalog_from``/``catalog_to``,
+    e.g. a version published from approved drafts)."""
     catalogs = backends.rulebook.get("/catalogs")
     names = [c["name"] for c in catalogs]
     catalog = catalog if catalog in names else settings.default_catalog
@@ -69,8 +82,15 @@ def impact(
         context.update(
             versions=versions, version=chosen, from_version=old, to_version=new, as_of=date
         )
-        if old != new:
-            body = report_request(settings, lang, str(catalog), str(chosen), old, new, date)
+        change = catalog_from in versions and catalog_to in versions and catalog_from != catalog_to
+        if change:
+            context.update(catalog_from=catalog_from, catalog_to=catalog_to)
+        if change or old != new:
+            body = (
+                catalog_request(str(catalog), str(catalog_from), str(catalog_to), date, lang)
+                if change
+                else report_request(settings, lang, str(catalog), str(chosen), old, new, date)
+            )
             report = backends.rulebook.post("/impact-reports", body)
             context.update(
                 report=report,

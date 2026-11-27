@@ -17,7 +17,8 @@ WORKDIR /app
 COPY --from=build /app/.venv /app/.venv
 COPY data ./data
 COPY schemas ./schemas
-RUN chgrp -R 0 /app && chmod -R g=u /app
+# /checkpoints: mount point for the approval-log checkpoint volume (separate from the DB).
+RUN mkdir -p /checkpoints && chgrp -R 0 /app /checkpoints && chmod -R g=u /app /checkpoints
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 USER 1001
 EXPOSE 8000

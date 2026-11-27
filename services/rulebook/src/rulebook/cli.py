@@ -128,6 +128,35 @@ def _inventory_json(args: argparse.Namespace) -> int:
     return 0
 
 
+def _propose_obligations(args: argparse.Namespace) -> int:
+    from rulebook.obligation_column import propose
+
+    text, proposals = propose(Path(args.csv), Path(args.source_json), args.lang)
+    for p in proposals:
+        print(f"{p.check_id}: clauses {', '.join(p.clauses)} -> {p.code or '(none found)'}")
+    if args.write:
+        Path(args.csv).write_text(text, encoding="utf-8")
+        print(f"wrote {args.csv}: bump SOURCE_DATE in the settings file and re-import")
+    return 0
+
+
+def _apply_drafts(args: argparse.Namespace) -> int:
+    import json
+
+    from rulebook.apply_drafts import apply
+    from rulebook.golden import import_golden
+
+    change_set = json.loads(Path(args.change_set).read_text(encoding="utf-8"))
+    csv_path = Path(args.csv)
+    for path, text in apply(csv_path, change_set).items():
+        path.write_text(text, encoding="utf-8")
+        print(f"wrote {path}")
+    result = import_golden(csv_path, Path(args.out_dir))
+    for lang, path in result.paths.items():
+        print(f"  {lang}: {path} version {result.version}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rulebook", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -187,6 +216,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--check", action="store_true", help="Write nothing; exit 1 if *.meta.json is stale"
     )
     sub.add_parser("source-schema", help="Print the source-document JSON Schema")
+    ad = sub.add_parser(
+        "apply-drafts",
+        help="Write a published draft change set into the golden set and re-import",
+    )
+    ad.add_argument("change_set", help="Change set JSON (GET /drafts/batches/{id}/change-set)")
+    ad.add_argument("--csv", required=True, help="Golden-set CSV to update")
+    ad.add_argument("--out-dir", default="data/catalogs", help="Where the catalogs go")
+    obl = sub.add_parser(
+        "propose-obligations",
+        help="Fill blank golden-set Obligation cells from linked source clauses (plain code)",
+    )
+    obl.add_argument("csv", help="Golden-set CSV")
+    obl.add_argument("--source-json", required=True, help="Source document JSON the links use")
+    obl.add_argument("--lang", default="en", choices=["en", "fr"])
+    obl.add_argument("--write", action="store_true", help="Write the CSV (default: dry run)")
     sug = sub.add_parser(
         "suggest-source-clauses",
         help="Propose source clauses for each golden-set check (review CSV; nothing applied)",
@@ -208,6 +252,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     invj.add_argument("csv")
 
     args = parser.parse_args(argv)
+    if args.command == "apply-drafts":
+        return _apply_drafts(args)
+    if args.command == "propose-obligations":
+        return _propose_obligations(args)
     if args.command == "inventory-json":
         return _inventory_json(args)
     if args.command == "suggest-source-clauses":

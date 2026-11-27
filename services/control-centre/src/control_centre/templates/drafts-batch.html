@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block notes %}
+{% if settings.synthetic_data %}{{ m.note('synthetic', t) }}{% endif %}
+{% endblock %}
+{% block content %}
+{% set other = other_lang %}
+{% set open = batch.status == 'open' %}
+<p><a href="/{{ lang }}/drafts">{{ t('drafts.back') }}</a></p>
+<dl class="facts">
+  <dt>{{ t('drafts.catalog') }}</dt><dd>{{ batch.catalog }} {{ batch.base_version }} → {{ batch.new_version or batch.plan.proposed_version }}</dd>
+  <dt>{{ t('drafts.source_change') }}</dt><dd>{{ batch.source_change.instrument }} {{ batch.source_change.from }} → {{ batch.source_change.to }}</dd>
+  <dt>{{ t('drafts.batch_status') }}</dt><dd data-batch-status="{{ batch.status }}">{{ t('drafts.batch.' ~ batch.status) }}</dd>
+  <dt>{{ t('drafts.diff_summary') }}</dt>
+  <dd>{% for k, n in batch.plan.diff_summary.items() if n %}{{ t('drafts.summary.' ~ k, n=n) }}{% if not loop.last %} · {% endif %}{% endfor %}</dd>
+</dl>
+<p class="muted">{{ t('drafts.human_decides') }} {{ t('drafts.not_reviewed') }}</p>
+{% set back_url = '/' ~ lang ~ '/drafts/' ~ batch.id %}
+{% if open %}{% include "_acting-as.html" %}{% endif %}
+
+{% if notice %}
+<div class="alert alert-ok" role="status" id="notice"><p>{{ t('drafts.notice.' ~ notice) }}</p>
+{% if notice == 'published' %}<p><a href="/{{ lang }}/impact?catalog_from={{ batch.base_version }}&amp;catalog_to={{ batch.new_version }}">{{ t('drafts.see_impact', version=batch.new_version) }}</a></p>{% endif %}
+</div>
+{% endif %}
+{% if error %}
+<div class="alert alert-error" role="alert" id="error" tabindex="-1">
+  <p><strong>{{ t('drafts.refused') }}</strong> {{ t('drafts.error.' ~ error) }}</p>
+  {% if error_item %}<p><a href="#item-{{ error_item }}">{{ t('drafts.go_to_item') }}</a></p>{% endif %}
+</div>
+{% endif %}
+
+{% for item in batch['items'] %}
+{% set d = item.drafts.get(lang, {}) %}
+{% set od = item.drafts.get(other, {}) %}
+{% set cid = item.target_control or item.proposed_id %}
+{% set cur = batch.current_controls.get(item.target_control, {}).get(lang) if item.target_control else none %}
+<section class="draft-item" id="item-{{ item.id }}" aria-labelledby="item-{{ item.id }}-h" data-kind="{{ item.kind }}" data-status="{{ item.status }}">
+  <h2 id="item-{{ item.id }}-h">{{ item.seq }}. {{ cid }} · {{ t('drafts.kind.' ~ item.kind) }}
+    <span class="badge badge-status-{{ item.status }}">{{ t('drafts.status.' ~ item.status) }}</span></h2>
+  <p>{% for f in item.flags %}{{ m.badge(f, t) }} {% endfor %}{% if item.group %}<span class="muted">{{ t('drafts.new_group', title=batch.plan.new_groups[item.group].title[lang], id=item.group) }}</span>{% endif %}</p>
+  <div class="side-by-side">
+    <div class="pane">
+      <h3>{{ t('drafts.current') }}</h3>
+      {% if cur %}
+      <p>{{ cur.statement }}</p>
+      <p class="muted">{{ t('drafts.obligation') }}: {{ t('obligation.' ~ cur.obligation) if cur.obligation else t('policy.none') }} · {{ t('drafts.check_type') }}: {{ t('check-type.' ~ cur.check_type) if cur.check_type else t('policy.none') }}</p>
+      {% else %}
+      <p class="muted">{{ t('drafts.no_current') }}</p>
+      {% endif %}
+    </div>
+    <div class="pane">
+      <h3>{{ t('drafts.clause_change') }}</h3>
+      {% for n in item.old_clauses %}
+      <p class="clause-label">{{ t('drafts.old_clause', n=n, v=batch.source_change.from) }}</p>
+      <blockquote class="quote clause-old">{{ batch.plan.clauses[lang].old.get(n, '') }}</blockquote>
+      {% endfor %}
+      {% for n in item.new_clauses %}
+      <p class="clause-label">{{ t('drafts.new_clause', n=n, v=batch.source_change.to) }}</p>
+      <blockquote class="quote clause-new">{{ batch.plan.clauses[lang].new.get(n, '') }}</blockquote>
+      {% endfor %}
+      {% if not item.new_clauses %}<p class="muted">{{ t('drafts.clause_removed') }}</p>{% endif %}
+    </div>
+    <div class="pane">
+      <h3>{{ t('drafts.draft', language=t('language.' ~ lang)) }}</h3>
+      {% if item.kind == 'reference' %}
+      <p>{{ t('drafts.reference_text', clauses=item.new_clauses|join(', ')) }}</p>
+      {% elif item.kind == 'retire' %}
+      <p>{{ t('drafts.retire_text') }}</p>
+      {% elif d.status == 'pending' %}
+      <p class="muted">{{ t('drafts.pending') }}</p>
+      {% else %}
+      <p data-draft-status="{{ d.status }}"><strong>{{ t('drafts.draft_status.' ~ d.status) }}</strong>{% if d.reason %} · {{ t('drafts.reason.' ~ d.reason) }}{% endif %}</p>
+      {% for f in d.get('flags', []) %}<p>{{ m.badge(f, t) }} {{ t('drafts.flag_hint.' ~ f) }}</p>{% endfor %}
+      {% if d.no_change %}<p>{{ t('drafts.no_change') }}</p>{% endif %}
+      {% if d.statement %}<p class="draft-text">{{ d.statement }}</p>{% endif %}
+      {% if d.status == 'needs-human' and d.statement %}<p class="muted">{{ t('drafts.model_suggestion_only') }}</p>{% endif %}
+      <dl class="facts small">
+        <dt>{{ t('drafts.obligation') }}</dt><dd>{{ t('obligation.' ~ d.obligation) if d.obligation else t('policy.none') }}</dd>
+        <dt>{{ t('drafts.check_type') }}</dt><dd>{{ t('check-type.' ~ d.check_type) if d.check_type else t('policy.none') }}</dd>
+        {% if d.confidence is not none %}<dt>{{ t('finding.confidence') }}</dt><dd>{{ ('%.2f'|format(d.confidence))|replace('.', ',') if lang == 'fr' else '%.2f'|format(d.confidence) }}</dd>{% endif %}
+        <dt>{{ t('drafts.provenance') }}</dt>
+        <dd>{% if d.get('model_id') %}{{ t('drafts.by_model', model=d.model_id, prompt=d.prompt_version) }}{% endif %}{% if d.get('source') == 'person' %}{% if d.get('model_id') %}; {% endif %}{{ t('drafts.edited_by', who=d.edited_by) }}{% endif %}</dd>
+      </dl>
+      {% endif %}
+      {% if item.kind in ('edit', 'new') %}
+      <p class="muted other-lang">{{ t('drafts.other_language', language=t('language.' ~ other)) }}
+        {{ t('drafts.draft_status.' ~ od.get('status', 'pending')) }}{% if od.get('reason') %} · {{ t('drafts.reason.' ~ od.reason) }}{% endif %}.
+        <a href="/{{ other }}/drafts/{{ batch.id }}#item-{{ item.id }}" hreflang="{{ other }}">{{ t('drafts.read_other', language=t('language.' ~ other)) }}</a></p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if item.status in ('approved', 'rejected') %}
+  <p data-decision="{{ item.status }}">{{ t('drafts.decided.' ~ item.status, who=item.decided_by) }}{% if item.drafts.get('_decision') %} · {{ t('drafts.log_record', seq=item.drafts._decision.seq) }}{% endif %}</p>
+  {% elif open %}
+  {% if error_item == item.id and error %}<p class="alert alert-error">{{ t('drafts.error.' ~ error) }}</p>{% endif %}
+  {% if item.last_edited_by %}<p class="muted">{{ t('drafts.last_edited', who=item.last_edited_by) }}{% if item.last_edited_by == actor %} {{ t('drafts.two_person_note') }}{% endif %}</p>{% endif %}
+  <div class="actions">
+    {% if item.kind in ('edit', 'new') %}
+    <details{% if error_item == item.id and error in ('id-used', 'languages-differ', 'needs-human', 'no-statement') %} open{% endif %}>
+      <summary>{{ t('drafts.edit', language=t('language.' ~ lang)) }}</summary>
+      <form method="post" action="/{{ lang }}/drafts/{{ batch.id }}/items/{{ item.id }}/edit">
+        <div class="field">
+          <label for="statement-{{ item.id }}">{{ t('drafts.statement', language=t('language.' ~ lang)) }}</label>
+          <textarea id="statement-{{ item.id }}" name="statement" required maxlength="4000">{{ d.statement or (cur.statement if cur else '') }}</textarea>
+        </div>
+        <div class="field">
+          <label for="obligation-{{ item.id }}">{{ t('drafts.obligation') }}</label>
+          <select id="obligation-{{ item.id }}" name="obligation">
+            {% for o in obligations %}<option value="{{ o }}"{% if o == d.obligation %} selected{% endif %}>{{ t('obligation.' ~ o) }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="check-type-{{ item.id }}">{{ t('drafts.check_type') }}</label>
+          <select id="check-type-{{ item.id }}" name="check_type">
+            {% for c in ('rule-based', 'judgment') %}<option value="{{ c }}"{% if c == (d.check_type or (cur.check_type if cur else '')) %} selected{% endif %}>{{ t('check-type.' ~ c) }}</option>{% endfor %}
+          </select>
+        </div>
+        {% if item.kind == 'new' %}
+        <div class="field">
+          <label for="proposed-id-{{ item.id }}">{{ t('drafts.proposed_id') }}</label>
+          <span id="proposed-id-{{ item.id }}-hint" class="hint">{{ t('drafts.proposed_id_hint') }}</span>
+          <input id="proposed-id-{{ item.id }}" name="proposed_id" value="{{ item.proposed_id }}" aria-describedby="proposed-id-{{ item.id }}-hint" maxlength="40">
+        </div>
+        {% endif %}
+        <p class="muted">{{ t('drafts.edit_hint') }}</p>
+        <button type="submit" class="secondary">{{ t('drafts.save_edit') }}</button>
+      </form>
+    </details>
+    {% endif %}
+    <form method="post" action="/{{ lang }}/drafts/{{ batch.id }}/items/{{ item.id }}/approve" class="inline-form">
+      <div class="choice">
+        <input type="checkbox" id="both-{{ item.id }}" name="both_languages" value="yes" required>
+        <label for="both-{{ item.id }}">{{ t('drafts.confirm_both') }}</label>
+      </div>
+      <button type="submit">{{ t('drafts.approve') }}</button>
+    </form>
+    <form method="post" action="/{{ lang }}/drafts/{{ batch.id }}/items/{{ item.id }}/reject" class="inline-form">
+      <div class="field">
+        <label for="reason-{{ item.id }}">{{ t('drafts.reject_reason') }}</label>
+        <input id="reason-{{ item.id }}" name="reason" required maxlength="1000">
+      </div>
+      <div class="field"><button type="submit" class="secondary">{{ t('drafts.reject') }}</button></div>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
+
+<h2 id="publish" tabindex="-1">{{ t('drafts.publish') }}</h2>
+{% if batch.status == 'published' %}
+<p data-published="{{ batch.new_version }}">{{ t('drafts.published', version=batch.new_version) }}</p>
+<p><a href="/{{ lang }}/impact?catalog_from={{ batch.base_version }}&amp;catalog_to={{ batch.new_version }}">{{ t('drafts.see_impact', version=batch.new_version) }}</a></p>
+{% elif not decided %}
+<p>{{ t('drafts.publish_wait') }}</p>
+{% else %}
+<form method="post" action="/{{ lang }}/drafts/{{ batch.id }}/publish">
+  <div class="field">
+    <label for="source-date">{{ t('drafts.source_date') }}</label>
+    <span id="source-date-hint" class="hint">{{ t('drafts.source_date_hint', previous=defaults.previous[:10], default=defaults.default[:10]) }}</span>
+    <input id="source-date" name="source_date" type="date" required value="{{ defaults.default[:10] }}" min="{{ min_date }}" aria-describedby="source-date-hint">
+  </div>
+  <p class="muted">{{ t('drafts.publish_hint', version=defaults.version) }}</p>
+  <button type="submit">{{ t('drafts.publish_button', version=defaults.version) }}</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": false, \"statement\": \"A widget risk assessment is completed before the widget is put into service.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Departments must complete a widget risk assessment before a widget is put into service.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.89}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": false, \"statement\": \"A widget risk assessment is completed before the widget is put into service.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.15082288973458366,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Departments must complete a widget risk assessment before a widget is put into service.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.89}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 44,
+  "completion_tokens": 92,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

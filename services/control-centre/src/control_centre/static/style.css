@@ -139,3 +139,17 @@ ul.effects { margin: 0; padding-left: 1.1rem; }
 .field select, .field input[type="date"] { max-width: 20rem; }
 blockquote.quote { margin: 0.25rem 0; padding: 0.25rem 0.75rem; border-left: 4px solid var(--rule); background: #f8f8f8; }
 .badge-flagged-evidence { background: var(--warn-bg); color: var(--warn-text); }
+.side-by-side { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+.side-by-side .pane { border: 1px solid var(--rule); padding: 0.5rem 0.75rem; }
+.side-by-side h3 { margin-top: 0.25rem; font-size: 1.05rem; }
+section.draft-item { border-top: 3px solid var(--rule); margin-top: 2rem; padding-top: 0.5rem; }
+.clause-label { font-weight: 600; margin: 0.5rem 0 0; }
+blockquote.clause-old { border-left-color: #6b6b6b; }
+blockquote.clause-new { border-left-color: var(--link); }
+.draft-text { font-weight: 600; }
+dl.facts.small { font-size: 0.95rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; margin: 0.75rem 0; }
+.actions details { flex-basis: 100%; }
+.badge-status-approved { background: #e6f4ea; color: #1e4620; }
+.badge-status-rejected, .badge-obligation-mismatch, .badge-instruction-like-text { background: var(--warn-bg); color: var(--warn-text); }
+.acting-as { border: 1px dashed var(--rule); padding: 0.5rem 0.75rem; margin: 1rem 0; }

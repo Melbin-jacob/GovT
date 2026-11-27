@@ -44,10 +44,19 @@ accuracy:  ## Accuracy harness on the synthetic cases (recorded replies, no mode
 		--out accuracy-output --hardware "recorded replies, no model" --write-latest accuracy-output/latest.json
 	uv run assessment-engine accuracy gate --run accuracy-output/latest.json \
 		--baseline data/accuracy/synthetic-demo/baseline.json --scores synthetic-demo
+	MODEL_GATEWAY_RECORDINGS=data/accuracy/synthetic-demo/recordings MODEL_GATEWAY_MODEL=scripted-fake-v1 \
+		uv run assessment-engine accuracy draft-run --cases data/accuracy/synthetic-demo/drafting/cases.csv \
+		--out accuracy-output --hardware "recorded replies, no model" --write-latest accuracy-output/latest-drafting.json
+	uv run assessment-engine accuracy gate --run accuracy-output/latest-drafting.json \
+		--baseline data/accuracy/synthetic-demo/drafting/baseline.json --scores synthetic-demo
 
 demo-ui:  ## Click through the web UI (EN/FR) in Chromium with axe scans; after `make demo-review`
 	CONTROL_CENTRE_URL=$${CONTROL_CENTRE_URL:-http://127.0.0.1:8004} E2E_OUTPUT=e2e-output \
 		uv run pytest services/control-centre/e2e -p no:cacheprovider
+
+demo-drafts:  ## Policy change -> AI drafts -> approve in the UI -> catalog 1.1.0 -> impact; run LAST (publishes)
+	CONTROL_CENTRE_URL=$${CONTROL_CENTRE_URL:-http://127.0.0.1:8004} E2E_OUTPUT=e2e-output E2E_DRAFTS=1 \
+		uv run pytest services/control-centre/e2e/test_drafts_demo.py -p no:cacheprovider
 
 servicenow-check:  ## Check a REAL ServiceNow instance (.env.servicenow); never run in CI
 	uv run connector-hub check-servicenow

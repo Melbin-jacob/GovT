@@ -1,0 +1,11 @@
+[
+ {
+  "id": "75e803c6-e4aa-4ac3-852f-c9e88a5e1d2e",
+  "catalog": "example-widgets",
+  "base_version": "1.0.0",
+  "source_change": "example-widgets 2023-01-01 -> 2025-01-01",
+  "status": "published",
+  "new_version": "1.1.0",
+  "created_at": "2026-11-27T22:47:35.673738+00:00"
+ }
+]

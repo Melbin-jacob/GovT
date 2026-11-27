@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from govhub_shared import OSCAL_NS, OSCAL_VERSION
+from govhub_shared.obligations import OBLIGATION_CODES
 from govhub_shared.oscal import (
     content_hash,
     dump_json,
@@ -77,6 +78,14 @@ COL_AGREED_FR = "Libellé final convenu"
 # Optional: semicolon-separated clause numbers in the source version named by SOURCE_VERSION.
 # Empty means "no links yet" (reported, not an error).
 COL_SOURCE_CLAUSES = "Source clauses"
+# Optional (Milestone 6). Blank or absent -> nothing is added to the catalog.
+COL_OBLIGATION = "Obligation"  # language-neutral code (OBLIGATION_CODES)
+COL_STATUS = "Status"  # active (default) | withdrawn: a retired control stays, withdrawn
+COL_GROUP = "Group"  # explicit Section key of the groups file (default: from Clause)
+COL_DRAFTED_BY = "Drafted by"  # provenance of AI-drafted wording, e.g. "model qwen3-8b ..."
+COL_APPROVED_BY = "Approved by"  # the person who approved the drafted wording
+COL_APPROVAL_RECORD = "Approval record"  # approval-log seq and hash
+STATUS_CODES: tuple[str, ...] = ("active", "withdrawn")
 
 # Controlled vocabularies: CSV display value -> language-neutral code stored in both catalogs.
 NUMBERING_STATUS_CODES: dict[str, str] = {
@@ -126,6 +135,11 @@ class GoldenSettings:
     source_meta_dir: Path
     statement_status: str
     catalog: dict[Lang, CatalogText]
+    # Optional: the official file hash per language when no meta file is at hand (the
+    # rulebook rebuilding a version from its database), and the approval-log head stamped
+    # on a version produced by approved drafts (APPROVAL_LOG_HEAD).
+    source_hashes: dict[Lang, str] | None = None
+    approval_log_head: str | None = None
 
     def meta_path(self, lang: Lang) -> Path:
         name = f"{self.source_instrument}.{self.source_version}.{lang}.meta.json"
@@ -136,6 +150,7 @@ class GoldenSettings:
 class GroupTitle:
     section: str
     title: dict[Lang, str]
+    group_id: str | None = None  # explicit ID (new groups: neutral <prefix>-G<nn>)
 
 
 @dataclass(frozen=True)
@@ -152,6 +167,11 @@ class GoldenRow:
     guidance: dict[Lang, str | None]
     objective: dict[Lang, str | None]
     source_clauses: tuple[str, ...] = ()
+    obligation: str | None = None
+    status: str = "active"
+    drafted_by: str | None = None
+    approved_by: str | None = None
+    approval_record: str | None = None
 
 
 @dataclass
@@ -197,6 +217,7 @@ def read_groups(path: Path) -> dict[str, GroupTitle]:
             _cell(r, "Section"): GroupTitle(
                 section=_cell(r, "Section"),
                 title={"en": _cell(r, "Title (EN)"), "fr": _cell(r, "Titre (FR)")},
+                group_id=_cell(r, "Group ID") or None,
             )
             for r in csv.DictReader(fh)
         }
@@ -233,7 +254,7 @@ def read_rows(
                 seen[check_id] = line
 
             clause = _cell(record, COL_CLAUSE)
-            section = section_of(clause)
+            section = _cell(record, COL_GROUP) or section_of(clause)
             if not clause:
                 row_errors.append(f"{where}: blank Clause")
             elif section is None:
@@ -291,6 +312,16 @@ def read_rows(
             if len(set(links)) != len(links):
                 errors.append(f"{where}: Source clauses lists a clause twice")
                 continue
+            obligation = _cell(record, COL_OBLIGATION) or None
+            if obligation is not None and obligation not in OBLIGATION_CODES:
+                errors.append(
+                    f"{where}: Obligation {obligation!r} is not one of {list(OBLIGATION_CODES)}"
+                )
+                continue
+            row_status = _cell(record, COL_STATUS) or "active"
+            if row_status not in STATUS_CODES:
+                errors.append(f"{where}: Status {row_status!r} is not one of {list(STATUS_CODES)}")
+                continue
             agreed_en, agreed_fr = _cell(record, COL_AGREED_EN), _cell(record, COL_AGREED_FR)
             rows.append(
                 GoldenRow(
@@ -312,6 +343,11 @@ def read_rows(
                         "fr": _cell(record, COL_EVIDENCE_FR) or None,
                     },
                     source_clauses=links,
+                    obligation=obligation,
+                    status=row_status,
+                    drafted_by=_cell(record, COL_DRAFTED_BY) or None,
+                    approved_by=_cell(record, COL_APPROVED_BY) or None,
+                    approval_record=_cell(record, COL_APPROVAL_RECORD) or None,
                 )
             )
 
@@ -337,6 +373,17 @@ def _control(row: GoldenRow, lang: Lang, resource_uuid: str | None = None) -> di
         props.append(_hub_prop("numbering-note-lang", NOTE_LANG))
     props.append(_hub_prop("review-status", "reviewed" if row.reviewed[lang] else "draft"))
     props.extend(_hub_prop("source-clause", number) for number in row.source_clauses)
+    if row.obligation:
+        props.append(_hub_prop("obligation", row.obligation))
+    if row.status == "withdrawn":
+        props.append({"name": "status", "value": "withdrawn"})  # OSCAL core prop
+    for name, value in (
+        ("drafted-by", row.drafted_by),
+        ("approved-by", row.approved_by),
+        ("approval-record", row.approval_record),
+    ):
+        if value:
+            props.append(_hub_prop(name, value))
 
     parts: list[dict[str, str]] = [
         {"id": f"{row.check_id}_smt", "name": "statement", "prose": row.statement[lang]}
@@ -360,8 +407,10 @@ def _source_resource(settings: GoldenSettings, lang: Lang) -> tuple[str, dict[st
     uuid = stable_uuid("source-document", settings.source_instrument, settings.source_version, lang)
     rlink: dict[str, Any] = {"href": settings.catalog[lang].href}
     meta = settings.meta_path(lang)
-    if meta.is_file():
+    file_hash = (settings.source_hashes or {}).get(lang)
+    if file_hash is None and meta.is_file():
         file_hash = json.loads(meta.read_text(encoding="utf-8"))["file"]["sha256"]
+    if file_hash:
         rlink["hashes"] = [{"algorithm": "SHA-256", "value": file_hash}]
     return uuid, {
         "uuid": uuid,
@@ -377,7 +426,7 @@ def _source_resource(settings: GoldenSettings, lang: Lang) -> tuple[str, dict[st
 
 def check_source_links(rows: Sequence[GoldenRow], settings: GoldenSettings) -> list[str]:
     """Every linked clause must exist in the source version (both languages)."""
-    linked = [r for r in rows if r.source_clauses]
+    linked = [r for r in rows if r.source_clauses and r.status != "withdrawn"]
     if not linked:
         return []
     errors: list[str] = []
@@ -401,7 +450,13 @@ def check_source_links(rows: Sequence[GoldenRow], settings: GoldenSettings) -> l
 
 
 def _section_key(section: str) -> tuple[int, ...]:
-    return tuple(int(p) for p in section.split("."))
+    """Numeric sort key of a section ("6.2"); a later-version key ("6.2@2025-01-01") sorts
+    right after the plain sections, by version."""
+    number, _, version = section.partition("@")
+    numbers = tuple(int(p) for p in number.split("."))
+    if not version:
+        return (0, *numbers)
+    return (1, *(int(p) for p in version.split("-")), *numbers)
 
 
 def build_catalog(
@@ -423,6 +478,10 @@ def build_catalog(
     src = settings.catalog[lang]
     resource_uuid, resource = _source_resource(settings, lang)
     sections = sorted({r.group for r in rows}, key=_section_key)
+    group_ids = {
+        section: groups[section].group_id or group_id(section, settings.group_prefix)
+        for section in sections
+    }
     body: dict[str, Any] = {
         "uuid": "00000000-0000-4000-8000-000000000000",  # replaced below
         "metadata": {
@@ -439,13 +498,18 @@ def build_catalog(
                 _hub_prop("source-file", source_name),
                 _hub_prop("source-instrument", settings.source_instrument),
                 _hub_prop("source-version", settings.source_version),
+                *(
+                    [_hub_prop("approval-log-head", settings.approval_log_head)]
+                    if settings.approval_log_head
+                    else []
+                ),
             ],
             "links": [{"href": src.href, "rel": "reference", "text": src.document}],
             "remarks": src.remarks.format(source=source_name),
         },
         "groups": [
             {
-                "id": group_id(section, settings.group_prefix),
+                "id": group_ids[section],
                 "class": "section",
                 "title": groups[section].title[lang],
                 "props": [{"name": "label", "value": section}],
@@ -515,6 +579,7 @@ def read_settings(path: Path) -> GoldenSettings:
             settings, "STATEMENT_STATUS", path, "paraphrase-pending-verification"
         ),
         catalog=catalog,
+        approval_log_head=settings.get("APPROVAL_LOG_HEAD") or None,
     )
 
 

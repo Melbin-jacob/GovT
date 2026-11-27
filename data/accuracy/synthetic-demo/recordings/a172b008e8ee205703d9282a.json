@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": true, \"statement\": \"Les widgets sont étalonnés au moins une fois par année.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Les widgets doivent être étalonnés au moins une fois par année.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.86}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": true, \"statement\": \"Les widgets sont étalonnés au moins une fois par année.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.18632957819149348,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Les widgets doivent être étalonnés au moins une fois par année.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.86}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 110,
+  "completion_tokens": 80,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

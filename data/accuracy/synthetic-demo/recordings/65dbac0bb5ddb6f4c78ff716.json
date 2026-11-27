@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": false, \"statement\": \"L'évaluation des risques du widget est mise à jour lorsque l'objet du widget change.\", \"guidance\": null, \"objective\": null, \"check_type\": \"judgment\", \"obligation\": \"must\", \"cited_clause\": \"L’évaluation des risques du widget doit être mise à jour lorsque l’objet du widget change.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.86}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": false, \"statement\": \"L'évaluation des risques du widget est mise à jour lorsque l'objet du widget change.\", \"guidance\": null, \"objective\": null, \"check_type\": \"judgment\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.19845093872383832,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"L’évaluation des risques du widget doit être mise à jour lorsque l’objet du widget change.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.86}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 49,
+  "completion_tokens": 94,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

@@ -53,8 +53,12 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     if not BASE or not (AXE_RESULTS or TIMINGS):
         return
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "axe-summary.json").write_text(json.dumps(AXE_RESULTS, indent=1), "utf-8")
-    (OUT / "timing.json").write_text(json.dumps(TIMINGS, indent=1), "utf-8")
+    # A later session (``make demo-drafts`` after ``make demo-ui``) adds to the results.
+    for name, results in (("axe-summary.json", AXE_RESULTS), ("timing.json", TIMINGS)):
+        path = OUT / name
+        if path.is_file():
+            results.update({**json.loads(path.read_text("utf-8")), **results})
+        path.write_text(json.dumps(results, indent=1), "utf-8")
     lines = [
         "| Screen | Path | Violations | Passed rules | Needs review | Not applicable |",
         "|---|---|---|---|---|---|",

@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-404 strings: 3 provided by the project owner, 401 unverified.
+548 strings: 3 provided by the project owner, 545 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -39,6 +39,8 @@ strings before any use outside the demo.
 | `assessment.run_hint` | Le moteur d'évaluation propose un verdict à partir des preuves; la constatation reste ouverte pour votre décision. | The assessment engine drafts a verdict from the evidence; the finding stays open for your decision. | Unverified, written by Claude Code |
 | `banner.demo` | Démo seulement : aucune authentification. | Demo only: no authentication. | Unverified, written by Claude Code |
 | `banner.detail` | Toute personne qui accède à cette page agit comme l'examinateur de démonstration. Ne l'exposez pas. | Anyone who can reach this page acts as the demo reviewer. Do not expose it. | Unverified, written by Claude Code |
+| `check-type.judgment` | Jugement | Judgment | Unverified, written by Claude Code |
+| `check-type.rule-based` | Fondé sur des règles | Rule-based | Unverified, written by Claude Code |
 | `choose.heading` | Choisissez votre langue | Choose your language | Unverified, written by Claude Code |
 | `choose.intro` | Prototype pour examiner des systèmes d'IA au regard des règles de gouvernance. Un modèle ne fait que rédiger une ébauche; une personne décide. | Prototype for reviewing AI systems against governance rules. A model only drafts; a person decides. | Unverified, written by Claude Code |
 | `decide.action` | Décision | Decision | Unverified, written by Claude Code |
@@ -63,6 +65,127 @@ strings before any use outside the demo.
 | `decide.start_hint` | Le début de l'examen enregistre l'heure sur le serveur. Le temps de décision est mesuré à partir de ce moment. | Starting the review records the time on the server. The time to decide is measured from here. | Unverified, written by Claude Code |
 | `decide.submit` | Consigner la décision | Record decision | Unverified, written by Claude Code |
 | `decide.timer` | Séance d'examen {session} commencée; le temps de décision est mesuré. | Review session {session} started; the time to decide is being measured. | Unverified, written by Claude Code |
+| `drafts.acting_as` | Agir en tant que (démo) | Acting as (demo) | Unverified, written by Claude Code |
+| `drafts.acting_as_button` | Changer de personne | Change person | Unverified, written by Claude Code |
+| `drafts.acting_as_hint` | Démo seulement, sans connexion : choisissez qui vous êtes pour voir les rôles et la règle des deux personnes en action. | Demo only, no sign-in: choose who you are to see the roles and the two-person rule at work. | Unverified, written by Claude Code |
+| `drafts.approve` | Approuver | Approve | Unverified, written by Claude Code |
+| `drafts.back` | Retour aux lots d'ébauches | Back to the drafting batches | Unverified, written by Claude Code |
+| `drafts.batch.open` | Ouvert : décisions requises | Open: decisions needed | Unverified, written by Claude Code |
+| `drafts.batch.published` | Publié | Published | Unverified, written by Claude Code |
+| `drafts.batch_status` | État | Status | Unverified, written by Claude Code |
+| `drafts.batch_title` | Ébauches du recueil : un changement de politique | Rulebook drafts: one policy change | Unverified, written by Claude Code |
+| `drafts.batches` | Lots d'ébauches | Drafting batches | Unverified, written by Claude Code |
+| `drafts.batches_caption` | Lots d'ébauches, du plus récent au plus ancien | Drafting batches, newest first | Unverified, written by Claude Code |
+| `drafts.by_model` | modèle {model}, invite {prompt} | model {model}, prompt {prompt} | Unverified, written by Claude Code |
+| `drafts.catalog` | Catalogue | Catalog | Unverified, written by Claude Code |
+| `drafts.check_type` | Type de contrôle | Check type | Unverified, written by Claude Code |
+| `drafts.clause_change` | Changement de la disposition | Clause change | Unverified, written by Claude Code |
+| `drafts.clause_removed` | La disposition a été supprimée de la nouvelle version. | The clause was removed from the new version. | Unverified, written by Claude Code |
+| `drafts.confirm_both` | J'ai lu les ébauches dans les deux langues | I have read the drafts in both languages | Unverified, written by Claude Code |
+| `drafts.created` | Commencé | Started | Unverified, written by Claude Code |
+| `drafts.current` | Contrôle actuel | Current control | Unverified, written by Claude Code |
+| `drafts.decided.approved` | Approuvé par {who} | Approved by {who} | Unverified, written by Claude Code |
+| `drafts.decided.rejected` | Rejeté par {who} | Rejected by {who} | Unverified, written by Claude Code |
+| `drafts.diff_summary` | Changements des dispositions | Clause changes | Unverified, written by Claude Code |
+| `drafts.draft` | Ébauche ({language}) | Draft ({language}) | Unverified, written by Claude Code |
+| `drafts.draft_status.drafted` | Rédigée par le modèle | Drafted by the model | Unverified, written by Claude Code |
+| `drafts.draft_status.edited` | Rédigée ou corrigée par une personne | Written or corrected by a person | Unverified, written by Claude Code |
+| `drafts.draft_status.needs-human` | Une personne doit rédiger cette ébauche | A person must write this draft | Unverified, written by Claude Code |
+| `drafts.draft_status.pending` | Pas encore d'ébauche | No draft yet | Unverified, written by Claude Code |
+| `drafts.edit` | Modifier l'ébauche en {language} | Edit the {language} draft | Unverified, written by Claude Code |
+| `drafts.edit_hint` | L'obligation et le type de contrôle doivent être les mêmes dans les deux langues; modifiez l'autre langue sur sa propre page. | Obligation and check type must be the same in both languages; edit the other language on its own page. | Unverified, written by Claude Code |
+| `drafts.edited_by` | modifiée par {who} | edited by {who} | Unverified, written by Claude Code |
+| `drafts.error.batch-closed` | Ce lot est déjà publié. | This batch is already published. | Unverified, written by Claude Code |
+| `drafts.error.confirm-both` | Confirmez avoir lu les ébauches dans les deux langues avant d'approuver. | Confirm that you have read the drafts in both languages before approving. | Unverified, written by Claude Code |
+| `drafts.error.id-used` | Cet identifiant de contrôle n'est pas valide ou a déjà été utilisé; les identifiants ne sont jamais réutilisés. | That control ID is not valid or has been used before; IDs are never reused. | Unverified, written by Claude Code |
+| `drafts.error.item-decided` | Cet élément a déjà fait l'objet d'une décision. | This item already has a decision. | Unverified, written by Claude Code |
+| `drafts.error.languages-differ` | Les ébauches anglaise et française ne concordent pas (obligation, type de contrôle ou « aucun changement »). Harmonisez-les d'abord. | The English and French drafts disagree (obligation, check type or "no change"). Make them match first. | Unverified, written by Claude Code |
+| `drafts.error.needs-human` | Une ébauche dans une langue doit encore être rédigée par une personne. | A draft in one language still needs a person to write it. | Unverified, written by Claude Code |
+| `drafts.error.no-check-type` | Un nouveau contrôle doit avoir un type de contrôle. | A new control needs a check type. | Unverified, written by Claude Code |
+| `drafts.error.no-statement` | Une ébauche n'a pas de texte d'exigence. | A draft has no requirement text. | Unverified, written by Claude Code |
+| `drafts.error.no-wording` | Cet élément n'a pas de libellé à modifier. | This item has no wording to edit. | Unverified, written by Claude Code |
+| `drafts.error.not-new` | Seuls les nouveaux contrôles reçoivent un identifiant proposé. | Only new controls get a proposed ID. | Unverified, written by Claude Code |
+| `drafts.error.not-ready` | L'élément n'est pas prêt : les deux langues doivent avoir une ébauche. | The item is not ready: both languages need a draft. | Unverified, written by Claude Code |
+| `drafts.error.reason` | Un rejet doit être motivé. | A rejection needs a reason. | Unverified, written by Claude Code |
+| `drafts.error.refused` | Le recueil de règles a refusé la demande. | The rulebook refused the request. | Unverified, written by Claude Code |
+| `drafts.error.role` | Votre rôle ne le permet pas : seul un agent de gouvernance approuve ou rejette, et seuls les réviseurs et les agents de gouvernance modifient. | Your role cannot do this: only a governance officer approves or rejects, and only reviewers and governance officers edit. | Unverified, written by Claude Code |
+| `drafts.error.source-date` | La date de source doit être postérieure à la date de source précédente; le contrôle de SOURCE_DATE la refuserait. | The source date must be a date later than the previous source date; the SOURCE_DATE guard would refuse it. | Unverified, written by Claude Code |
+| `drafts.error.stale-links` | Un contrôle garderait un lien vers une disposition qui a maintenant un autre sens. Approuvez la mise à jour de son renvoi ou retirez-le. | A control would keep a link to a clause that now has another meaning. Approve its clause-reference update or retire it. | Unverified, written by Claude Code |
+| `drafts.error.two-person-rule` | Règle des deux personnes : vous avez modifié cette ébauche en dernier; un autre agent de gouvernance doit donc l'approuver. | Two-person rule: you last edited this draft, so another governance officer must approve it. | Unverified, written by Claude Code |
+| `drafts.error.undecided` | Certains éléments n'ont pas encore fait l'objet d'une décision. | Some items have no decision yet. | Unverified, written by Claude Code |
+| `drafts.flag_hint.instruction-like-text` | Le texte de la disposition a été traité comme des données, jamais comme des instructions. | The clause text was treated as data, never as instructions. | Unverified, written by Claude Code |
+| `drafts.flag_hint.obligation-mismatch` | L'obligation de l'ébauche ne correspond pas à celle que le code ordinaire trouve dans la nouvelle disposition. Vérifiez-la. | The obligation in the draft does not match the one plain code finds in the new clause. Check it. | Unverified, written by Claude Code |
+| `drafts.go_to_item` | Aller à l'élément | Go to the item | Unverified, written by Claude Code |
+| `drafts.human_decides` | Un modèle d'IA ne fait que rédiger; une personne décide. Seul un agent de gouvernance approuve, et la personne qui a modifié une ébauche en dernier ne peut pas l'approuver. | An AI model only drafts; a person decides. Only a governance officer approves, and the person who last edited a draft cannot approve it. | Unverified, written by Claude Code |
+| `drafts.intro` | Lorsqu'une directive change, le carrefour planifie les modifications des contrôles à partir de la comparaison des dispositions, et un modèle d'IA rédige le nouveau libellé en anglais et en français. Des personnes modifient, approuvent ou rejettent chaque ébauche; les modifications approuvées forment une nouvelle version du catalogue. | When a directive changes, the hub plans the control changes from the clause diff and an AI model drafts the new wording in English and in French. People edit, approve or reject each draft; approved changes become a new catalog version. | Unverified, written by Claude Code |
+| `drafts.kind.edit` | modifier le contrôle | change the control | Unverified, written by Claude Code |
+| `drafts.kind.new` | nouveau contrôle | new control | Unverified, written by Claude Code |
+| `drafts.kind.reference` | mettre à jour le renvoi à la disposition | update the clause reference | Unverified, written by Claude Code |
+| `drafts.kind.retire` | retirer le contrôle | retire the control | Unverified, written by Claude Code |
+| `drafts.last_edited` | Modifiée en dernier par {who}. | Last edited by {who}. | Unverified, written by Claude Code |
+| `drafts.log_record` | enregistrement {seq} du journal des approbations | approval log record {seq} | Unverified, written by Claude Code |
+| `drafts.model_suggestion_only` | Ce n'est qu'une suggestion du modèle; une personne doit rédiger ou confirmer l'ébauche. | This is only the model's suggestion; a person must write or confirm the draft. | Unverified, written by Claude Code |
+| `drafts.new_clause` | Disposition {n}, version {v} | Clause {n}, version {v} | Unverified, written by Claude Code |
+| `drafts.new_group` | Nouvelle section : {title} ({id}) | New section: {title} ({id}) | Unverified, written by Claude Code |
+| `drafts.new_version` | Nouvelle version du catalogue | New catalog version | Unverified, written by Claude Code |
+| `drafts.no_batches` | Aucun lot d'ébauches pour le moment. | No drafting batch yet. | Unverified, written by Claude Code |
+| `drafts.no_change` | Le modèle ne propose aucun changement de libellé. | The model proposes no change of wording. | Unverified, written by Claude Code |
+| `drafts.no_current` | Aucun : il s'agit d'un nouveau contrôle. | None: this is a new control. | Unverified, written by Claude Code |
+| `drafts.not_reviewed` | L'approbation ne rend pas un contrôle révisé : il reste à l'état d'ébauche jusqu'à ce que les annotateurs conviennent du libellé final. | Approval does not make a control reviewed: it stays a draft until the annotators agree the final wording. | Unverified, written by Claude Code |
+| `drafts.notice.approved` | L'élément a été approuvé et consigné dans le journal des approbations. | The item was approved and recorded in the approval log. | Unverified, written by Claude Code |
+| `drafts.notice.created` | Le travail de rédaction est planifié. Le modèle était injoignable : des personnes peuvent rédiger les ébauches. | The drafting work is planned. The model could not be reached: people can write the drafts. | Unverified, written by Claude Code |
+| `drafts.notice.drafted` | Le travail de rédaction est planifié et les ébauches du modèle sont arrivées. | The drafting work is planned and the model's drafts have arrived. | Unverified, written by Claude Code |
+| `drafts.notice.edited` | L'ébauche a été enregistrée. | The draft was saved. | Unverified, written by Claude Code |
+| `drafts.notice.published` | La nouvelle version du catalogue a été publiée. | The new catalog version was published. | Unverified, written by Claude Code |
+| `drafts.notice.rejected` | L'élément a été rejeté et consigné dans le journal des approbations. | The item was rejected and recorded in the approval log. | Unverified, written by Claude Code |
+| `drafts.obligation` | Obligation | Obligation | Unverified, written by Claude Code |
+| `drafts.old_clause` | Disposition {n}, version {v} | Clause {n}, version {v} | Unverified, written by Claude Code |
+| `drafts.other_language` | Ébauche en {language} : | {language} draft: | Unverified, written by Claude Code |
+| `drafts.pending` | Pas encore d'ébauche. | No draft yet. | Unverified, written by Claude Code |
+| `drafts.proposed_id` | Identifiant du contrôle | Control ID | Unverified, written by Claude Code |
+| `drafts.proposed_id_hint` | Un identifiant séquentiel neutre (préfixe-C et trois chiffres). Un identifiant déjà utilisé ne peut jamais être réutilisé. | A neutral sequential ID (prefix-C and three digits). An ID that has ever been used cannot be used again. | Unverified, written by Claude Code |
+| `drafts.provenance` | Rédigée par | Drafted by | Unverified, written by Claude Code |
+| `drafts.publish` | Publier la nouvelle version du catalogue | Publish the new catalog version | Unverified, written by Claude Code |
+| `drafts.publish_button` | Publier la version {version} | Publish version {version} | Unverified, written by Claude Code |
+| `drafts.publish_hint` | Les modifications approuvées forment la version {version} du catalogue, en anglais et en français (celles qui ont été rejetées sont exclues). Les versions enregistrées ne changent jamais. | Approved changes become catalog version {version} in English and in French (rejected ones are left out). Stored versions never change. | Unverified, written by Claude Code |
+| `drafts.publish_wait` | Chaque élément doit faire l'objet d'une décision (approuvé ou rejeté) avant que la nouvelle version puisse être publiée. | Every item needs a decision (approved or rejected) before the new version can be published. | Unverified, written by Claude Code |
+| `drafts.published` | Publié comme version {version} du catalogue. | Published as catalog version {version}. | Unverified, written by Claude Code |
+| `drafts.read_other` | Lire l'ébauche en {language} | Read the {language} draft | Unverified, written by Claude Code |
+| `drafts.reason.citation-not-found` | le texte cité ne figure pas dans la nouvelle disposition | the quoted clause text is not in the new clause | Unverified, written by Claude Code |
+| `drafts.reason.incomplete` | l'ébauche du modèle est incomplète | the model's draft is incomplete | Unverified, written by Claude Code |
+| `drafts.reason.instruction-like-text` | la disposition contient un texte ressemblant à des instructions; elle n'a donc pas été envoyée au modèle | the clause contains instruction-like text, so it was not sent to the model | Unverified, written by Claude Code |
+| `drafts.reason.low-confidence` | la confiance du modèle est inférieure au seuil | the model's confidence is below the threshold | Unverified, written by Claude Code |
+| `drafts.reason.model-unavailable` | le modèle était indisponible | the model was unavailable | Unverified, written by Claude Code |
+| `drafts.reason.no-change-for-new-clause` | le modèle a répondu « aucun changement » pour une nouvelle disposition | the model answered "no change" for a new clause | Unverified, written by Claude Code |
+| `drafts.reason.unparseable` | la réponse du modèle était illisible | the model's reply could not be read | Unverified, written by Claude Code |
+| `drafts.reference_text` | Seule la numérotation a changé : le libellé reste et le contrôle est lié à la disposition {clauses}. Aucun modèle n'a été utilisé. | Only the numbering changed: the wording stays and the control is linked to clause {clauses}. No model was used. | Unverified, written by Claude Code |
+| `drafts.refused` | Non effectué. | Not done. | Unverified, written by Claude Code |
+| `drafts.reject` | Rejeter | Reject | Unverified, written by Claude Code |
+| `drafts.reject_reason` | Motif du rejet | Reason for rejecting | Unverified, written by Claude Code |
+| `drafts.retire_text` | La disposition a été supprimée : le contrôle est retiré (il reste dans le catalogue, marqué comme retiré). Aucun modèle n'a été utilisé. | The clause was removed: the control is retired (it stays in the catalog, marked withdrawn). No model was used. | Unverified, written by Claude Code |
+| `drafts.save_edit` | Enregistrer l'ébauche | Save the draft | Unverified, written by Claude Code |
+| `drafts.see_impact` | Voir le rapport d'incidence pour la version {version} | See the impact report for version {version} | Unverified, written by Claude Code |
+| `drafts.source_change` | Changement de politique | Policy change | Unverified, written by Claude Code |
+| `drafts.source_date` | Date de la source (SOURCE_DATE) | Source date (SOURCE_DATE) | Unverified, written by Claude Code |
+| `drafts.source_date_hint` | Doit être postérieure à la date de source précédente ({previous}). Par défaut : {default}, soit la plus tardive de la date d'entrée en vigueur de la politique et du lendemain de la date de source précédente. | Must be later than the previous source date ({previous}). Default: {default}, the later of the policy's effective date and the day after the previous source date. | Unverified, written by Claude Code |
+| `drafts.start` | Rédiger les modifications pour un changement de politique | Draft the changes for a policy change | Unverified, written by Claude Code |
+| `drafts.start_button` | Planifier et rédiger | Plan and draft | Unverified, written by Claude Code |
+| `drafts.start_hint` | Le plan vient de code ordinaire (la comparaison des dispositions et les liens du catalogue); le moteur d'évaluation demande ensuite des ébauches au modèle. La renumérotation et les dispositions supprimées n'ont pas besoin du modèle. | The plan comes from plain code (the clause diff and the catalog's links); then the assessment engine asks the model for drafts. Renumbering and removed clauses need no model. | Unverified, written by Claude Code |
+| `drafts.statement` | Exigence ({language}) | Requirement ({language}) | Unverified, written by Claude Code |
+| `drafts.status.approved` | Approuvé | Approved | Unverified, written by Claude Code |
+| `drafts.status.pending` | En attente des ébauches | Waiting for drafts | Unverified, written by Claude Code |
+| `drafts.status.ready` | Prêt pour une décision | Ready for a decision | Unverified, written by Claude Code |
+| `drafts.status.rejected` | Rejeté | Rejected | Unverified, written by Claude Code |
+| `drafts.summary.added` | {n} ajoutée(s) | {n} added | Unverified, written by Claude Code |
+| `drafts.summary.merges` | {n} fusionnée(s) | {n} merged | Unverified, written by Claude Code |
+| `drafts.summary.obligation-change` | {n} à l'obligation modifiée | {n} with a changed obligation | Unverified, written by Claude Code |
+| `drafts.summary.removed` | {n} supprimée(s) | {n} removed | Unverified, written by Claude Code |
+| `drafts.summary.renumbered` | {n} renumérotée(s) | {n} renumbered | Unverified, written by Claude Code |
+| `drafts.summary.splits` | {n} scindée(s) | {n} split | Unverified, written by Claude Code |
+| `drafts.summary.text-changed` | {n} au libellé modifié | {n} with changed wording | Unverified, written by Claude Code |
+| `drafts.summary.unchanged` | {n} inchangée(s) | {n} unchanged | Unverified, written by Claude Code |
+| `drafts.title` | 6. Ébauches du recueil de règles | 6. Rulebook drafts | Unverified, written by Claude Code |
+| `drafts.two_person_note` | C'est vous : un autre agent de gouvernance doit l'approuver (règle des deux personnes). | That is you: another governance officer must approve it (two-person rule). | Unverified, written by Claude Code |
 | `effect.evidence_task` | Demande de preuves | Evidence request | Unverified, written by Claude Code |
 | `effect.not_sent` | non envoyée (motif dans le registre des décisions) | not sent (reason in the decision log) | Unverified, written by Claude Code |
 | `effect.poam` | Plan d'action, version {version} | Plan of action version {version} | Unverified, written by Claude Code |
@@ -109,9 +232,11 @@ strings before any use outside the demo.
 | `flag.added` | Ajoutée | Added | Unverified, written by Claude Code |
 | `flag.draft-rule` | Règle provisoire, non vérifiée | Draft rule, unverified | Unverified, written by Claude Code |
 | `flag.flagged-evidence` | Texte ressemblant à des instructions | Instruction-like text | Unverified, written by Claude Code |
+| `flag.instruction-like-text` | Texte ressemblant à des instructions | Instruction-like text | Unverified, written by Claude Code |
 | `flag.language-divergence` | L'anglais et le français diffèrent | English and French differ | Unverified, written by Claude Code |
 | `flag.merge` | Fusionnée | Merged | Unverified, written by Claude Code |
 | `flag.obligation-change` | Obligation modifiée | Obligation changed | Unverified, written by Claude Code |
+| `flag.obligation-mismatch` | Obligation différente de la disposition | Obligation differs from the clause | Unverified, written by Claude Code |
 | `flag.removed` | Supprimée | Removed | Unverified, written by Claude Code |
 | `flag.renumbered` | Renumérotée | Renumbered | Unverified, written by Claude Code |
 | `flag.split` | Scindée | Split | Unverified, written by Claude Code |
@@ -127,8 +252,9 @@ strings before any use outside the demo.
 | `gap.profiles` | profils | profiles | Unverified, written by Claude Code |
 | `gap.tenant` | groupe responsable | responsible group | Unverified, written by Claude Code |
 | `home.ai` | Aucun modèle d'IA n'est encore utilisé : les constatations sont provisoires jusqu'à ce que le moteur d'évaluation existe. | No AI model is used yet: findings are placeholders until the assessment engine exists. | Unverified, written by Claude Code |
+| `home.drafts` | faire rédiger par un modèle d'IA les modifications des contrôles après un changement de politique, puis les approuver dans une nouvelle version du catalogue | draft control changes with an AI model after a policy change, and approve them into a new catalog version | Unverified, written by Claude Code |
 | `home.impact` | voir les contrôles et les systèmes touchés par le changement, et l'effort d'examen | see which controls and systems the change affects, and the review effort | Unverified, written by Claude Code |
-| `home.intro` | Suivez un changement de règle, du texte de la politique jusqu'à une décision humaine consignée, en cinq écrans. | Follow one rule change from the policy text to a recorded human decision, in five screens. | Unverified, written by Claude Code |
+| `home.intro` | Suivez un changement de règle, du texte de la politique jusqu'à une décision humaine consignée, en six écrans. | Follow one rule change from the policy text to a recorded human decision, in six screens. | Unverified, written by Claude Code |
 | `home.inventory` | voir les systèmes d'IA et les lacunes dans leurs dossiers | see the AI systems and the gaps in their records | Unverified, written by Claude Code |
 | `home.log` | vérifier que le registre des décisions n'a pas été modifié | check that the decision log has not been altered | Unverified, written by Claude Code |
 | `home.policy` | comparer deux versions d'une directive, disposition par disposition | compare two versions of a directive clause by clause | Unverified, written by Claude Code |
@@ -137,10 +263,12 @@ strings before any use outside the demo.
 | `impact.as_of` | En date du | As of | Unverified, written by Claude Code |
 | `impact.as_of_hint` | Les échéances sont calculées à partir de cette date. | Due dates are counted from this date. | Unverified, written by Claude Code |
 | `impact.assigned_group` | Groupe affecté | Assignment group | Unverified, written by Claude Code |
+| `impact.back_to_source` | Afficher plutôt un changement de politique | Show a policy change instead | Unverified, written by Claude Code |
 | `impact.capacity` | Capacité (heures par semaine) | Capacity (hours per week) | Unverified, written by Claude Code |
 | `impact.capacity_caption` | Effort par groupe responsable par rapport à la capacité hebdomadaire | Effort per responsible group against weekly capacity | Unverified, written by Claude Code |
 | `impact.capacity_flag` | Capacité | Capacity | Unverified, written by Claude Code |
 | `impact.catalog` | Catalogue de contrôles | Control catalog | Unverified, written by Claude Code |
+| `impact.catalog_change` | Incidence du changement de catalogue {catalog} {old} → {new} (contrôles modifiés directement, par exemple par des ébauches approuvées). | Impact of the catalog change {catalog} {old} → {new} (controls changed directly, for example by approved drafts). | Unverified, written by Claude Code |
 | `impact.catalog_version` | Version du catalogue | Catalog version | Unverified, written by Claude Code |
 | `impact.clauses` | Dispositions sources | Source clauses | Unverified, written by Claude Code |
 | `impact.control` | Contrôle | Control | Unverified, written by Claude Code |
@@ -162,6 +290,7 @@ strings before any use outside the demo.
 | `impact.n_systems` | Systèmes touchés | Systems affected | Unverified, written by Claude Code |
 | `impact.next` | Aller à la file d'examen | Go to the review queue | Unverified, written by Claude Code |
 | `impact.not_in_servicenow` | Pas encore dans ServiceNow | Not yet in ServiceNow | Unverified, written by Claude Code |
+| `impact.not_reassessed` | Modifiés seulement dans la numérotation, les liens ou la tenue des dossiers, donc non réévalués : {ids}. | Changed only in numbering, links or record-keeping, so not reassessed: {ids}. | Unverified, written by Claude Code |
 | `impact.over_capacity` | Dépasse la capacité hebdomadaire : {weeks} semaines nécessaires | Over weekly capacity: {weeks} weeks needed | Unverified, written by Claude Code |
 | `impact.priority` | Priorité | Priority | Unverified, written by Claude Code |
 | `impact.rank` | Rang | Rank | Unverified, written by Claude Code |
@@ -195,6 +324,8 @@ strings before any use outside the demo.
 | `inventory.title` | 5. Inventaire des systèmes | 5. System inventory | Unverified, written by Claude Code |
 | `label.placeholder` | VALEUR PROVISOIRE | PLACEHOLDER | Unverified, written by Claude Code |
 | `lang.switch` | English | Français | Unverified, written by Claude Code |
+| `language.en` | anglais | English | Unverified, written by Claude Code |
+| `language.fr` | français | French | Unverified, written by Claude Code |
 | `lifecycle.development` | Développement | Development | Unverified, written by Claude Code |
 | `lifecycle.pilot` | Projet pilote | Pilot | Unverified, written by Claude Code |
 | `lifecycle.production` | Production | Production | Unverified, written by Claude Code |
@@ -235,6 +366,7 @@ strings before any use outside the demo.
 | `log.verify` | Vérifier le registre | Verify the log | Unverified, written by Claude Code |
 | `log.verify_heading` | Vérifier le registre | Check the log | Unverified, written by Claude Code |
 | `log.when` | Date | When | Unverified, written by Claude Code |
+| `nav.drafts` | Ébauches du recueil de règles | Rulebook drafts | Unverified, written by Claude Code |
 | `nav.impact` | Rapport d'incidence | Impact report | Unverified, written by Claude Code |
 | `nav.inventory` | Inventaire des systèmes | System inventory | Unverified, written by Claude Code |
 | `nav.label` | Écrans de la démo | Demo screens | Unverified, written by Claude Code |
@@ -249,6 +381,13 @@ strings before any use outside the demo.
 | `notice.assessed` | Le moteur d'évaluation a fourni une ébauche. | The assessment engine returned a draft. | Unverified, written by Claude Code |
 | `notice.upload-failed` | Le fichier de preuve n'a pas pu être enregistré. | The evidence file could not be stored. | Unverified, written by Claude Code |
 | `notice.uploaded` | Le fichier de preuve a été enregistré. | The evidence file was stored. | Unverified, written by Claude Code |
+| `obligation.may` | peut | may | Unverified, written by Claude Code |
+| `obligation.may-not` | ne peut pas | may not | Unverified, written by Claude Code |
+| `obligation.must` | doit | must | Unverified, written by Claude Code |
+| `obligation.must-not` | ne doit pas | must not | Unverified, written by Claude Code |
+| `obligation.restriction` | restriction | restriction | Unverified, written by Claude Code |
+| `obligation.should` | devrait | should | Unverified, written by Claude Code |
+| `obligation.should-not` | ne devrait pas | should not | Unverified, written by Claude Code |
 | `policy.changes` | Changements | Changes | Unverified, written by Claude Code |
 | `policy.clauses` | {n} dispositions | {n} clauses | Unverified, written by Claude Code |
 | `policy.compare` | Comparer | Compare | Unverified, written by Claude Code |
@@ -284,6 +423,8 @@ strings before any use outside the demo.
 | `review.ranking_text` | Niveau d'incidence (inconnu d'abord, puis de IV à I), puis gravité du verdict, puis incertitude (aucune confiance ou confiance la plus faible d'abord), puis échéance. | Impact level (unknown first, then IV to I), then verdict severity, then uncertainty (no confidence or lowest confidence first), then due date. | Unverified, written by Claude Code |
 | `review.title` | 3. File d'examen | 3. Review queue | Unverified, written by Claude Code |
 | `review.total` | {n} constatations attendent une décision. | {n} findings waiting for a decision. | Unverified, written by Claude Code |
+| `role.governance-officer` | agent de gouvernance | governance officer | Unverified, written by Claude Code |
+| `role.reviewer` | réviseur | reviewer | Unverified, written by Claude Code |
 | `site.title` | Carrefour de gouvernance de l'IA (prototype) | AI Governance Hub (prototype) | Unverified, written by Claude Code |
 | `state.accepted` | Acceptée | Accepted | Unverified, written by Claude Code |
 | `state.accepted-with-remediation` | Acceptée avec mesures correctives | Accepted with remediation | Unverified, written by Claude Code |
@@ -322,9 +463,12 @@ French half of ServiceNow task text. `{name}` marks a value filled in at run tim
 | `excluded.lifecycle-retired` | Système retiré | System retired | Unverified, written by Claude Code |
 | `excluded.no-affected-control` | Aucun contrôle touché ne fait partie de la portée de ce système | No affected control is in this system's scope | Unverified, written by Claude Code |
 | `excluded.no-profile` | Aucun profil de ce système ne sélectionne de contrôles de {catalog} | No profile of this system selects controls from {catalog} | Unverified, written by Claude Code |
+| `field.class` | classe | class | Unverified, written by Claude Code |
 | `field.part:assessment-objective` | objectif d'évaluation | assessment objective | Unverified, written by Claude Code |
 | `field.part:guidance` | orientation | guidance | Unverified, written by Claude Code |
 | `field.part:statement` | énoncé | statement | Unverified, written by Claude Code |
+| `field.prop:hub:check-type` | type de contrôle | check type | Unverified, written by Claude Code |
+| `field.prop:hub:obligation` | obligation | obligation | Unverified, written by Claude Code |
 | `field.prop:label` | étiquette | label | Unverified, written by Claude Code |
 | `field.title` | titre | title | Unverified, written by Claude Code |
 | `list.and` | et | and | Unverified, written by Claude Code |

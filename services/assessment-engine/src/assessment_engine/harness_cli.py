@@ -7,8 +7,9 @@ import json
 import re
 import tomllib
 from pathlib import Path
+from typing import Any
 
-from assessment_engine import gate, harness
+from assessment_engine import draft_harness, gate, harness
 from assessment_engine.controls import FileControls
 from assessment_engine.settings_file import load_config
 from govhub_shared.model_gateway import NullGateway, RecordedGateway, gateway_from_env
@@ -38,9 +39,54 @@ def _gate(args: argparse.Namespace) -> int:
     return 0 if result["passed"] else 1
 
 
+def _draft_run(args: argparse.Namespace) -> int:
+    gateway = gateway_from_env()
+    if isinstance(gateway, NullGateway):
+        print("No model: set MODEL_GATEWAY_URL (live) or MODEL_GATEWAY_RECORDINGS (replay).")
+        return 2
+    cases_path = Path(args.cases)
+    cases = draft_harness.load_cases(cases_path)
+    folder = Path(args.batches) if args.batches else cases_path.parent / "batches"
+    batches = {p.stem: draft_harness.load_batch(p) for p in sorted(folder.glob("*.json"))}
+    config = load_config(Path(args.config))
+    proposals = draft_harness.run(cases, batches, gateway, config)
+    model_ids = sorted({p.model_id for p in proposals if p.model_id})
+    info = harness.RunInfo(
+        model_id=", ".join(model_ids) or "none",
+        prompt_version=config.drafting_prompt_version,
+        gateway="recorded replies" if isinstance(gateway, RecordedGateway) else "live server",
+        hardware=args.hardware,
+        golden_set_status=golden_set_status(Path(args.status_file)),
+        cases_file=str(cases_path),
+        cases_sha256=harness.sha256_file(cases_path),
+    )
+    run = draft_harness.report(cases, proposals, info)
+    return _write(run, draft_harness.markdown(run), info, cases_path, "drafting", args)
+
+
+def _write(
+    run: dict[str, Any], summary: str, info: harness.RunInfo, cases_path: Path, kind: str,
+    args: argparse.Namespace,
+) -> int:  # fmt: skip
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    slug = re.sub(r"[^A-Za-z0-9.-]+", "-", f"{info.model_id}-{info.prompt_version}")
+    folder = cases_path.parent.name
+    stem = f"{info.started[:10]}-{slug}-{folder}" + ("" if kind in folder else f"-{kind}")
+    (out / f"{stem}.json").write_text(json.dumps(run, indent=1) + "\n", "utf-8")
+    (out / f"{stem}.md").write_text(summary, "utf-8")
+    print(summary)
+    print(f"Run written to {out / stem}.json")
+    if args.write_latest:
+        Path(args.write_latest).write_text(json.dumps(run, indent=1) + "\n", "utf-8")
+    return 0
+
+
 def accuracy(args: argparse.Namespace) -> int:
     if args.accuracy_command in ("gate", "baseline"):
         return _gate(args)
+    if args.accuracy_command == "draft-run":
+        return _draft_run(args)
     if args.accuracy_command != "run":
         return 2
     gateway = gateway_from_env()

@@ -34,6 +34,9 @@ TABLES = (
     "profiles",
     "inventory_snapshots",
     "ai_systems",
+    "draft_items",
+    "draft_batches",
+    "approval_log",
 )
 DEFAULT_URL = "postgresql+psycopg://govhub:govhub@localhost:5432/rulebook_test"
 
@@ -78,7 +81,10 @@ def engine(database_url: str) -> Iterator[Engine]:
 @pytest.fixture
 def db(engine: Engine) -> Iterator[Session]:
     with engine.begin() as conn:
+        # The approval log refuses TRUNCATE; as its owner, tests may switch that off briefly.
+        conn.execute(text("ALTER TABLE approval_log DISABLE TRIGGER USER"))
         conn.execute(text(f"TRUNCATE {', '.join(TABLES)} CASCADE"))
+        conn.execute(text("ALTER TABLE approval_log ENABLE TRIGGER USER"))
     with sessionmaker(bind=engine, expire_on_commit=False)() as session:
         yield session
 

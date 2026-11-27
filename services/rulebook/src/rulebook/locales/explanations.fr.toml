@@ -36,4 +36,7 @@
 "field.part:assessment-objective" = "objectif d'évaluation"
 "field.title" = "titre"
 "field.prop:label" = "étiquette"
+"field.prop:hub:obligation" = "obligation"
+"field.prop:hub:check-type" = "type de contrôle"
+"field.class" = "classe"
 "list.and" = "et"

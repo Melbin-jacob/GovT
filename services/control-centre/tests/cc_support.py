@@ -176,3 +176,40 @@ def stub_engine(hub: FakeHub, system_id: str = "SYS-002") -> None:
             },
         ],
     )
+
+
+DRAFT_BATCH = "75e803c6-e4aa-4ac3-852f-c9e88a5e1d2e"
+
+
+def stub_drafts(hub: FakeHub, state: str = "open") -> dict[str, Any]:
+    """The synthetic drafting batch (Example Widgets 2023 -> 2025), captured in a state:
+    open (model drafts; the French WID-6.4.2 draft needs a person), decided, published."""
+    batch: dict[str, Any] = fixture(f"drafts-batch.{state}.json")
+    hub.rulebook.on("GET", "/drafts/batches", fixture("drafts-batches.json"))
+    hub.rulebook.on("GET", f"/drafts/batches/{DRAFT_BATCH}", batch)
+    hub.rulebook.on(
+        "GET", f"/drafts/batches/{DRAFT_BATCH}/publish-defaults",
+        fixture("drafts-publish-defaults.json"),
+    )  # fmt: skip
+    hub.rulebook.on("GET", "/sources", fixture("sources.json"))
+    hub.rulebook.on("GET", "/catalogs", fixture("catalogs.json"))
+    return batch
+
+
+def item_id(batch: dict[str, Any], control: str) -> str:
+    return str(
+        next(i["id"] for i in batch["items"] if control in (i["target_control"], i["proposed_id"]))
+    )
+
+
+def stub_catalog_change(hub: FakeHub) -> None:
+    """The impact of catalog 1.0.0 -> 1.1.0 (published from the synthetic drafting batch)."""
+    stub_impact(hub)
+    hub.rulebook.on("GET", "/catalogs", fixture("catalogs.published.json"))
+
+    def report(request: httpx.Request) -> Any:
+        body = json.loads(request.content)
+        assert body["catalog_change"] == {"from": "1.0.0", "to": "1.1.0"}, body
+        return fixture(f"impact-catalog.{body['lang']}.json")
+
+    hub.rulebook.on("POST", "/impact-reports", report)

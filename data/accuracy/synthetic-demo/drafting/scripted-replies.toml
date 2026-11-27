@@ -1,0 +1,97 @@
+# Drafting replies of the SCRIPTED FAKE model (scripted-fake-v1) for the synthetic batch.
+# Written by hand by Claude Code to exercise the engine; no real model. Keys: the target
+# control (or "new-<clause>") and the language. Some replies are wrong on purpose, so the
+# harness and the demo show what a person catches:
+#   WID-6.1.2.en  obligation "should" for a "must" clause (flagged: obligation mismatch);
+#   WID-6.3.1.en  "no change" for a split clause (a precision and a recall miss);
+#   WID-6.4.2.fr  low token confidence (0.41): needs a person;
+#   WID-6.4.2.en  obligation "must" where the clause has no obligation word (flagged).
+# The cited clause is the item's first new clause unless "cited" is given. If an
+# instruction is visible in the request, the fake obeys it (worst case).
+
+["WID-6.1.2".en]
+statement = "The register records the owner, location, model and firmware version of each widget."
+obligation = "should"
+check_type = "rule-based"
+confidence = 0.9
+token_confidence = 0.88
+
+["WID-6.1.2".fr]
+statement = "Le registre consigne le propriétaire, l'emplacement, le modèle et la version du micrologiciel de chaque widget."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.9
+token_confidence = 0.87
+
+["WID-6.2.1".en]
+no_change = true
+statement = "Widgets are calibrated at least once a year."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.86
+token_confidence = 0.84
+
+["WID-6.2.1".fr]
+no_change = true
+statement = "Les widgets sont étalonnés au moins une fois par année."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.86
+token_confidence = 0.83
+
+["WID-6.4.2".en]
+statement = "Departments report annually, for the fiscal year, on widgets in service."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.8
+token_confidence = 0.78
+
+["WID-6.4.2".fr]
+statement = "Les ministères font rapport chaque année, pour l'exercice, sur les widgets en service."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.62
+token_confidence = 0.41
+
+["WID-6.3.1".en]
+no_change = true
+statement = "Every calibration is logged and the log is kept for two years."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.77
+token_confidence = 0.75
+
+["WID-6.3.1".fr]
+statement = "Chaque étalonnage est consigné, et le journal d'étalonnage est conservé deux ans."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.88
+token_confidence = 0.85
+
+["new-6.2.1".en]
+statement = "A widget risk assessment is completed before the widget is put into service."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.89
+token_confidence = 0.86
+
+["new-6.2.1".fr]
+statement = "Une évaluation des risques du widget est réalisée avant sa mise en service."
+obligation = "must"
+check_type = "rule-based"
+confidence = 0.88
+token_confidence = 0.85
+
+["new-6.2.2".en]
+statement = "The widget risk assessment is updated when the widget's purpose changes."
+obligation = "must"
+check_type = "judgment"
+confidence = 0.87
+token_confidence = 0.83
+
+["new-6.2.2".fr]
+statement = "L'évaluation des risques du widget est mise à jour lorsque l'objet du widget change."
+obligation = "must"
+check_type = "judgment"
+confidence = 0.86
+token_confidence = 0.82

@@ -15,9 +15,9 @@ import io
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from govhub_shared.matching import similarity
 from rulebook.golden import GoldenRow
 from rulebook.obligations import Lang
-from rulebook.sources.diff import similarity
 from rulebook.sources.model import SourceDocument
 from rulebook.sources.normalize import match_tokens
 

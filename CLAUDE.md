@@ -24,7 +24,7 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 ## Layout
 - `services/<name>/` — one folder per service: connector-hub, rulebook, assessment-engine,
   review-desk, control-centre. Implemented: rulebook (M1–2), connector-hub and review-desk (M3),
-  control-centre demo UI (M4; sign-in still TODO).
+  control-centre demo UI (M4; sign-in still TODO), rulebook drafts (M6).
 - `shared/` — `govhub_shared`: constants, OSCAL helpers, model-gateway interface.
 - `data/golden/` — hand-mapped golden set CSVs. `data/catalogs/` — generated catalogs.
   `data/profiles/` — OSCAL profiles.
@@ -52,6 +52,13 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 ## Policy content rules
 - **Never invent policy text.** The golden-set CSV is the only source of check wording.
   Do not paraphrase, translate or "fix" it in code. If text is missing, omit the field.
+  AI-drafted wording enters only after a person approves it (Milestone 6), with provenance
+  (`Drafted by`, `Approved by`, `Approval record` columns); approval never makes a control
+  `reviewed`. The exported CSV change keeps the golden set as the record.
+- Optional columns: `Obligation` (codes: must, must-not, should, should-not, may, may-not,
+  restriction; proposed by `rulebook propose-obligations` only from linked clauses, never
+  guessed), `Status` (active/withdrawn), `Group` (groups-file key; new sections of a
+  renumbered directive get neutral group IDs `<prefix>-G<nn>`).
 - **English and French are separate catalogs with identical control IDs.** The parity check
   fails if a control exists in one language and not the other.
 - French guidance, assessment objective and reviewed statement come only from the optional
@@ -123,6 +130,13 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   `data/accuracy/private/` (gitignored). Recordings are committed for synthetic cases only.
 - Accuracy: human-labelled and synthetic scores are never mixed; every report says
   DRAFT GOLDEN SET until confirmed; `make accuracy` (release gate) must pass.
+- Drafting (M6): the rulebook plans with plain code; the model drafts each language from
+  that language's text only (never translated); instruction-like clause text is never sent.
+  Only a governance officer approves, never the person who last edited the draft
+  (two-person rule, enforced by the rulebook). The approval log is append-only and
+  hash-chained like the decision log. New control IDs are `<prefix>-C<nnn>`, never reused.
+  The drafting harness's synthetic batch is the planner's output (regenerate with
+  `UPDATE_DRAFTING_BATCH=1`); recordings via `scripts/make_synthetic_recordings.py`.
 
 ## Web UI (control-centre)
 - Server-rendered (FastAPI + Jinja2), plain forms; nothing loaded from another origin (CSP).
@@ -134,7 +148,10 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Never use Government of Canada logos, wordmark, flag symbols or "Canada.ca" text. Keep the
   demo banner, the bilingual footer and the synthetic/fictional notes.
 - Demo only, no authentication: bind to localhost or the internal network only.
-- `make demo-ui` (Playwright + axe) must pass with zero axe violations.
+- `make demo-ui` (Playwright + axe) must pass with zero axe violations; so must
+  `make demo-drafts` (run last: it publishes a catalog version).
+- Drafts screen: each page shows its own language's drafts only; demo identity comes from
+  the "Acting as" selector until sign-in exists (TODO(control-centre)).
 
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway` (`OpenAIGateway` to a

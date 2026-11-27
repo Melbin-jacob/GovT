@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": false, \"statement\": \"The register records the owner, location, model and firmware version of each widget.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"should\", \"cited_clause\": \"The register must record the owner, the location, the model and the firmware version of each widget.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.9}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": false, \"statement\": \"The register records the owner, location, model and firmware version of each widget.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "should",
+    "logprob": -0.12783337150988489,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"The register must record the owner, the location, the model and the firmware version of each widget.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.9}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 116,
+  "completion_tokens": 97,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

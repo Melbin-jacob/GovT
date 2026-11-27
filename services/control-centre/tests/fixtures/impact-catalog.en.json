@@ -1,0 +1,1002 @@
+{
+ "report_id": "02c4bcf8e596cf4e",
+ "inputs": {
+  "catalog": "example-widgets",
+  "catalog_version": "1.1.0",
+  "tenant": null,
+  "as_of": "2026-12-01",
+  "inventory_snapshot_hash": "af14ac8fa079c51dd424202baac064517200273dc7c3eaf76372d3398e6e0765",
+  "due_date_policy": "data/config/due-dates.toml (PLACEHOLDER values, not policy)",
+  "lang": "en"
+ },
+ "triggers": {
+  "catalog": {
+   "from": "1.0.0",
+   "to": "1.1.0",
+   "summary": {
+    "added": 2,
+    "retired": 1,
+    "reinstated": 0,
+    "removed": 0,
+    "changed": 9,
+    "obligation-change": 1
+   },
+   "not_reassessed": [
+    "WID-6.1.1",
+    "WID-6.2.2",
+    "WID-6.2.3",
+    "WID-6.4.1"
+   ]
+  }
+ },
+ "affected_controls": [
+  {
+   "id": "WID-6.1.2",
+   "label": "6.1.2",
+   "source_clauses": [
+    "6.1.2"
+   ],
+   "obligation_change": false,
+   "reasons": [
+    {
+     "trigger": "catalog",
+     "code": "control-changed",
+     "params": {
+      "from": "1.0.0",
+      "to": "1.1.0",
+      "fields": [
+       "part:statement"
+      ]
+     },
+     "flags": [],
+     "text": {
+      "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+      "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+     },
+     "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+    }
+   ]
+  },
+  {
+   "id": "WID-6.2.1",
+   "label": "6.2.1",
+   "source_clauses": [
+    "6.3.1"
+   ],
+   "obligation_change": true,
+   "reasons": [
+    {
+     "trigger": "catalog",
+     "code": "control-changed",
+     "params": {
+      "from": "1.0.0",
+      "to": "1.1.0",
+      "fields": [
+       "prop:hub:obligation"
+      ]
+     },
+     "flags": [
+      "obligation-change"
+     ],
+     "text": {
+      "en": "Control changed between versions 1.0.0 and 1.1.0: obligation",
+      "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation"
+     },
+     "detail": "Control changed between versions 1.0.0 and 1.1.0: obligation"
+    }
+   ]
+  },
+  {
+   "id": "WID-6.3.1",
+   "label": "6.3.1",
+   "source_clauses": [
+    "6.4.1",
+    "6.4.2"
+   ],
+   "obligation_change": false,
+   "reasons": [
+    {
+     "trigger": "catalog",
+     "code": "control-changed",
+     "params": {
+      "from": "1.0.0",
+      "to": "1.1.0",
+      "fields": [
+       "part:statement"
+      ]
+     },
+     "flags": [],
+     "text": {
+      "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+      "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+     },
+     "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+    }
+   ]
+  },
+  {
+   "id": "WID-6.4.2",
+   "label": "6.4.2",
+   "source_clauses": [
+    "6.5.2"
+   ],
+   "obligation_change": false,
+   "reasons": [
+    {
+     "trigger": "catalog",
+     "code": "control-changed",
+     "params": {
+      "from": "1.0.0",
+      "to": "1.1.0",
+      "fields": [
+       "part:statement",
+       "prop:hub:obligation"
+      ]
+     },
+     "flags": [],
+     "text": {
+      "en": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation",
+      "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation"
+     },
+     "detail": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation"
+    }
+   ]
+  },
+  {
+   "id": "WID-C001",
+   "label": "6.2.1",
+   "source_clauses": [
+    "6.2.1"
+   ],
+   "obligation_change": false,
+   "reasons": [
+    {
+     "trigger": "catalog",
+     "code": "control-added",
+     "params": {
+      "version": "1.1.0"
+     },
+     "flags": [],
+     "text": {
+      "en": "Control new in version 1.1.0",
+      "fr": "Contrôle nouveau dans la version 1.1.0"
+     },
+     "detail": "Control new in version 1.1.0"
+    }
+   ]
+  },
+  {
+   "id": "WID-C002",
+   "label": "6.2.2",
+   "source_clauses": [
+    "6.2.2"
+   ],
+   "obligation_change": false,
+   "reasons": [
+    {
+     "trigger": "catalog",
+     "code": "control-added",
+     "params": {
+      "version": "1.1.0"
+     },
+     "flags": [],
+     "text": {
+      "en": "Control new in version 1.1.0",
+      "fr": "Contrôle nouveau dans la version 1.1.0"
+     },
+     "detail": "Control new in version 1.1.0"
+    }
+   ]
+  }
+ ],
+ "summary": {
+  "affected_controls": 6,
+  "affected_systems": 6,
+  "findings_to_review": 20,
+  "findings_by_impact_level": {
+   "IV": 6,
+   "III": 8,
+   "II": 4,
+   "I": 2
+  },
+  "obligation_changes": 1,
+  "maintenance_items": 1,
+  "excluded_systems": 2
+ },
+ "systems": [
+  {
+   "system_id": "SYS-001",
+   "name": "Sample Benefits Triage Assistant (fictional)",
+   "tenant": "agency-sample-benefits",
+   "owner": "Director, Example Benefits Program",
+   "impact_level": "IV",
+   "lifecycle": "production",
+   "data_gaps": [],
+   "controls_in_scope": 10,
+   "findings_to_review": 6,
+   "obligation_changes": 1,
+   "controls": [
+    "WID-6.1.2",
+    "WID-6.2.1",
+    "WID-6.3.1",
+    "WID-6.4.2",
+    "WID-C001",
+    "WID-C002"
+   ],
+   "rank": 1
+  },
+  {
+   "system_id": "SYS-002",
+   "name": "Example Permit Eligibility Screener (fictional)",
+   "tenant": "office-fictional-permits",
+   "owner": "Manager, Example Permits",
+   "impact_level": "III",
+   "lifecycle": "production",
+   "data_gaps": [],
+   "controls_in_scope": 10,
+   "findings_to_review": 6,
+   "obligation_changes": 1,
+   "controls": [
+    "WID-6.1.2",
+    "WID-6.2.1",
+    "WID-6.3.1",
+    "WID-6.4.2",
+    "WID-C001",
+    "WID-C002"
+   ],
+   "rank": 2
+  },
+  {
+   "system_id": "SYS-005",
+   "name": "Mock Fraud-Risk Scorer (fictional)",
+   "tenant": "agency-sample-benefits",
+   "owner": "Director, Example Program Integrity",
+   "impact_level": "III",
+   "lifecycle": "pilot",
+   "data_gaps": [],
+   "controls_in_scope": 5,
+   "findings_to_review": 2,
+   "obligation_changes": 1,
+   "controls": [
+    "WID-6.1.2",
+    "WID-6.2.1"
+   ],
+   "rank": 3
+  },
+  {
+   "system_id": "SYS-003",
+   "name": "Demo Correspondence Summarizer (fictional)",
+   "tenant": "dept-example-services",
+   "owner": "Chief, Example Correspondence Unit",
+   "impact_level": "II",
+   "lifecycle": "production",
+   "data_gaps": [],
+   "controls_in_scope": 3,
+   "findings_to_review": 2,
+   "obligation_changes": 0,
+   "controls": [
+    "WID-6.3.1",
+    "WID-6.4.2"
+   ],
+   "rank": 4
+  },
+  {
+   "system_id": "SYS-007",
+   "name": "Test Grant Application Sorter (fictional)",
+   "tenant": "office-fictional-permits",
+   "owner": "Manager, Example Grants",
+   "impact_level": "II",
+   "lifecycle": "production",
+   "data_gaps": [],
+   "controls_in_scope": 5,
+   "findings_to_review": 2,
+   "obligation_changes": 1,
+   "controls": [
+    "WID-6.1.2",
+    "WID-6.2.1"
+   ],
+   "rank": 5
+  },
+  {
+   "system_id": "SYS-004",
+   "name": "Placeholder Call-Centre Routing Model (fictional)",
+   "tenant": "dept-example-services",
+   "owner": "Manager, Example Contact Centre",
+   "impact_level": "I",
+   "lifecycle": "production",
+   "data_gaps": [],
+   "controls_in_scope": 3,
+   "findings_to_review": 2,
+   "obligation_changes": 0,
+   "controls": [
+    "WID-6.3.1",
+    "WID-6.4.2"
+   ],
+   "rank": 6
+  }
+ ],
+ "tasks": [
+  {
+   "task_id": "IMP-02c4bcf8-SYS-001",
+   "table": "sc_task",
+   "type": "reassessment",
+   "title": {
+    "en": "Reassess 6 control(s) for Sample Benefits Triage Assistant (fictional)",
+    "fr": "Réévaluer 6 contrôle(s) pour Sample Benefits Triage Assistant (fictional)"
+   },
+   "short_description": "Reassess 6 control(s) for Sample Benefits Triage Assistant (fictional) / Réévaluer 6 contrôle(s) pour Sample Benefits Triage Assistant (fictional)",
+   "description": "Rule change: example-widgets 1.0.0 → 1.1.0. Reassess the controls below and attach evidence.\n- WID-6.1.2: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.2.1 [OBLIGATION CHANGE]: Control changed between versions 1.0.0 and 1.1.0: obligation\n- WID-6.3.1: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.4.2: Control changed between versions 1.0.0 and 1.1.0: statement and obligation\n- WID-C001: Control new in version 1.1.0\n- WID-C002: Control new in version 1.1.0\n\nChangement de règle : example-widgets 1.0.0 → 1.1.0. Réévaluez les contrôles ci-dessous et joignez les preuves.\n- WID-6.1.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.2.1 [OBLIGATION MODIFIÉE]: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation\n- WID-6.3.1: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.4.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation\n- WID-C001: Contrôle nouveau dans la version 1.1.0\n- WID-C002: Contrôle nouveau dans la version 1.1.0",
+   "assignment_group": "agency-sample-benefits",
+   "assigned_to": "benefits.owner@example.invalid",
+   "priority": 1,
+   "due_date": "2026-12-31",
+   "due_date_basis": "PLACEHOLDER: impact level IV = 30 days (default) / PLACEHOLDER : niveau d'incidence IV = 30 jours (valeur par défaut)",
+   "due_date_basis_text": {
+    "en": "PLACEHOLDER: impact level IV = 30 days (default)",
+    "fr": "PLACEHOLDER : niveau d'incidence IV = 30 jours (valeur par défaut)"
+   },
+   "system_id": "SYS-001",
+   "impact_level": "IV",
+   "controls": [
+    {
+     "id": "WID-6.1.2",
+     "statement": "The register records the owner, location, model and firmware version of each widget.",
+     "evidence_requested": "Register fields populated",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.2.1",
+     "statement": "Widgets are calibrated at least once a year.",
+     "evidence_requested": "Calibration dates within the last 12 months",
+     "obligation_change": true,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [
+        "obligation-change"
+       ],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: obligation"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.3.1",
+     "statement": "Every calibration is logged, and the calibration log is kept for two years.",
+     "evidence_requested": "Calibration log covering two years",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.4.2",
+     "statement": "Departments report annually, for the fiscal year, on widgets in service.",
+     "evidence_requested": "Published annual report",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement",
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation"
+      }
+     ]
+    },
+    {
+     "id": "WID-C001",
+     "statement": "A widget risk assessment is completed before the widget is put into service.",
+     "evidence_requested": null,
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-added",
+       "params": {
+        "version": "1.1.0"
+       },
+       "flags": [],
+       "text": {
+        "en": "Control new in version 1.1.0",
+        "fr": "Contrôle nouveau dans la version 1.1.0"
+       },
+       "detail": "Control new in version 1.1.0"
+      }
+     ]
+    },
+    {
+     "id": "WID-C002",
+     "statement": "The widget risk assessment is updated whenever the purpose of the widget changes.",
+     "evidence_requested": null,
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-added",
+       "params": {
+        "version": "1.1.0"
+       },
+       "flags": [],
+       "text": {
+        "en": "Control new in version 1.1.0",
+        "fr": "Contrôle nouveau dans la version 1.1.0"
+       },
+       "detail": "Control new in version 1.1.0"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "task_id": "IMP-02c4bcf8-SYS-002",
+   "table": "sc_task",
+   "type": "reassessment",
+   "title": {
+    "en": "Reassess 6 control(s) for Example Permit Eligibility Screener (fictional)",
+    "fr": "Réévaluer 6 contrôle(s) pour Example Permit Eligibility Screener (fictional)"
+   },
+   "short_description": "Reassess 6 control(s) for Example Permit Eligibility Screener (fictional) / Réévaluer 6 contrôle(s) pour Example Permit Eligibility Screener (fictional)",
+   "description": "Rule change: example-widgets 1.0.0 → 1.1.0. Reassess the controls below and attach evidence.\n- WID-6.1.2: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.2.1 [OBLIGATION CHANGE]: Control changed between versions 1.0.0 and 1.1.0: obligation\n- WID-6.3.1: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.4.2: Control changed between versions 1.0.0 and 1.1.0: statement and obligation\n- WID-C001: Control new in version 1.1.0\n- WID-C002: Control new in version 1.1.0\n\nChangement de règle : example-widgets 1.0.0 → 1.1.0. Réévaluez les contrôles ci-dessous et joignez les preuves.\n- WID-6.1.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.2.1 [OBLIGATION MODIFIÉE]: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation\n- WID-6.3.1: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.4.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation\n- WID-C001: Contrôle nouveau dans la version 1.1.0\n- WID-C002: Contrôle nouveau dans la version 1.1.0",
+   "assignment_group": "office-fictional-permits",
+   "assigned_to": "permits.owner@example.invalid",
+   "priority": 2,
+   "due_date": "2026-12-31",
+   "due_date_basis": "PLACEHOLDER: impact level III = 30 days (override for office-fictional-permits) / PLACEHOLDER : niveau d'incidence III = 30 jours (valeur propre à office-fictional-permits)",
+   "due_date_basis_text": {
+    "en": "PLACEHOLDER: impact level III = 30 days (override for office-fictional-permits)",
+    "fr": "PLACEHOLDER : niveau d'incidence III = 30 jours (valeur propre à office-fictional-permits)"
+   },
+   "system_id": "SYS-002",
+   "impact_level": "III",
+   "controls": [
+    {
+     "id": "WID-6.1.2",
+     "statement": "The register records the owner, location, model and firmware version of each widget.",
+     "evidence_requested": "Register fields populated",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.2.1",
+     "statement": "Widgets are calibrated at least once a year.",
+     "evidence_requested": "Calibration dates within the last 12 months",
+     "obligation_change": true,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [
+        "obligation-change"
+       ],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: obligation"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.3.1",
+     "statement": "Every calibration is logged, and the calibration log is kept for two years.",
+     "evidence_requested": "Calibration log covering two years",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.4.2",
+     "statement": "Departments report annually, for the fiscal year, on widgets in service.",
+     "evidence_requested": "Published annual report",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement",
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation"
+      }
+     ]
+    },
+    {
+     "id": "WID-C001",
+     "statement": "A widget risk assessment is completed before the widget is put into service.",
+     "evidence_requested": null,
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-added",
+       "params": {
+        "version": "1.1.0"
+       },
+       "flags": [],
+       "text": {
+        "en": "Control new in version 1.1.0",
+        "fr": "Contrôle nouveau dans la version 1.1.0"
+       },
+       "detail": "Control new in version 1.1.0"
+      }
+     ]
+    },
+    {
+     "id": "WID-C002",
+     "statement": "The widget risk assessment is updated whenever the purpose of the widget changes.",
+     "evidence_requested": null,
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-added",
+       "params": {
+        "version": "1.1.0"
+       },
+       "flags": [],
+       "text": {
+        "en": "Control new in version 1.1.0",
+        "fr": "Contrôle nouveau dans la version 1.1.0"
+       },
+       "detail": "Control new in version 1.1.0"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "task_id": "IMP-02c4bcf8-SYS-005",
+   "table": "sc_task",
+   "type": "reassessment",
+   "title": {
+    "en": "Reassess 2 control(s) for Mock Fraud-Risk Scorer (fictional)",
+    "fr": "Réévaluer 2 contrôle(s) pour Mock Fraud-Risk Scorer (fictional)"
+   },
+   "short_description": "Reassess 2 control(s) for Mock Fraud-Risk Scorer (fictional) / Réévaluer 2 contrôle(s) pour Mock Fraud-Risk Scorer (fictional)",
+   "description": "Rule change: example-widgets 1.0.0 → 1.1.0. Reassess the controls below and attach evidence.\n- WID-6.1.2: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.2.1 [OBLIGATION CHANGE]: Control changed between versions 1.0.0 and 1.1.0: obligation\n\nChangement de règle : example-widgets 1.0.0 → 1.1.0. Réévaluez les contrôles ci-dessous et joignez les preuves.\n- WID-6.1.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.2.1 [OBLIGATION MODIFIÉE]: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation",
+   "assignment_group": "agency-sample-benefits",
+   "assigned_to": "integrity.owner@example.invalid",
+   "priority": 2,
+   "due_date": "2027-01-15",
+   "due_date_basis": "PLACEHOLDER: impact level III = 45 days (default) / PLACEHOLDER : niveau d'incidence III = 45 jours (valeur par défaut)",
+   "due_date_basis_text": {
+    "en": "PLACEHOLDER: impact level III = 45 days (default)",
+    "fr": "PLACEHOLDER : niveau d'incidence III = 45 jours (valeur par défaut)"
+   },
+   "system_id": "SYS-005",
+   "impact_level": "III",
+   "controls": [
+    {
+     "id": "WID-6.1.2",
+     "statement": "The register records the owner, location, model and firmware version of each widget.",
+     "evidence_requested": "Register fields populated",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.2.1",
+     "statement": "Widgets are calibrated at least once a year.",
+     "evidence_requested": "Calibration dates within the last 12 months",
+     "obligation_change": true,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [
+        "obligation-change"
+       ],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: obligation"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "task_id": "IMP-02c4bcf8-SYS-003",
+   "table": "sc_task",
+   "type": "reassessment",
+   "title": {
+    "en": "Reassess 2 control(s) for Demo Correspondence Summarizer (fictional)",
+    "fr": "Réévaluer 2 contrôle(s) pour Demo Correspondence Summarizer (fictional)"
+   },
+   "short_description": "Reassess 2 control(s) for Demo Correspondence Summarizer (fictional) / Réévaluer 2 contrôle(s) pour Demo Correspondence Summarizer (fictional)",
+   "description": "Rule change: example-widgets 1.0.0 → 1.1.0. Reassess the controls below and attach evidence.\n- WID-6.3.1: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.4.2: Control changed between versions 1.0.0 and 1.1.0: statement and obligation\n\nChangement de règle : example-widgets 1.0.0 → 1.1.0. Réévaluez les contrôles ci-dessous et joignez les preuves.\n- WID-6.3.1: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.4.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation",
+   "assignment_group": "dept-example-services",
+   "assigned_to": "correspondence.owner@example.invalid",
+   "priority": 3,
+   "due_date": "2027-01-30",
+   "due_date_basis": "PLACEHOLDER: impact level II = 60 days (default) / PLACEHOLDER : niveau d'incidence II = 60 jours (valeur par défaut)",
+   "due_date_basis_text": {
+    "en": "PLACEHOLDER: impact level II = 60 days (default)",
+    "fr": "PLACEHOLDER : niveau d'incidence II = 60 jours (valeur par défaut)"
+   },
+   "system_id": "SYS-003",
+   "impact_level": "II",
+   "controls": [
+    {
+     "id": "WID-6.3.1",
+     "statement": "Every calibration is logged, and the calibration log is kept for two years.",
+     "evidence_requested": "Calibration log covering two years",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.4.2",
+     "statement": "Departments report annually, for the fiscal year, on widgets in service.",
+     "evidence_requested": "Published annual report",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement",
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "task_id": "IMP-02c4bcf8-SYS-007",
+   "table": "sc_task",
+   "type": "reassessment",
+   "title": {
+    "en": "Reassess 2 control(s) for Test Grant Application Sorter (fictional)",
+    "fr": "Réévaluer 2 contrôle(s) pour Test Grant Application Sorter (fictional)"
+   },
+   "short_description": "Reassess 2 control(s) for Test Grant Application Sorter (fictional) / Réévaluer 2 contrôle(s) pour Test Grant Application Sorter (fictional)",
+   "description": "Rule change: example-widgets 1.0.0 → 1.1.0. Reassess the controls below and attach evidence.\n- WID-6.1.2: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.2.1 [OBLIGATION CHANGE]: Control changed between versions 1.0.0 and 1.1.0: obligation\n\nChangement de règle : example-widgets 1.0.0 → 1.1.0. Réévaluez les contrôles ci-dessous et joignez les preuves.\n- WID-6.1.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.2.1 [OBLIGATION MODIFIÉE]: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation",
+   "assignment_group": "office-fictional-permits",
+   "assigned_to": "grants.owner@example.invalid",
+   "priority": 3,
+   "due_date": "2027-01-30",
+   "due_date_basis": "PLACEHOLDER: impact level II = 60 days (default) / PLACEHOLDER : niveau d'incidence II = 60 jours (valeur par défaut)",
+   "due_date_basis_text": {
+    "en": "PLACEHOLDER: impact level II = 60 days (default)",
+    "fr": "PLACEHOLDER : niveau d'incidence II = 60 jours (valeur par défaut)"
+   },
+   "system_id": "SYS-007",
+   "impact_level": "II",
+   "controls": [
+    {
+     "id": "WID-6.1.2",
+     "statement": "The register records the owner, location, model and firmware version of each widget.",
+     "evidence_requested": "Register fields populated",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.2.1",
+     "statement": "Widgets are calibrated at least once a year.",
+     "evidence_requested": "Calibration dates within the last 12 months",
+     "obligation_change": true,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [
+        "obligation-change"
+       ],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: obligation"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "task_id": "IMP-02c4bcf8-SYS-004",
+   "table": "sc_task",
+   "type": "reassessment",
+   "title": {
+    "en": "Reassess 2 control(s) for Placeholder Call-Centre Routing Model (fictional)",
+    "fr": "Réévaluer 2 contrôle(s) pour Placeholder Call-Centre Routing Model (fictional)"
+   },
+   "short_description": "Reassess 2 control(s) for Placeholder Call-Centre Routing Model (fictional) / Réévaluer 2 contrôle(s) pour Placeholder Call-Centre Routing Model (fictional)",
+   "description": "Rule change: example-widgets 1.0.0 → 1.1.0. Reassess the controls below and attach evidence.\n- WID-6.3.1: Control changed between versions 1.0.0 and 1.1.0: statement\n- WID-6.4.2: Control changed between versions 1.0.0 and 1.1.0: statement and obligation\n\nChangement de règle : example-widgets 1.0.0 → 1.1.0. Réévaluez les contrôles ci-dessous et joignez les preuves.\n- WID-6.3.1: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé\n- WID-6.4.2: Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation",
+   "assignment_group": "dept-example-services",
+   "assigned_to": "contact.owner@example.invalid",
+   "priority": 4,
+   "due_date": "2027-03-01",
+   "due_date_basis": "PLACEHOLDER: impact level I = 90 days (default) / PLACEHOLDER : niveau d'incidence I = 90 jours (valeur par défaut)",
+   "due_date_basis_text": {
+    "en": "PLACEHOLDER: impact level I = 90 days (default)",
+    "fr": "PLACEHOLDER : niveau d'incidence I = 90 jours (valeur par défaut)"
+   },
+   "system_id": "SYS-004",
+   "impact_level": "I",
+   "controls": [
+    {
+     "id": "WID-6.3.1",
+     "statement": "Every calibration is logged, and the calibration log is kept for two years.",
+     "evidence_requested": "Calibration log covering two years",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement"
+      }
+     ]
+    },
+    {
+     "id": "WID-6.4.2",
+     "statement": "Departments report annually, for the fiscal year, on widgets in service.",
+     "evidence_requested": "Published annual report",
+     "obligation_change": false,
+     "reasons": [
+      {
+       "trigger": "catalog",
+       "code": "control-changed",
+       "params": {
+        "from": "1.0.0",
+        "to": "1.1.0",
+        "fields": [
+         "part:statement",
+         "prop:hub:obligation"
+        ]
+       },
+       "flags": [],
+       "text": {
+        "en": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation",
+        "fr": "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé et obligation"
+       },
+       "detail": "Control changed between versions 1.0.0 and 1.1.0: statement and obligation"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "maintenance": [
+  {
+   "code": "control-retired",
+   "params": {},
+   "text": {
+    "en": "Control retired: close the open findings for it",
+    "fr": "Contrôle retiré : fermer les constatations ouvertes qui s'y rapportent"
+   },
+   "control": "WID-6.3.2",
+   "systems": [
+    "SYS-001",
+    "SYS-002",
+    "SYS-003",
+    "SYS-004"
+   ],
+   "detail": "Control retired: close the open findings for it"
+  }
+ ],
+ "excluded_systems": [
+  {
+   "code": "no-profile",
+   "params": {
+    "catalog": "example-widgets"
+   },
+   "text": {
+    "en": "No profile of this system selects controls from example-widgets",
+    "fr": "Aucun profil de ce système ne sélectionne de contrôles de example-widgets"
+   },
+   "system_id": "SYS-006",
+   "reason": "No profile of this system selects controls from example-widgets"
+  },
+  {
+   "code": "lifecycle-retired",
+   "params": {},
+   "text": {
+    "en": "System retired",
+    "fr": "Système retiré"
+   },
+   "system_id": "SYS-008",
+   "reason": "System retired"
+  }
+ ]
+}

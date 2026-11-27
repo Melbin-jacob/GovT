@@ -1,5 +1,5 @@
 # SYNTHETIC demo golden set for the fictional Directive on Example Widgets.
-SOURCE_DATE = "2026-11-27T00:00:00Z"
+SOURCE_DATE = "2026-11-28T00:00:00Z"
 VERSION = "1.0.0"
 GROUP_PREFIX = "widgets"
 # Source clauses use the numbering of the 2023-01-01 version.

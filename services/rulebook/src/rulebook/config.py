@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/rulebook"
     # Relative paths resolve against the working directory (/app in the container).
     due_dates_path: str = "data/config/due-dates.toml"
+    # Approval-log checkpoints outside the database (empty disables).
+    approval_checkpoint_file: str = "var/checkpoints/approval-log.jsonl"
 
 
 @lru_cache

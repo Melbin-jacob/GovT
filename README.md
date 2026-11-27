@@ -27,7 +27,7 @@ schemas/                     vendored NIST OSCAL 1.1.3 JSON schemas
 docs/                        design notes
 ```
 
-## Status: Milestones 1 to 5
+## Status: Milestones 1 to 6
 
 | Done | Item |
 |---|---|
@@ -39,7 +39,8 @@ docs/                        design notes
 | ✅ | **M3** connector-hub (ServiceNow inventory and tasks, mock ServiceNow), review-desk (ranked queue, five decisions, hash-chained log, OSCAL POA&M, forecast) |
 | ✅ | **M4** control-centre web UI in English and French: policy change, impact report, review queue with the five decisions, decision log with external checkpoints, inventory; WCAG 2.1 AA basics, axe-scanned end-to-end test in CI |
 | ✅ | **M5** assessment-engine: evidence upload (encrypted), rule-based checks in code, judgment checks drafted by a self-hosted model with prompt-injection defences, OSCAL assessment-results; accuracy harness (Appendix B) and release gate, EN and FR; CI uses a scripted fake model only |
-| ⏳ later | sign-in (OIDC), tenants, AI drafting of new controls (Milestone 6) |
+| ✅ | **M6** rulebook drafts: a policy change is planned into control changes by plain code, drafted per language by the self-hosted model with safeguards, edited/approved/rejected by people in the bilingual "Rulebook drafts" screen (governance officers approve; two-person rule), published as a new catalog version with provenance and a hash-chained approval log; drafting accuracy harness and release gate |
+| ⏳ later | sign-in (OIDC), tenants |
 
 Definition of done, checked in CI on every push: `make setup && make test` on a clean
 checkout, both catalogs validate, committed catalogs match the CSV, and `make up` serves the
@@ -390,3 +391,38 @@ VM with Mistral Small 3.2 24B). Labelled cases for the harness: **docs/accuracy-
 Scores are per language, human-labelled and synthetic never mixed, and labelled
 **DRAFT GOLDEN SET** until the golden set is confirmed.
 
+## Milestone 6: AI-drafted control changes, approved by people
+
+When a directive changes, the rulebook plans the work from the clause diff with plain code:
+an **edit** per linked control whose clause changed (splits and merges included), a
+**new** control per added clause, a **retirement** per removed clause, and a
+**clause-reference update** where only the numbering changed (no model for the last two).
+The assessment engine drafts each edit and new control **separately in English and in
+French**, from that language's own text, with the same safeguards as assessments: clause
+text goes to the model only as delimited data and instruction-like text is never sent; the
+draft must quote the new clause word for word; low confidence, an unreadable reply or a
+"no change" for a new clause sends the draft to a person; plain code checks the drafted
+obligation against the clause and flags a mismatch.
+
+People decide in **"Rulebook drafts"** (control-centre, screen 6): the current control, the
+clause change and the draft side by side, in the page language. Reviewers and governance
+officers edit; **only a governance officer approves**, and **the person who last edited a
+draft cannot approve it** (two-person rule, enforced by the rulebook, the reason shown on
+the screen). Publishing makes a new minor catalog version (stored versions never change)
+whose controls carry `drafted-by`, `approved-by` and `approval-record`; approval does not
+make a control *reviewed*. The SOURCE_DATE defaults to the later of the policy's effective
+date and the day after the previous one, and the screen refuses any date the guard would.
+New controls get neutral IDs `<prefix>-C<nnn>` that are never reused. The golden set stays
+the record: `rulebook apply-drafts` writes the published change set into the CSV, which
+re-imports to exactly the stored version.
+
+```bash
+make demo-drafts   # LAST, after make demo-ui: plan, draft (fake model), approve in the UI,
+                   # publish 1.1.0, impact report of 1.0.0 -> 1.1.0; writes e2e-output/drafts/
+make accuracy      # also runs the drafting harness: recall, precision, obligation accuracy
+```
+
+Drafting accuracy (requirement recall, draft precision, obligation accuracy, per language)
+is measured against expected drafts written by annotators (**docs/accuracy-cases.md**,
+template `data/accuracy/template/drafting-cases.csv`); the committed synthetic ones only
+check the pipeline.

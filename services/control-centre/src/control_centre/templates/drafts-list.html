@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block notes %}
+{% if settings.synthetic_data %}{{ m.note('synthetic', t) }}{% endif %}
+{% endblock %}
+{% block content %}
+<p class="lead">{{ t('drafts.intro') }}</p>
+<p class="muted">{{ t('drafts.human_decides') }}</p>
+{% include "_acting-as.html" %}
+
+<h2>{{ t('drafts.start') }}</h2>
+<form method="post" action="/{{ lang }}/drafts" class="inline-form">
+  <input type="hidden" name="instrument" value="{{ default_instrument }}">
+  <input type="hidden" name="catalog" value="{{ default_catalog }}">
+  {% set src = sources|selectattr('instrument', 'equalto', default_instrument)|first %}
+  {% set cat = catalogs|selectattr('name', 'equalto', default_catalog)|first %}
+  <div class="field">
+    <label for="version">{{ t('impact.catalog_version') }}</label>
+    <select id="version" name="version">
+      {% for v in cat.versions %}<option value="{{ v.version }}"{% if v.version == cat.latest %} selected{% endif %}>{{ v.version }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="from">{{ t('policy.from') }}</label>
+    <select id="from" name="from">
+      {% for v in src.versions %}<option value="{{ v.version }}"{% if loop.first %} selected{% endif %}>{{ v.version }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="to">{{ t('policy.to') }}</label>
+    <select id="to" name="to">
+      {% for v in src.versions %}<option value="{{ v.version }}"{% if loop.last %} selected{% endif %}>{{ v.version }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field"><button type="submit">{{ t('drafts.start_button') }}</button></div>
+</form>
+<p class="muted">{{ t('drafts.start_hint') }}</p>
+
+<h2>{{ t('drafts.batches') }}</h2>
+{% if batches %}
+<table data-table="batches">
+  <caption>{{ t('drafts.batches_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('drafts.created') }}</th>
+    <th scope="col">{{ t('drafts.catalog') }}</th>
+    <th scope="col">{{ t('drafts.source_change') }}</th>
+    <th scope="col">{{ t('drafts.batch_status') }}</th>
+    <th scope="col">{{ t('drafts.new_version') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for b in batches %}
+    <tr>
+      <th scope="row"><a href="/{{ lang }}/drafts/{{ b.id }}">{{ b.created_at[:16]|replace('T', ' ') }} UTC</a></th>
+      <td>{{ b.catalog }} {{ b.base_version }}</td>
+      <td>{{ b.source_change|replace('->', '→') }}</td>
+      <td>{{ t('drafts.batch.' ~ b.status) }}</td>
+      <td>{{ b.new_version or t('policy.none') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ t('drafts.no_batches') }}</p>
+{% endif %}
+{% endblock %}

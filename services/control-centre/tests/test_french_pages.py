@@ -19,6 +19,8 @@ from cc_support import (
     MODEL_DRAFT,
     FakeHub,
     fixture,
+    stub_catalog_change,
+    stub_drafts,
     stub_engine,
     stub_impact,
     stub_inventory,
@@ -31,6 +33,7 @@ from control_centre import i18n
 
 ROOT = Path(__file__).parents[3]
 EXPLANATIONS = ROOT / "services/rulebook/src/rulebook/locales/explanations.en.toml"
+EXPLANATIONS_FR = EXPLANATIONS.with_name("explanations.fr.toml")
 ENGINE_MESSAGES = ROOT / "services/assessment-engine/src/assessment_engine/locales/messages.en.toml"
 # English that review-desk and the old report format produced (must never reach FR pages).
 REVIEW_DESK_ENGLISH = [
@@ -54,8 +57,11 @@ def _fragments(template: str) -> list[str]:
 
 def english_phrases() -> set[str]:
     phrases = set(REVIEW_DESK_ENGLISH)
-    for template in tomllib.loads(EXPLANATIONS.read_text("utf-8"))["templates"].values():
-        phrases.update(_fragments(template))
+    templates = tomllib.loads(EXPLANATIONS.read_text("utf-8"))["templates"]
+    french = tomllib.loads(EXPLANATIONS_FR.read_text("utf-8"))["templates"]
+    for key, template in templates.items():
+        # a word spelled the same in French (e.g. "obligation") is not a leak
+        phrases.update(p for p in _fragments(template) if p not in _fragments(french[key]))
     for template in tomllib.loads(ENGINE_MESSAGES.read_text("utf-8"))["messages"].values():
         phrases.update(_fragments(template))
     en, fr = i18n.strings("en"), i18n.strings("fr")
@@ -123,6 +129,17 @@ def french_pages(ui: TestClient, hub: FakeHub) -> dict[str, str]:
     )
     stub_engine(hub, finding["system_id"])
     out["finding-assessed"] = ui.get(f"/fr/review/{fid}?notice=assessed").text
+    # Rulebook drafts: open (with a refusal), decided, published, and the new version's impact.
+    batch = stub_drafts(hub)
+    page = f"/fr/drafts/{batch['id']}"
+    out["drafts"] = ui.get("/fr/drafts").text
+    out["drafts-open"] = ui.get(f"{page}?error=two-person-rule&item={batch['items'][0]['id']}").text
+    stub_drafts(hub, "decided")
+    out["drafts-decided"] = ui.get(f"{page}?notice=approved").text
+    stub_drafts(hub, "published")
+    out["drafts-published"] = ui.get(f"{page}?notice=published").text
+    stub_catalog_change(hub)
+    out["impact-catalog"] = ui.get("/fr/impact?catalog_from=1.0.0&catalog_to=1.1.0").text
     return out
 
 
@@ -157,6 +174,15 @@ def test_no_english_generated_text_on_any_french_page(ui: TestClient, hub: FakeH
         ("policy", "Les dispositions identiques sont jumelées d'abord."),
         ("finding-assessed", "injection d'invite possible"),
         ("finding-assessed", "Un texte ressemblant à des instructions a été trouvé"),
+        ("drafts-open", "la confiance du modèle est inférieure au seuil"),
+        ("drafts-open", "Règle des deux personnes"),
+        (
+            "drafts-open",
+            "Le registre consigne le propriétaire, l'emplacement, le modèle et la version",
+        ),
+        ("drafts-published", "Publié comme version 1.1.0 du catalogue."),
+        ("impact-catalog", "Contrôle modifié entre les versions 1.0.0 et 1.1.0 : obligation"),
+        ("impact-catalog", "Contrôle nouveau dans la version 1.1.0"),
     ],
 )
 def test_french_pages_show_the_french_text(

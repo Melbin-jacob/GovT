@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": true, \"statement\": \"Widgets are calibrated at least once a year.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Widgets must be calibrated at least once a year.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.86}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": true, \"statement\": \"Widgets are calibrated at least once a year.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.1743533871447778,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Widgets must be calibrated at least once a year.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.86}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 90,
+  "completion_tokens": 74,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

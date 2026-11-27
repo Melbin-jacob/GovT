@@ -34,7 +34,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Final, Literal
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, Field, model_validator
@@ -47,8 +47,10 @@ from govhub_shared.oscal import (
     iter_controls,
     resolve_profile,
 )
+from govhub_shared.text import normalize_for_match
 from rulebook import explain, store
 from rulebook import inventory as inv
+from rulebook.diff import FieldChange
 from rulebook.sources import store as source_store
 from rulebook.sources.diff import (
     METHOD,
@@ -332,6 +334,37 @@ def _source_findings(
     }
 
 
+# Fields whose change alone never triggers re-review: renumbering (links, clause labels,
+# groups) and record-keeping (provenance of approved drafts, review and numbering status).
+BOOKKEEPING_FIELDS: Final = frozenset(
+    {
+        "links",
+        "group",
+        "prop:label",
+        "prop:hub:source-clause",
+        "prop:hub:numbering-status",
+        "prop:hub:review-status",
+        "prop:hub:drafted-by",
+        "prop:hub:approved-by",
+        "prop:hub:approval-record",
+    }
+)
+
+
+def is_substantive(change: FieldChange) -> bool:
+    """A change that needs re-review: anything except renumbering, record-keeping or
+    typography (wording equal after clause-diff normalization). Unknown fields count."""
+    if change.field in BOOKKEEPING_FIELDS:
+        return False
+    if (
+        change.field.startswith("part:")
+        and isinstance(change.before, str)
+        and isinstance(change.after, str)
+    ):
+        return normalize_for_match(change.before) != normalize_for_match(change.after)
+    return True
+
+
 def _catalog_findings(
     session: Session, request: ImpactRequest, findings: Findings
 ) -> dict[str, Any]:
@@ -355,10 +388,17 @@ def _catalog_findings(
     flags: dict[str, set[str]] = defaultdict(set)
     added: set[str] = set()
     retired: set[str] = set()
+    bookkeeping: set[str] = set()
     for result in results:
         for control in result.changed:
-            fields[control.id].update(c.field for c in control.changes)
-            flags[control.id].update(f for f in control.flags if f == "obligation-change")
+            substantive = [c for c in control.changes if is_substantive(c)]
+            if not substantive:
+                bookkeeping.add(control.id)
+                continue
+            fields[control.id].update(c.field for c in substantive)
+            flags[control.id].update(
+                f for c in substantive for f in c.flags if f == "obligation-change"
+            )
         added.update(result.added)
         retired.update(result.retired)
     for cid in sorted(fields):
@@ -371,7 +411,13 @@ def _catalog_findings(
     for cid in sorted(added):
         findings.add(cid, Reason("catalog", "control-added", {"version": change.to_version}))
     findings.retired.extend(sorted(retired))
-    return {"from": change.from_version, "to": change.to_version, "summary": results[0].summary}
+    return {
+        "from": change.from_version,
+        "to": change.to_version,
+        "summary": results[0].summary,
+        # changed only in links, numbering or provenance: no re-review (listed for audit)
+        "not_reassessed": sorted(bookkeeping - set(fields) - added - retired),
+    }
 
 
 # --- systems ---------------------------------------------------------------------------

@@ -38,4 +38,7 @@
 "field.part:assessment-objective" = "assessment objective"
 "field.title" = "title"
 "field.prop:label" = "label"
+"field.prop:hub:obligation" = "obligation"
+"field.prop:hub:check-type" = "check type"
+"field.class" = "class"
 "list.and" = "and"

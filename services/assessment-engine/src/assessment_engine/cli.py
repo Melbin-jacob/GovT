@@ -28,6 +28,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--rules", default="data/rules")
     run.add_argument("--config", default="data/config/assessment.toml")
     run.add_argument("--write-latest", help="Also write the run JSON to this path")
+    drun = acc_sub.add_parser(
+        "draft-run", help="Draft planned batches and score them against expected drafts"
+    )
+    drun.add_argument("--cases", required=True, help="Expected-drafts CSV (docs/accuracy-cases.md)")
+    drun.add_argument("--batches", help="Folder of batch files (default: <cases folder>/batches)")
+    drun.add_argument("--out", default="data/accuracy/runs", help="Directory for the run files")
+    drun.add_argument("--hardware", default="not described", help="e.g. '8 vCPU, 32 GB RAM'")
+    drun.add_argument("--status-file", default="data/accuracy/status.toml")
+    drun.add_argument("--config", default="data/config/assessment.toml")
+    drun.add_argument("--write-latest", help="Also write the run JSON to this path")
     for name, text in (
         ("gate", "Fail if any measure is below the baseline in either language"),
         ("baseline", "Make a run the new baseline (previous ones are kept as history)"),

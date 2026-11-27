@@ -142,6 +142,11 @@ jobs:
           uv run playwright install --with-deps chromium
       - name: Demo - UI click-through in English and French (Playwright, axe)
         run: make demo-ui
+      - name: Demo - policy change to AI drafts, approval in the UI, catalog 1.1.0, impact (synthetic)
+        run: make demo-drafts
+      - name: Drafts demo summary
+        if: always()
+        run: tee -a "$GITHUB_STEP_SUMMARY" < e2e-output/drafts/summary.md || true
       - name: UI test summary (axe results and timings)
         if: always()
         run: tee -a "$GITHUB_STEP_SUMMARY" < e2e-output/summary.md || true

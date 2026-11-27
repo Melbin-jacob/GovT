@@ -21,9 +21,10 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from assessment_engine import harness
+from assessment_engine import draft_harness, drafting, harness
 from assessment_engine.controls import FileControls
 from assessment_engine.passages import injection_flags
+from assessment_engine.rulebook_drafts import inputs_for
 from assessment_engine.settings_file import load_config
 from govhub_shared.model_gateway import (
     ChatRequest,
@@ -106,6 +107,71 @@ class ScriptedFake:
         )
 
 
+DRAFTING = ROOT / "data/accuracy/synthetic-demo/drafting"
+DRAFT_REPLIES = tomllib.loads((DRAFTING / "scripted-replies.toml").read_text("utf-8"))
+
+
+class ScriptedDraftingFake:
+    """Drafting replies keyed by item and language; obeys a visible injection."""
+
+    def __init__(self) -> None:
+        self.key = ("", "en")
+        self.cited = ""
+
+    def chat(self, request: ChatRequest) -> ChatResponse:
+        user = request.messages[-1].content
+        target, lang = self.key
+        entry = dict(DRAFT_REPLIES[target][lang])
+        if injection_flags(user):  # worst case: do what the injected text says
+            entry.update(no_change=True, obligation="may", confidence=1.0, token_confidence=1.0)
+        reply = {
+            "no_change": bool(entry.get("no_change", False)),
+            "statement": entry["statement"],
+            "guidance": None,
+            "objective": None,
+            "check_type": entry["check_type"],
+            "obligation": entry["obligation"],
+            "cited_clause": entry.get("cited", self.cited),
+            "reasoning": "Scripted synthetic draft.",
+            "confidence": entry["confidence"],
+        }
+        content = json.dumps(reply, ensure_ascii=False)
+        marker = f'"obligation": "{entry["obligation"]}'
+        head, tail = content.split(marker, 1)
+        head += marker[: -len(entry["obligation"])]
+        tokens = [
+            TokenLogprob(token=head, logprob=0.0),
+            TokenLogprob(token=entry["obligation"], logprob=math.log(entry["token_confidence"])),
+            TokenLogprob(token=tail, logprob=0.0),
+        ]
+        return ChatResponse(
+            content=content,
+            model_id=MODEL,
+            logprobs=tokens,
+            prompt_tokens=len(user) // 4,
+            completion_tokens=len(content) // 4,
+            latency_seconds=0.0,
+        )
+
+
+def generate_drafting(recorder: RecordedGateway, fake: ScriptedDraftingFake) -> int:
+    config = load_config(ROOT / "data/config/assessment.toml")
+    done = 0
+    for path in sorted((DRAFTING / "batches").glob("*.json")):
+        batch = draft_harness.load_batch(path)
+        for item in batch["items"]:
+            if item["kind"] not in ("edit", "new"):
+                continue
+            target = item["target_control"] or f"new-{item['new_clauses'][0]}"
+            for lang in ("en", "fr"):
+                data = inputs_for(batch, item, lang)
+                fake.key = (target, lang)
+                fake.cited = data.new_clauses[item["new_clauses"][0]]
+                drafting.draft_item(recorder, data, config)
+                done += 1
+    return done
+
+
 def generate(directory: Path) -> list[str]:
     if directory.exists():
         shutil.rmtree(directory)
@@ -122,6 +188,8 @@ def generate(directory: Path) -> list[str]:
             case, gateway=recorder, source=source, rules_dir=ROOT / "data/rules", config=config
         )
         done.append(case.case_id)
+    drafter = ScriptedDraftingFake()
+    generate_drafting(RecordedGateway(directory, MODEL, mode="record", inner=drafter), drafter)
     return done
 
 

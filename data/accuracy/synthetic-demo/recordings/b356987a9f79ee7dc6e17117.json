@@ -1,0 +1,28 @@
+{
+ "task": "draft-control-change",
+ "response": {
+  "content": "{\"no_change\": false, \"statement\": \"Departments report annually, for the fiscal year, on widgets in service.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"must\", \"cited_clause\": \"Departments report annually on the number of widgets in service. The report covers the fiscal year.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.8}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"no_change\": false, \"statement\": \"Departments report annually, for the fiscal year, on widgets in service.\", \"guidance\": null, \"objective\": null, \"check_type\": \"rule-based\", \"obligation\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "must",
+    "logprob": -0.2484613592984996,
+    "top": []
+   },
+   {
+    "token": "\", \"cited_clause\": \"Departments report annually on the number of widgets in service. The report covers the fiscal year.\", \"reasoning\": \"Scripted synthetic draft.\", \"confidence\": 0.8}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 108,
+  "completion_tokens": 94,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

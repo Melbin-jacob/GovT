@@ -119,6 +119,14 @@ def _versions(session: Session, catalog: Catalog, lang: str) -> list[CatalogVers
     )
 
 
+def latest_version(session: Session, name: str, lang: str) -> str:
+    """The newest stored version of a catalog in one language."""
+    rows = _versions(session, _get_catalog(session, name), lang)
+    if not rows:
+        raise NotFoundError(f"{name} has no {lang} version")
+    return rows[-1].version
+
+
 def get_version(session: Session, name: str, version: str, lang: str) -> CatalogVersion:
     catalog = _get_catalog(session, name)
     row = session.scalar(
