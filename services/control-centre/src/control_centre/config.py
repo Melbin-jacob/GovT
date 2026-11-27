@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     connector_hub_url: str = Field(
         default="http://127.0.0.1:8001", validation_alias="CONNECTOR_HUB_URL"
     )
+    assessment_engine_url: str = Field(
+        default="http://127.0.0.1:8005", validation_alias="ASSESSMENT_ENGINE_URL"
+    )
     # Placeholder identity sent to review-desk. TODO(control-centre): OIDC sign-in.
     demo_user: str = "demo-reviewer-01"
     demo_role: str = "reviewer"
@@ -30,9 +33,6 @@ class Settings(BaseSettings):
     default_instrument: str = "example-widgets"
     default_catalog: str = "example-widgets"
     default_as_of: str = "2026-12-01"
-    # Language the impact report (and so its task IDs, ServiceNow tasks and findings) is
-    # produced in. The UI around it follows the page language.
-    report_lang: str = "en"
 
 
 @lru_cache

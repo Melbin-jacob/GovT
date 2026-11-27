@@ -25,6 +25,11 @@ data/sources/raw/
 demo-output/
 demo-review-output/
 e2e-output/
+demo-assessment-output/
+accuracy-output/
 
 # Local decision-log checkpoint files (review-desk default path)
 var/
+
+# Real labelled accuracy cases and their evidence stay local (may be Protected)
+data/accuracy/private/

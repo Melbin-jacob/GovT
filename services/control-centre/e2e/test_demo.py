@@ -11,6 +11,16 @@ import time
 
 from e2e_support import TIMINGS, Recorder
 from playwright.sync_api import Page, expect
+from test_french_pages import english_phrases
+
+PHRASES = english_phrases()
+
+
+def assert_no_english(page: Page) -> None:
+    """The French page's main content holds none of the known English phrases."""
+    text = page.locator("main").inner_text()
+    leaks = sorted(p for p in PHRASES if p in text)
+    assert not leaks, f"{page.url}: English text on a French page: {leaks}"
 
 
 def _open_first_open_finding(page: Page, start_label: str) -> None:
@@ -98,6 +108,7 @@ def test_french_screens(rec: Recorder) -> None:
     expect(page.locator("html")).to_have_attribute("lang", "fr")
     expect(page.get_by_text("Démo seulement : aucune authentification.")).to_be_visible()
     rec.capture("fr-0-overview")
+    assert_no_english(page)
 
     page.get_by_role("link", name="1. Changement de politique").click()
     expect(
@@ -105,29 +116,36 @@ def test_french_screens(rec: Recorder) -> None:
     ).to_be_visible()
     expect(page.locator('tr[data-flags^="obligation-change"]')).to_contain_text("doivent")
     rec.capture("fr-1-policy-change")
+    assert_no_english(page)
 
     page.get_by_role("link", name="2. Rapport d'incidence").click()
     expect(page.locator("table[data-table=tasks]")).to_contain_text("GOVT")
     rec.capture("fr-2-impact-report")
+    assert_no_english(page)
 
     page.get_by_role("link", name="3. File d'examen").click()
     rec.capture("fr-3-review-queue")
+    assert_no_english(page)
     _open_first_open_finding(page, "Commencer l'examen")
     page.get_by_label("Demander d'autres preuves").check()
     page.get_by_label("Motif ou note").fill("Joindre le registre d'étalonnage de 2026.")
     rec.capture("fr-3-finding-decision")
+    assert_no_english(page)
     page.get_by_role("button", name="Consigner la décision").click()
     expect(page.get_by_role("status")).to_contain_text("Décision consignée")
+    assert_no_english(page)
 
     page.get_by_role("link", name="4. Registre des décisions").click()
     page.get_by_role("button", name="Vérifier le registre").click()
     expect(page.locator("#verify-result")).to_have_attribute("data-ok", "true")
     rec.capture("fr-4-decision-log")
+    assert_no_english(page)
 
     page.get_by_role("link", name="5. Inventaire des systèmes").click()
     expect(page.get_by_text("Systèmes et responsables fictifs")).to_be_visible()
     expect(page.locator('tr[data-system="SYS-009"]')).to_contain_text("Manquant")
     rec.capture("fr-5-inventory")
+    assert_no_english(page)
 
     # The switch keeps the page: back to English on the same screen.
     page.get_by_role("link", name="English").click()
@@ -170,3 +188,27 @@ def test_keyboard_only_decision(rec: Recorder) -> None:
     page.get_by_role("button", name="Record decision").focus()
     page.keyboard.press("Enter")
     expect(page.get_by_role("status")).to_contain_text("Decision recorded as record")
+
+
+def _open_finding(page: Page, base: str, system: str, control: str, lang: str) -> None:
+    page.goto(f"/{lang}/review")
+    row = page.locator("table[data-table=queue] tbody tr", has_text=system).filter(has_text=control)
+    expect(row).to_have_count(1)
+    row.locator("a").first.click()
+
+
+def test_engine_draft_with_flagged_evidence(rec: Recorder) -> None:
+    """After scripts/demo-assessment.sh: the register finding of SYS-003 carries a model
+    draft that the engine downgraded because the evidence holds an injected instruction."""
+    page = rec.page
+    for lang in ("en", "fr"):
+        _open_finding(page, rec.base_url, "SYS-003", "WID-6.3.2", lang)
+        expect(page.locator('[data-assessment="model"]')).to_be_visible()
+        expect(page.locator("[data-flagged]")).to_be_visible()
+        expect(page.locator("[data-flagged] blockquote").first).to_contain_text(
+            "ignore previous instructions"
+        )
+        rec.capture(f"{lang}-3-finding-engine-draft")
+        if lang == "fr":
+            expect(page.get_by_text("Ébauche du modèle")).to_be_visible()
+            assert_no_english(page)

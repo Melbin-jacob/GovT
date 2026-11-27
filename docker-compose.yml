@@ -103,6 +103,60 @@ services:
       timeout: 3s
       retries: 20
 
+  # Assessment engine (Milestone 5). Internal only: localhost. Evidence on its own volume;
+  # encrypt that volume at rest on the platform. The dev key below is for the fictional
+  # demo data only (like the database password): never reuse it.
+  assessment-engine:
+    build:
+      context: .
+      dockerfile: services/assessment-engine/Dockerfile
+    command: ["assessment-engine", "serve", "--migrate", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      ASSESSMENT_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/assessment_engine
+      ASSESSMENT_EVIDENCE_DIR: /evidence
+      ASSESSMENT_EVIDENCE_KEY: ZGV2LW9ubHktZmljdGlvbmFsLWRlbW8tZGF0YS1rZXk=  # dev only
+      RULEBOOK_URL: http://rulebook:8000
+      REVIEW_DESK_URL: http://review-desk:8000
+      # The model server is internal to the deployment. By default Compose uses the
+      # SCRIPTED FAKE model below (no real model). To use llama.cpp or vLLM, set these
+      # three variables (docs/model-setup.md).
+      MODEL_GATEWAY_URL: ${MODEL_GATEWAY_URL:-http://fake-model:8000}
+      MODEL_GATEWAY_MODEL: ${MODEL_GATEWAY_MODEL:-scripted-fake-v1}
+      MODEL_GATEWAY_ALLOWED_HOSTS: ${MODEL_GATEWAY_ALLOWED_HOSTS:-fake-model}
+    volumes:
+      - evidence:/evidence
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # a model server on the host (docs/model-setup.md)
+    ports:
+      - "127.0.0.1:8005:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      review-desk:
+        condition: service_healthy
+      fake-model:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # SCRIPTED FAKE model (demo and CI only, never a real model): answers the requests it
+  # has recorded replies for (data/accuracy/synthetic-demo/recordings). Not published.
+  fake-model:
+    build:
+      context: .
+      dockerfile: services/assessment-engine/Dockerfile
+    command: ["assessment-engine", "fake-model", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      FAKE_MODEL_RECORDINGS: /app/data/accuracy/synthetic-demo/recordings
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   # Web UI for the demo. Demo only: no authentication, so localhost only (like review-desk).
   control-centre:
     build:
@@ -113,10 +167,13 @@ services:
       RULEBOOK_URL: http://rulebook:8000
       REVIEW_DESK_URL: http://review-desk:8000
       CONNECTOR_HUB_URL: http://connector-hub:8000
+      ASSESSMENT_ENGINE_URL: http://assessment-engine:8000
     ports:
       - "127.0.0.1:8004:8000"
     depends_on:
       review-desk:
+        condition: service_healthy
+      assessment-engine:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
@@ -127,3 +184,4 @@ services:
 volumes:
   pgdata:
   checkpoints:
+  evidence:

@@ -11,6 +11,14 @@ Each system's checks in scope are its profiles resolved against the report's cat
 version. Affected (system, control) pairs are findings that need re-review. Output is
 deterministic for the same inputs: no clock is read and the report ID is a content hash.
 
+The report is language-neutral. Findings come from one reference diff (English when it is
+stored, else French; EN/FR divergences are reported as maintenance items) and a catalog
+change counts in either language. Every generated sentence is a code with parameters,
+rendered in both languages from ``locales/explanations.*.toml`` (``explain.py``). The
+report ID hashes inputs, codes and parameters, never the language or the wording, so the
+same report has one ID in English and French. ``lang`` only selects the language of the
+control text (statements) and of the ``detail`` fields.
+
 Nothing is sent anywhere: the tasks are returned as JSON shaped like ServiceNow task
 records. TODO(connector-hub): push them to ServiceNow ``sc_task`` (never ``incident``).
 TODO(review-desk): persist reports and open findings in the review queue.
@@ -39,8 +47,8 @@ from govhub_shared.oscal import (
     iter_controls,
     resolve_profile,
 )
+from rulebook import explain, store
 from rulebook import inventory as inv
-from rulebook import store
 from rulebook.sources import store as source_store
 from rulebook.sources.diff import (
     METHOD,
@@ -79,7 +87,9 @@ class ImpactRequest(BaseModel):
     as_of: date = Field(
         description="Reference date for due dates (the report never reads the clock)"
     )
-    lang: Lang = Field(default="en", description="Language of control text in tasks")
+    lang: Lang = Field(
+        default="en", description="Language of control text and detail fields (not the ID)"
+    )
     tenant: str | None = Field(default=None, description="Only systems of this tenant")
 
     @model_validator(mode="after")
@@ -105,12 +115,23 @@ class DueDatePolicy:
     tenants: dict[str, dict[int, tuple[int, str]]]
     path: str
 
-    def due(self, tenant: str, level: int, as_of: date) -> tuple[date, str]:
+    def due(self, tenant: str, level: int, as_of: date) -> tuple[date, dict[str, str]]:
+        """Due date and its basis in both languages."""
         override = self.tenants.get(tenant, {}).get(level)
         days, status = override or self.default[level]
-        scope = f"tenant {tenant} override" if override else "default"
-        roman = inv.ROMAN_OF[level]
-        return as_of + timedelta(days=days), f"{status}: level {roman} = {days} days ({scope})"
+        basis = {}
+        for lang in explain.LANGS:
+            scope = (
+                explain.render("due.scope.tenant", lang, {"tenant": tenant})
+                if override
+                else explain.render("due.scope.default", lang)
+            )
+            basis[lang] = explain.render(
+                "due.basis",
+                lang,
+                {"status": status, "level": inv.ROMAN_OF[level], "days": days, "scope": scope},
+            )
+        return as_of + timedelta(days=days), basis
 
 
 def load_due_dates(path: Path) -> DueDatePolicy:
@@ -139,17 +160,25 @@ def load_due_dates(path: Path) -> DueDatePolicy:
 @dataclass
 class Reason:
     trigger: Literal["source", "catalog"]
-    kind: str
-    detail: str
+    code: str  # explanations template "reason.<code>"
+    params: dict[str, Any]
     flags: list[str] = field(default_factory=list)
 
-    def as_dict(self) -> dict[str, Any]:
+    def neutral(self) -> dict[str, Any]:
         return {
             "trigger": self.trigger,
-            "kind": self.kind,
-            "detail": self.detail,
+            "code": self.code,
+            "params": self.params,
             "flags": self.flags,
         }
+
+    def as_dict(self, lang: str) -> dict[str, Any]:
+        text = explain.both(f"reason.{self.code}", self.params)
+        return {**self.neutral(), "text": text, "detail": text[lang]}
+
+
+def maintenance_item(code: str, params: dict[str, Any], **extra: Any) -> dict[str, Any]:
+    return explain.item(f"maintenance.{code}", params, **extra)
 
 
 @dataclass
@@ -205,9 +234,12 @@ def _source_findings(
                 include_text=False,
             )
         except store.NotFoundError:
-            if lang == request.lang:
-                raise
-    diff = diffs[request.lang]
+            continue
+    if not diffs:
+        raise store.NotFoundError(
+            f"source {src.instrument} {src.from_version} -> {src.to_version} is not stored"
+        )
+    diff = diffs.get("en") or diffs["fr"]  # reference diff: the same in both languages
     divergences = (
         [d.model_dump(mode="json") for d in cross_check(diffs["en"], diffs["fr"])]
         if len(diffs) == 2
@@ -228,7 +260,7 @@ def _source_findings(
         for cid in ids:
             extra = ["language-divergence"] if clause in divergent else []
             findings.add(
-                cid, Reason(reason.trigger, reason.kind, reason.detail, reason.flags + extra)
+                cid, Reason(reason.trigger, reason.code, reason.params, reason.flags + extra)
             )
         return bool(ids)
 
@@ -238,65 +270,54 @@ def _source_findings(
         key = link_key(pair.old, pair.new)
         if "text-changed" in pair.flags:
             flags = [f for f in pair.flags if f in ("obligation-change", "renumbered")]
-            detail = f"clause {pair.old} -> {pair.new} changed (similarity {pair.score})"
-            if not hit(key, Reason("source", "clause changed", detail, flags)):
+            params = {"old": pair.old, "new": pair.new, "score": pair.score}
+            code = "clause-changed" if pair.old == pair.new else "clause-changed-renumbered"
+            if not hit(key, Reason("source", code, params, flags)):
                 findings.maintenance.append(
-                    {
-                        "kind": "unmapped clause",
-                        "clause": pair.new,
-                        "detail": detail + "; no control is linked",
-                    }
+                    maintenance_item("unmapped-changed", params, clause=pair.new)
                 )
         elif "renumbered" in pair.flags and side == "from" and by_clause.get(pair.old):
             findings.maintenance.append(
-                {
-                    "kind": "update clause reference",
-                    "clause": pair.old,
-                    "detail": f"text unchanged, renumbered {pair.old} -> {pair.new}",
-                    "controls": sorted(by_clause[pair.old]),
-                }
+                maintenance_item(
+                    "update-reference",
+                    {"old": pair.old, "new": pair.new},
+                    clause=pair.old,
+                    controls=sorted(by_clause[pair.old]),
+                )
             )
     for split in diff.splits:
-        detail = f"clause {split.old} split into {', '.join(split.into)}"
+        params = {"old": split.old, "into": list(split.into)}
         keys = [split.old] if side == "from" else split.into
         if not any(
-            [hit(k, Reason("source", "clause split", detail, list(split.flags))) for k in keys]
+            [hit(k, Reason("source", "clause-split", params, list(split.flags))) for k in keys]
         ):
             findings.maintenance.append(
-                {"kind": "unmapped clause", "clause": split.old, "detail": detail}
+                maintenance_item("unmapped-split", params, clause=split.old)
             )
     for merge in diff.merges:
-        detail = f"clauses {', '.join(merge.olds)} merged into {merge.into}"
+        params = {"olds": list(merge.olds), "into": merge.into}
         keys = merge.olds if side == "from" else [merge.into]
         if not any(
-            [hit(k, Reason("source", "clause merged", detail, list(merge.flags))) for k in keys]
+            [hit(k, Reason("source", "clause-merged", params, list(merge.flags))) for k in keys]
         ):
             findings.maintenance.append(
-                {"kind": "unmapped clause", "clause": merge.into, "detail": detail}
+                maintenance_item("unmapped-merge", params, clause=merge.into)
             )
     for old in diff.removed:
-        detail = f"clause {old} removed in {src.to_version}"
-        if side == "from" and not hit(old, Reason("source", "clause removed", detail)):
-            findings.maintenance.append(
-                {"kind": "removed clause had no control", "clause": old, "detail": detail}
-            )
+        params = {"clause": old, "version": src.to_version}
+        if side == "from" and not hit(old, Reason("source", "clause-removed", params)):
+            findings.maintenance.append(maintenance_item("removed-no-control", params, clause=old))
     for new in diff.added:
-        detail = f"clause {new} added in {src.to_version}"
-        if side == "from" or not hit(new, Reason("source", "clause added", detail)):
-            findings.maintenance.append(
-                {
-                    "kind": "unmapped clause",
-                    "clause": new,
-                    "detail": detail + "; no control yet (draft one)",
-                }
-            )
+        params = {"clause": new, "version": src.to_version}
+        if side == "from" or not hit(new, Reason("source", "clause-added", params)):
+            findings.maintenance.append(maintenance_item("unmapped-added", params, clause=new))
     for d in divergences:
         findings.maintenance.append(
-            {
-                "kind": "language divergence",
-                "clause": d["clause"],
-                "detail": f"{d['kind']}: EN {d['en']} / FR {d['fr']}",
-            }
+            maintenance_item(
+                "language-divergence",
+                {"kind": d["kind"], "en": d["en"], "fr": d["fr"]},
+                clause=d["clause"],
+            )
         )
     return {
         "instrument": src.instrument,
@@ -316,25 +337,41 @@ def _catalog_findings(
 ) -> dict[str, Any]:
     assert request.catalog_change is not None  # noqa: S101 - caller checks
     change = request.catalog_change
-    result = store.diff_versions(
-        session, request.catalog, change.from_version, change.to_version, request.lang
-    )
-    for control in result.changed:
-        fields = ", ".join(c.field for c in control.changes)
-        flags = [f for f in control.flags if f == "obligation-change"]
-        findings.add(
-            control.id,
-            Reason(
-                "catalog",
-                "control changed",
-                f"{change.from_version} -> {change.to_version}: {fields}",
-                flags,
-            ),
+    results = []
+    for lang in ("en", "fr"):  # a change in either language counts
+        try:
+            results.append(
+                store.diff_versions(
+                    session, request.catalog, change.from_version, change.to_version, lang
+                )
+            )
+        except store.NotFoundError:
+            continue
+    if not results:
+        raise store.NotFoundError(
+            f"catalog {request.catalog} {change.from_version} -> {change.to_version} not stored"
         )
-    for cid in result.added:
-        findings.add(cid, Reason("catalog", "control added", f"new in {change.to_version}"))
-    findings.retired.extend(result.retired)
-    return {"from": change.from_version, "to": change.to_version, "summary": result.summary}
+    fields: dict[str, set[str]] = defaultdict(set)
+    flags: dict[str, set[str]] = defaultdict(set)
+    added: set[str] = set()
+    retired: set[str] = set()
+    for result in results:
+        for control in result.changed:
+            fields[control.id].update(c.field for c in control.changes)
+            flags[control.id].update(f for f in control.flags if f == "obligation-change")
+        added.update(result.added)
+        retired.update(result.retired)
+    for cid in sorted(fields):
+        params = {
+            "from": change.from_version,
+            "to": change.to_version,
+            "fields": sorted(fields[cid]),
+        }
+        findings.add(cid, Reason("catalog", "control-changed", params, sorted(flags[cid])))
+    for cid in sorted(added):
+        findings.add(cid, Reason("catalog", "control-added", {"version": change.to_version}))
+    findings.retired.extend(sorted(retired))
+    return {"from": change.from_version, "to": change.to_version, "summary": results[0].summary}
 
 
 # --- systems ---------------------------------------------------------------------------
@@ -397,7 +434,14 @@ def build_report(
             "label": by_id[cid].prop("label") if cid in by_id else None,
             "source_clauses": _source_clauses(by_id[cid]) if cid in by_id else [],
             "obligation_change": any("obligation-change" in r.flags for r in reasons),
-            "reasons": [r.as_dict() for r in reasons],
+            "reasons": [r.as_dict(request.lang) for r in reasons],
+        }
+        for cid, reasons in sorted(findings.controls.items())
+    ]
+    neutral_controls = [
+        {
+            "id": cid,
+            "reasons": [r.neutral() for r in reasons],
         }
         for cid, reasons in sorted(findings.controls.items())
     ]
@@ -413,13 +457,19 @@ def build_report(
     )
     profiles: dict[str, dict[str, Any]] = {}
     ranked: list[dict[str, Any]] = []
-    excluded: list[dict[str, str]] = []
+    excluded: list[dict[str, Any]] = []
+
+    def exclude(system_id: str, code: str, **params: Any) -> None:
+        entry = explain.item(f"excluded.{code}", params, system_id=system_id)
+        entry["reason"] = entry["text"][request.lang]
+        excluded.append(entry)
+
     retired_in_scope: dict[str, list[str]] = defaultdict(list)
     for system in systems:
         if request.tenant and system.tenant != request.tenant:
             continue
         if system.lifecycle == "retired":
-            excluded.append({"system_id": system.system_id, "reason": "lifecycle retired"})
+            exclude(system.system_id, "lifecycle-retired")
             continue
         in_scope: set[str] = set()
         previous_scope: set[str] = set()  # scope under catalog_change.from (for retirements)
@@ -434,21 +484,14 @@ def build_report(
                 if previous_doc is not None:
                     previous_scope |= _scope(profiles[name], request.catalog, previous_doc) or set()
         if not applicable:
-            excluded.append(
-                {
-                    "system_id": system.system_id,
-                    "reason": f"no profile selects from {request.catalog}",
-                }
-            )
+            exclude(system.system_id, "no-profile", catalog=request.catalog)
             continue
         for cid in findings.retired:
             if cid in previous_scope:
                 retired_in_scope[cid].append(system.system_id)
         hits = sorted(in_scope & affected_ids)
         if not hits:
-            excluded.append(
-                {"system_id": system.system_id, "reason": "no affected control in scope"}
-            )
+            exclude(system.system_id, "no-affected-control")
             continue
         ranked.append(
             {
@@ -472,26 +515,35 @@ def build_report(
         key=lambda s: (-inv.RANK[s["impact_level"]], -s["findings_to_review"], s["system_id"])
     )
 
-    trigger_text = " and ".join(
-        f"{t['instrument']} {t['from']} -> {t['to']}"
+    trigger_parts = [
+        f"{t['instrument']} {t['from']} → {t['to']}"
         if k == "source"
-        else f"{request.catalog} {t['from']} -> {t['to']}"
+        else f"{request.catalog} {t['from']} → {t['to']}"
         for k, t in triggers.items()
-    )
+    ]
+    inputs = {
+        "catalog": request.catalog,
+        "catalog_version": request.catalog_version,
+        "tenant": request.tenant,
+        "as_of": request.as_of.isoformat(),
+        "inventory_snapshot_hash": snapshot.content_hash,
+        "due_date_policy": f"{due_dates.path} (PLACEHOLDER values, not policy)",
+    }
+    # The ID never depends on the language or on template wording: inputs, triggers,
+    # coded reasons and the ranked systems only.
+    report_id = _sha(
+        {
+            "inputs": inputs,
+            "triggers": triggers,
+            "affected_controls": neutral_controls,
+            "systems": [s["system_id"] for s in ranked],
+        }
+    )[:16]
     report_core: dict[str, Any] = {
-        "inputs": {
-            "catalog": request.catalog,
-            "catalog_version": request.catalog_version,
-            "lang": request.lang,
-            "tenant": request.tenant,
-            "as_of": request.as_of.isoformat(),
-            "inventory_snapshot_hash": snapshot.content_hash,
-            "due_date_policy": f"{due_dates.path} (PLACEHOLDER values, not policy)",
-        },
+        "inputs": {**inputs, "lang": request.lang},
         "triggers": triggers,
         "affected_controls": affected_controls,
     }
-    report_id = _sha({**report_core, "systems": [s["system_id"] for s in ranked]})[:16]
 
     tasks: list[dict[str, Any]] = []
     for rank, entry in enumerate(ranked, start=1):
@@ -501,7 +553,10 @@ def build_report(
         level = record.impact_level or 4
         due, basis = due_dates.due(record.tenant, level, request.as_of)
         if record.impact_level is None:
-            basis = f"impact level unknown, treated as IV; {basis}"
+            basis = {
+                lang: f"{explain.render('due.unknown-level', lang)}; {text}"
+                for lang, text in basis.items()
+            }
         task_controls = []
         for cid in entry["controls"]:
             control = by_id.get(cid)
@@ -512,32 +567,40 @@ def build_report(
                     "statement": control.part("statement") if control else None,
                     "evidence_requested": control.part("assessment-objective") if control else None,
                     "obligation_change": info["obligation_change"],
-                    "reasons": [f"{r['kind']}: {r['detail']}" for r in info["reasons"]],
+                    "reasons": info["reasons"],
                 }
             )
-        lines = [
-            f"Rule change: {trigger_text}. Reassess the controls below and attach evidence.",
-            *(
-                f"- {c['id']}{' [OBLIGATION CHANGE]' if c['obligation_change'] else ''}: "
-                + "; ".join(c["reasons"])
-                for c in task_controls
-            ),
-        ]
+        title = explain.both("task.title", {"n": len(task_controls), "system": record.name})
+        blocks = []
+        for lang in explain.LANGS:  # ServiceNow gets both languages: English, then French
+            trigger = explain.join(trigger_parts, lang)
+            marker = " " + explain.render("task.obligation", lang)
+            blocks.append(
+                "\n".join(
+                    [
+                        explain.render("task.intro", lang, {"trigger": trigger}),
+                        *(
+                            f"- {c['id']}{marker if c['obligation_change'] else ''}: "
+                            + "; ".join(r["text"][lang] for r in c["reasons"])
+                            for c in task_controls
+                        ),
+                    ]
+                )
+            )
         tasks.append(
             {
                 "task_id": f"IMP-{report_id[:8]}-{record.system_id}",
                 "table": "sc_task",
                 "type": "reassessment",
-                "short_description": (
-                    f"Reassess {len(task_controls)} control(s) for {record.name} "
-                    f"after {trigger_text}"
-                ),
-                "description": "\n".join(lines),
+                "title": title,
+                "short_description": f"{title['en']} / {title['fr']}",
+                "description": "\n\n".join(blocks),
                 "assignment_group": record.tenant,
                 "assigned_to": record.owner_email,
                 "priority": PRIORITY[level],
                 "due_date": due.isoformat(),
-                "due_date_basis": basis,
+                "due_date_basis": f"{basis['en']} / {basis['fr']}",
+                "due_date_basis_text": basis,
                 "system_id": record.system_id,
                 "impact_level": record.impact_label,
                 "controls": task_controls,
@@ -547,13 +610,12 @@ def build_report(
     maintenance = list(findings.maintenance)
     for cid in sorted(findings.retired):
         maintenance.append(
-            {
-                "kind": "control retired",
-                "control": cid,
-                "detail": "close open findings for this control",
-                "systems": retired_in_scope.get(cid, []),
-            }
+            maintenance_item(
+                "control-retired", {}, control=cid, systems=retired_in_scope.get(cid, [])
+            )
         )
+    for entry in maintenance:
+        entry["detail"] = entry["text"][request.lang]
     by_level: dict[str, int] = defaultdict(int)
     for entry in ranked:
         by_level[entry["impact_level"]] += entry["findings_to_review"]

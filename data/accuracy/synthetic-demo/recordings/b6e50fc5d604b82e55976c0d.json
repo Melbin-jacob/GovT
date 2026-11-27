@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"partially-met\", \"confidence\": 0.82, \"cited_passage_id\": \"P2\", \"cited_quote\": \"Aucun avis n'est donné par téléphone ni en personne pour le moment\", \"reasoning_en\": \"Notice is given online only.\", \"reasoning_fr\": \"L'avis n'est donné qu'en ligne.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "partially-met",
+    "logprob": -0.2744368457017603,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.82, \"cited_passage_id\": \"P2\", \"cited_quote\": \"Aucun avis n'est donné par téléphone ni en personne pour le moment\", \"reasoning_en\": \"Notice is given online only.\", \"reasoning_fr\": \"L'avis n'est donné qu'en ligne.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 146,
+  "completion_tokens": 64,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

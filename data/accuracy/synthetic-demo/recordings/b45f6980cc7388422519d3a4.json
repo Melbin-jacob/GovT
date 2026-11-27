@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"met\", \"confidence\": 0.99, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Calibration results are filed by the operator.\", \"reasoning_en\": \"Calibration results are filed.\", \"reasoning_fr\": \"Les résultats d'étalonnage sont classés.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "met",
+    "logprob": -0.030459207484708574,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.99, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Calibration results are filed by the operator.\", \"reasoning_en\": \"Calibration results are filed.\", \"reasoning_fr\": \"Les résultats d'étalonnage sont classés.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 130,
+  "completion_tokens": 59,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

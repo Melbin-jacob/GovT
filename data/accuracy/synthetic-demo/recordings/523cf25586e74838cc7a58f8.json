@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"met\", \"confidence\": 0.97, \"cited_passage_id\": \"P2\", \"cited_quote\": \"Notices are complete on every channel.\", \"reasoning_en\": \"The evidence says notices are complete on every channel.\", \"reasoning_fr\": \"La preuve indique que les avis sont complets sur tous les modes.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "met",
+    "logprob": -0.05129329438755058,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.97, \"cited_passage_id\": \"P2\", \"cited_quote\": \"Notices are complete on every channel.\", \"reasoning_en\": \"The evidence says notices are complete on every channel.\", \"reasoning_fr\": \"La preuve indique que les avis sont complets sur tous les modes.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 157,
+  "completion_tokens": 70,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

@@ -1,0 +1,18 @@
+# Assessment engine settings. PLACEHOLDER values until the organization sets them.
+
+[confidence]
+# Model verdicts below this confidence become "unable to determine" (project owner:
+# one PLACEHOLDER value, overridable per language; calibration is reported per language).
+threshold = 0.70
+status = "PLACEHOLDER"
+
+[confidence.by_language]
+# en = 0.70
+# fr = 0.70
+
+[retrieval]
+passages = 5            # evidence passages given to the model per check
+min_quote_chars = 15    # a shorter quote cannot support a verdict
+
+[prompt]
+version = "assess-v1"   # assessment_engine/prompts/<version>.<lang>.md

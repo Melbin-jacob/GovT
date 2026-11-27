@@ -29,6 +29,19 @@ def roman(level: object) -> str:
 
 env.filters["roman"] = roman
 
+
+def localized(value: object, lang: str) -> str:
+    """Generated text in the page's language: a coded item carries ``text: {en, fr}``."""
+    if isinstance(value, dict):
+        text = value.get("text")
+        if isinstance(text, dict) and lang in text:
+            return str(text[lang])
+        return str(value.get("detail") or value.get("reason") or value.get("code", ""))
+    return str(value)
+
+
+env.filters["localized"] = localized
+
 # (key in the navigation, path below /{lang}/, string key of its label)
 SCREENS: list[tuple[str, str, str]] = [
     ("policy", "policy-change", "nav.policy"),

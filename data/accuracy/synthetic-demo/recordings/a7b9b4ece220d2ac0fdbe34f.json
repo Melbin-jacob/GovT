@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"partially-met\", \"confidence\": 0.84, \"cited_passage_id\": \"P1\", \"cited_quote\": \"No notice is given by telephone or in person at this time\", \"reasoning_en\": \"Notice is given online only; telephone and in-person channels have none.\", \"reasoning_fr\": \"L'avis n'est donné qu'en ligne; le téléphone et le comptoir n'en ont pas.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "partially-met",
+    "logprob": -0.23572233352106983,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.84, \"cited_passage_id\": \"P1\", \"cited_quote\": \"No notice is given by telephone or in person at this time\", \"reasoning_en\": \"Notice is given online only; telephone and in-person channels have none.\", \"reasoning_fr\": \"L'avis n'est donné qu'en ligne; le téléphone et le comptoir n'en ont pas.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 129,
+  "completion_tokens": 83,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

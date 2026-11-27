@@ -8,6 +8,7 @@ dependencies = [
     "jsonschema[format-nongpl]>=4.23",
     "pydantic>=2.9,<3",
     "regex>=2024.11",
+    "httpx>=0.28",
 ]
 
 [build-system]

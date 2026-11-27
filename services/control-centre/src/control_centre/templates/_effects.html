@@ -3,7 +3,7 @@
 {% set evi = fx.get('evidence-task') %}
 <ul class="effects">
   {% if fx.get('poam') %}<li>{{ t('effect.poam', version=fx.poam.version) }}</li>{% endif %}
-  {% if rem %}<li>{{ t('effect.remediation_task') }}: {{ rem.get('number') or rem.get('status') }}</li>{% endif %}
-  {% if evi %}<li>{{ t('effect.evidence_task') }}: {{ evi.get('number') or evi.get('status') }}</li>{% endif %}
-  {% if fx.get('work-note') %}<li>{{ t('effect.work_note') }}: {{ fx.get('work-note') }}</li>{% endif %}
+  {% if rem %}<li>{{ t('effect.remediation_task') }}: {{ rem.get('number') or t('effect.not_sent') }}</li>{% endif %}
+  {% if evi %}<li>{{ t('effect.evidence_task') }}: {{ evi.get('number') or t('effect.not_sent') }}</li>{% endif %}
+  {% if fx.get('work-note') %}<li>{{ t('effect.work_note') }}: {{ t('effect.sent') if fx.get('work-note') == 'sent' else t('effect.not_sent') }}</li>{% endif %}
 </ul>

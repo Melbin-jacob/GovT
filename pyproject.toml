@@ -15,6 +15,7 @@ members = [
     "services/connector-hub",
     "services/review-desk",
     "services/control-centre",
+    "services/assessment-engine",
 ]
 
 [tool.uv.sources]
@@ -23,6 +24,7 @@ govhub-rulebook = { workspace = true }
 govhub-connector-hub = { workspace = true }
 govhub-review-desk = { workspace = true }
 govhub-control-centre = { workspace = true }
+govhub-assessment-engine = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -31,6 +33,7 @@ dev = [
     "govhub-connector-hub",
     "govhub-review-desk",
     "govhub-control-centre",
+    "govhub-assessment-engine",
     "ruff>=0.8",
     "mypy>=1.13",
     "pytest>=8.3",
@@ -53,7 +56,7 @@ select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "S"]
 ignore = []
 
 [tool.ruff.lint.isort]
-known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk", "control_centre"]
+known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk", "control_centre", "assessment_engine"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests drive git via subprocess, use fake mock credentials, and contain French text
@@ -64,7 +67,7 @@ known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk"
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["govhub_shared", "rulebook", "connector_hub", "review_desk", "control_centre"]
+packages = ["govhub_shared", "rulebook", "connector_hub", "review_desk", "control_centre", "assessment_engine"]
 plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
@@ -74,6 +77,7 @@ testpaths = [
     "services/connector-hub/tests",
     "services/review-desk/tests",
     "services/control-centre/tests",
+    "services/assessment-engine/tests",
 ]
 pythonpath = [
     "services/rulebook/tests",
@@ -81,6 +85,7 @@ pythonpath = [
     "services/review-desk/tests",
     "services/control-centre/tests",
     "services/control-centre/e2e",
+    "services/assessment-engine/tests",
 ]
 addopts = "-ra --import-mode=importlib"
 filterwarnings = [

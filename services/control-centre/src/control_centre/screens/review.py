@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Final
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from control_centre.backends import BackendError, Backends
 from control_centre.i18n import Translator
-from control_centre.web import BackendsDep, LangDep, render
+from control_centre.web import BackendsDep, LangDep, SettingsDep, render
 
 router = APIRouter()
 
@@ -38,16 +38,32 @@ def review_queue(request: Request, lang: LangDep, backends: BackendsDep) -> HTML
     )
 
 
-def control_statement(backends: Backends, control_id: str, lang: str) -> str | None:
-    """The control's statement from the catalog in the page's language, if available."""
+def control_text(backends: Backends, control_id: str, lang: str) -> dict[str, str]:
+    """Statement and assessment objective from the catalog in the page's language."""
     try:
         control = backends.rulebook.get(f"/controls/{control_id}", lang=lang)
     except BackendError:
-        return None
-    for part in control.get("control", {}).get("parts", []):
-        if part.get("name") == "statement":
-            return str(part.get("prose", "")) or None
-    return None
+        return {}
+    return {
+        str(part["name"]): str(part["prose"])
+        for part in control.get("control", {}).get("parts", [])
+        if part.get("name") in ("statement", "assessment-objective") and part.get("prose")
+    }
+
+
+def engine_evidence(backends: Backends, finding: dict[str, Any]) -> dict[str, Any]:
+    """The system's evidence documents and the flagged passages the draft relied on.
+    The page still renders when the assessment engine is unavailable."""
+    out: dict[str, Any] = {"available": True, "documents": [], "flagged": []}
+    try:
+        out["documents"] = backends.engine.get(f"/systems/{finding['system_id']}/evidence")
+        flagged = set((finding.get("assessment") or {}).get("flagged_passage_ids") or [])
+        for doc_id in sorted({p.split(":", 1)[0] for p in flagged}):
+            passages = backends.engine.get(f"/evidence/{doc_id}/passages")
+            out["flagged"] += [p for p in passages if p["id"] in flagged]
+    except BackendError:
+        out["available"] = False
+    return out
 
 
 def _detail(
@@ -61,6 +77,7 @@ def _detail(
     errors: list[str] | None = None,
     form: dict[str, str] | None = None,
     status_code: int = 200,
+    notice: str | None = None,
 ) -> HTMLResponse:
     finding = backends.desk.get(f"/findings/{finding_id}")
     history = backends.desk.get(f"/findings/{finding_id}/decisions")
@@ -72,7 +89,7 @@ def _detail(
         screen="review",
         status_code=status_code,
         finding=finding,
-        statement=control_statement(backends, finding["control_id"], lang),
+        catalog_text=control_text(backends, finding["control_id"], lang),
         history=history,
         decidable=finding["state"] in OPEN_STATES,
         session_id=session_id,
@@ -81,7 +98,12 @@ def _detail(
         form=form or {},
         actions=ACTIONS,
         verdicts=VERDICTS,
+        evidence=engine_evidence(backends, finding),
+        notice=notice,
     )
+
+
+NOTICES: Final = ("uploaded", "assessed", "assess-failed", "upload-failed")
 
 
 @router.get("/{lang}/review/{finding_id}", response_class=HTMLResponse)
@@ -92,8 +114,58 @@ def finding_detail(
     finding_id: str,
     session: int | None = None,
     decided: int | None = None,
+    notice: str | None = None,
 ) -> HTMLResponse:
-    return _detail(request, lang, backends, finding_id, session_id=session, decided=decided)
+    return _detail(
+        request,
+        lang,
+        backends,
+        finding_id,
+        session_id=session,
+        decided=decided,
+        notice=notice if notice in NOTICES else None,
+    )
+
+
+@router.post("/{lang}/review/{finding_id}/evidence")
+async def upload_evidence(
+    lang: LangDep,
+    backends: BackendsDep,
+    finding_id: str,
+    file: Annotated[UploadFile, File()],
+) -> RedirectResponse:
+    """Forward an evidence file to the assessment engine for the finding's system."""
+    finding = backends.desk.get(f"/findings/{finding_id}")
+    data = await file.read()
+    try:
+        backends.engine.upload(
+            f"/systems/{finding['system_id']}/evidence", file.filename or "upload", data
+        )
+        notice = "uploaded"
+    except BackendError:
+        notice = "upload-failed"
+    return RedirectResponse(
+        f"/{lang}/review/{finding_id}?notice={notice}#evidence", status_code=303
+    )
+
+
+@router.post("/{lang}/review/{finding_id}/assess")
+def assess_finding(
+    lang: LangDep, backends: BackendsDep, settings: SettingsDep, finding_id: str
+) -> RedirectResponse:
+    """Ask the assessment engine for a draft of this finding (it stays open)."""
+    finding = backends.desk.get(f"/findings/{finding_id}")
+    try:
+        backends.engine.post(
+            f"/systems/{finding['system_id']}/assess-open-findings",
+            {"as_of": settings.default_as_of, "control_ids": [finding["control_id"]]},
+        )
+        notice = "assessed"
+    except BackendError:
+        notice = "assess-failed"
+    return RedirectResponse(
+        f"/{lang}/review/{finding_id}?notice={notice}#assessment", status_code=303
+    )
 
 
 @router.post("/{lang}/review/{finding_id}/open")

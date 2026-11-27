@@ -20,17 +20,94 @@
   <dt>{{ t('impact.level') }}</dt><dd>{{ finding.impact_level or t('impact.level_unknown') }}</dd>
   <dt>{{ t('impact.control') }}</dt><dd>{{ finding.control_id }}{% if finding.obligation_change %} {{ m.badge('obligation-change', t) }}{% endif %}</dd>
   <dt>{{ t('finding.statement') }}</dt>
-  <dd>{% if statement %}{{ statement }}{% else %}<span lang="en">{{ finding.statement }}</span>{% endif %}</dd>
-  {% if finding.evidence_requested %}<dt>{{ t('finding.evidence') }}</dt><dd lang="en">{{ finding.evidence_requested }}</dd>{% endif %}
-  <dt>{{ t('impact.why') }}</dt><dd lang="en">{{ finding.reasons|join('; ') }}</dd>
+  <dd>{{ catalog_text.get('statement') or t('finding.not_in_catalog') }}</dd>
+  {% if catalog_text.get('assessment-objective') %}<dt>{{ t('finding.evidence') }}</dt><dd>{{ catalog_text['assessment-objective'] }}</dd>{% endif %}
+  <dt>{{ t('impact.why') }}</dt>
+  <dd>{% for r in finding.reasons %}{% if r is string %}<span lang="en">{{ r }}</span>{% else %}{{ r|localized(lang) }}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</dd>
   <dt>{{ t('finding.verdict') }}</dt><dd>{{ t('verdict.' ~ finding.verdict) }}{% if finding.placeholder %} {{ m.placeholder(t) }}{% endif %}</dd>
   <dt>{{ t('finding.confidence') }}</dt><dd>{% if finding.confidence is none %}{{ t('finding.no_confidence') }}{% else %}{{ '%.2f'|format(finding.confidence) }}{% endif %}</dd>
-  <dt>{{ t('finding.rationale') }}</dt><dd lang="en">{{ finding.rationale }}</dd>
+  <dt>{{ t('finding.rationale') }}</dt><dd>{% if finding.get('assessment') %}{{ finding.assessment.rationale.get(lang, '') }}{% elif finding.placeholder %}{{ t('finding.placeholder_rationale') }}{% else %}{{ finding.rationale }}{% endif %}</dd>
   <dt>{{ t('finding.state') }}</dt><dd data-state="{{ finding.state }}">{{ t('state.' ~ finding.state) }}</dd>
   <dt>{{ t('impact.due') }}</dt><dd>{{ finding.due_date or t('policy.none') }}</dd>
   <dt>{{ t('impact.servicenow') }}</dt><dd>{{ finding.servicenow_task or t('policy.none') }}</dd>
 </dl>
-<p class="muted">{{ t('finding.ai_note') }}</p>
+<p class="muted">{% if finding.placeholder %}{{ t('finding.ai_note') }}{% else %}{{ t('assessment.human_decides') }}{% endif %}</p>
+
+{% if notice %}
+<div class="alert {{ 'alert-error' if notice.endswith('failed') else 'alert-ok' }}" role="status">
+  <p>{{ t('notice.' ~ notice) }}</p>
+</div>
+{% endif %}
+
+{% set a = finding.get('assessment') %}
+<h2 id="assessment" tabindex="-1">{{ t('assessment.heading') }}</h2>
+{% if a %}
+<dl class="facts" data-assessment="{{ a.method }}">
+  <dt>{{ t('assessment.method') }}</dt>
+  <dd>{{ t('assessment.method.' ~ a.method) }}{% if a.method == 'rule' and a.rule_status %} {{ m.badge('draft-rule', t) }}{% endif %}</dd>
+  {% if a.method == 'model' %}
+  <dt>{{ t('assessment.model') }}</dt><dd><code>{{ a.model_id or t('policy.none') }}</code> · {{ t('assessment.prompt') }} <code>{{ a.prompt_version or t('policy.none') }}</code></dd>
+  {% if a.model_verdict and a.model_verdict != finding.verdict %}<dt>{{ t('assessment.model_verdict') }}</dt><dd>{{ t('verdict.' ~ a.model_verdict) if a.model_verdict in verdicts else a.model_verdict }}</dd>{% endif %}
+  {% endif %}
+  {% if a.cited_quote %}
+  <dt>{{ t('assessment.cited') }}</dt>
+  <dd><blockquote class="quote"{% if a.evidence_language in ('en', 'fr') and a.evidence_language != lang %} lang="{{ a.evidence_language }}"{% endif %}>{{ a.cited_quote }}</blockquote></dd>
+  {% endif %}
+</dl>
+{% if a.flagged_passage_ids %}
+<div class="alert alert-warn" role="note" data-flagged="{{ a.flagged_passage_ids|length }}">
+  <p><strong>{{ t('assessment.flagged', n=a.flagged_passage_ids|length) }}</strong> {{ t('assessment.flagged_detail') }}</p>
+  {% for p in evidence.flagged %}
+  <blockquote class="quote"{% if p.language in ('en', 'fr') and p.language != lang %} lang="{{ p.language }}"{% endif %}>{{ p.text }}</blockquote>
+  {% endfor %}
+</div>
+{% endif %}
+{% else %}
+<p>{{ t('assessment.none') }}</p>
+{% endif %}
+
+<h2 id="evidence" tabindex="-1">{{ t('evidence.heading') }}</h2>
+{% if not evidence.available %}
+<p class="alert alert-warn">{{ t('evidence.unavailable') }}</p>
+{% else %}
+{% if evidence.documents %}
+<table data-table="evidence">
+  <caption>{{ t('evidence.caption', system=finding.system_id) }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('evidence.file') }}</th>
+    <th scope="col">{{ t('evidence.language') }}</th>
+    <th scope="col">{{ t('evidence.status') }}</th>
+    <th scope="col" class="num">{{ t('evidence.passages') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for d in evidence.documents %}
+    <tr>
+      <th scope="row">{{ d.filename }}{% if d.flagged_passages %}<br>{{ m.badge('flagged-evidence', t) }}{% endif %}</th>
+      <td>{{ t('evidence.lang.' ~ d.language) }}</td>
+      <td>{{ t('evidence.extraction.' ~ d.extraction_status) }}</td>
+      <td class="num">{{ d.passages }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ t('evidence.none') }}</p>
+{% endif %}
+{% if decidable %}
+<form method="post" action="/{{ lang }}/review/{{ finding.id }}/evidence" enctype="multipart/form-data" class="inline-form">
+  <div class="field">
+    <label for="evidence-file">{{ t('evidence.upload_label') }}</label>
+    <span id="evidence-hint" class="hint">{{ t('evidence.upload_hint') }}</span>
+    <input id="evidence-file" name="file" type="file" required aria-describedby="evidence-hint" accept=".txt,.md,.html,.htm,.pdf,.docx">
+  </div>
+  <div class="field"><button type="submit" class="secondary">{{ t('evidence.upload') }}</button></div>
+</form>
+<form method="post" action="/{{ lang }}/review/{{ finding.id }}/assess">
+  <p>{{ t('assessment.run_hint') }}</p>
+  <button type="submit" class="secondary">{{ t('assessment.run') }}</button>
+</form>
+{% endif %}
+{% endif %}
 
 {% if decidable %}
 <h2 id="decision" tabindex="-1">{{ t('decide.heading') }}</h2>

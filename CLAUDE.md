@@ -17,7 +17,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   Kubernetes/OpenShift: no cloud-specific services, non-root images that work under an
   arbitrary UID. **Only connector-hub may make outbound calls, and only to hosts listed in
   its configuration; nothing else ever calls out.** (Calls between hub services inside the
-  deployment are internal.)
+  deployment are internal.) The model server is also internal to the deployment: the
+  assessment engine reaches it only through `govhub_shared.model_gateway`, and only hosts
+  listed in `MODEL_GATEWAY_ALLOWED_HOSTS` (approved).
 
 ## Layout
 - `services/<name>/` — one folder per service: connector-hub, rulebook, assessment-engine,
@@ -94,6 +96,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 ## Impact reports
 - Reports never read the clock (`as_of` is an input); `report_id` is a content hash.
 - Renumbering or typography alone never triggers re-review; substance changes do.
+- The report ID is language-neutral (inputs, coded reasons, systems; never the language or
+  wording). Generated text is never written inline: it is a code with parameters rendered
+  from `rulebook/locales/explanations.{en,fr}.toml` into both languages.
 - Tasks are returned as ServiceNow-shaped `sc_task` JSON, never incidents, and are not sent
   until connector-hub exists. Due-date values are PLACEHOLDERS until the organization sets them.
 
@@ -107,20 +112,37 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   Its head is checkpointed outside the database (ServiceNow work note + checkpoint file on
   a separate volume); a checkpoint failure is reported, never blocks a decision.
 
+## Assessment engine
+- Rule-based checks: plain code in `data/rules/*.rules.toml` (unverified drafts until the
+  annotators confirm them); a missing fact gives unable-to-determine, never a guess.
+- Judgment checks: evidence goes to the model only as delimited data; a verdict must quote
+  the cited passage word for word (clause-diff normalization); below the confidence
+  threshold, unparseable, or met with flagged (instruction-like) text in context gives
+  unable-to-determine. The model never closes a finding.
+- Evidence is never committed, never logged; real labelled cases stay in
+  `data/accuracy/private/` (gitignored). Recordings are committed for synthetic cases only.
+- Accuracy: human-labelled and synthetic scores are never mixed; every report says
+  DRAFT GOLDEN SET until confirmed; `make accuracy` (release gate) must pass.
+
 ## Web UI (control-centre)
 - Server-rendered (FastAPI + Jinja2), plain forms; nothing loaded from another origin (CSP).
 - Every UI string in both `locales/en.toml` and `locales/fr.toml`; French strings written by
   an assistant are unverified and listed in `docs/fr-ui-strings.md` (regenerate with
-  `control-centre fr-strings docs/fr-ui-strings.md`; CI checks it). Policy wording comes
+  `python3 scripts/fr_strings.py`; CI checks it). Policy wording comes
   from the catalogs, never from the UI strings.
+- French pages never show English generated text (test scans every French page).
 - Never use Government of Canada logos, wordmark, flag symbols or "Canada.ca" text. Keep the
   demo banner, the bilingual footer and the synthetic/fictional notes.
 - Demo only, no authentication: bind to localhost or the internal network only.
 - `make demo-ui` (Playwright + axe) must pass with zero axe violations.
 
 ## AI usage
-- All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes
-  **no LLM calls** (`NullGateway` only). Self-hosted by default when added.
+- All model access goes through `govhub_shared.model_gateway` (`OpenAIGateway` to a
+  self-hosted OpenAI-compatible server; `RecordedGateway` replays recorded replies).
+  **CI and tests never run a real model**: they use recordings made on synthetic evidence.
+- Never log prompts, evidence passages or model replies (evidence may be personal or
+  Protected information). Log task, model, token counts and timings only.
+- The model drafts verdicts; it never closes a finding. A human decides.
 
 ## Working rules
 - Small commits with clear messages. Never put model identifiers in commits or code.

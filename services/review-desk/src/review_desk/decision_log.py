@@ -20,7 +20,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterable, Iterator, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from sqlalchemy import select, text
@@ -78,6 +78,8 @@ class VerifyResult:
     head_hash: str
     problems: list[str]
     checkpoints_checked: int = 0
+    # The same problems as codes and parameters, so a UI can show them in any language.
+    issues: list[dict[str, Any]] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -87,6 +89,7 @@ class VerifyResult:
             "head_seq": self.head_seq,
             "head_hash": self.head_hash,
             "problems": self.problems,
+            "issues": self.issues,
         }
 
 
@@ -113,42 +116,75 @@ def verify_entries(
     if expect_seq is not None and expect_head is not None:
         trusted.append(Checkpoint(expect_seq, expect_head))
     problems: list[str] = []
+    issues: list[dict[str, Any]] = []
+
+    def problem(code: str, text: str, **params: Any) -> None:
+        problems.append(text)
+        issues.append({"code": code, "params": params})
+
     expected_seq, expected_previous, count = 1, GENESIS, 0
     head_seq, head_hash = 0, GENESIS
     for entry in entries:
         count += 1
         if entry.seq != expected_seq:
-            problems.append(
-                f"seq {entry.seq}: expected seq {expected_seq} (record missing or reordered)"
+            problem(
+                "sequence-gap",
+                f"seq {entry.seq}: expected seq {expected_seq} (record missing or reordered)",
+                seq=entry.seq,
+                expected=expected_seq,
             )
         if entry.previous_hash != expected_previous:
-            problems.append(
-                f"seq {entry.seq}: previous hash does not match record {expected_seq - 1}"
+            problem(
+                "previous-hash-mismatch",
+                f"seq {entry.seq}: previous hash does not match record {expected_seq - 1}",
+                seq=entry.seq,
+                previous=expected_seq - 1,
             )
         if hash_text(entry.record_text) != entry.record_hash:
-            problems.append(f"seq {entry.seq}: record content does not match its hash (modified)")
+            problem(
+                "content-modified",
+                f"seq {entry.seq}: record content does not match its hash (modified)",
+                seq=entry.seq,
+            )
         try:
             body = json.loads(entry.record_text)
             if (
                 body.get("seq") != entry.seq
                 or body.get("previous-record-hash") != entry.previous_hash
             ):
-                problems.append(f"seq {entry.seq}: chain fields inside the record were altered")
+                problem(
+                    "chain-fields-altered",
+                    f"seq {entry.seq}: chain fields inside the record were altered",
+                    seq=entry.seq,
+                )
         except json.JSONDecodeError:
-            problems.append(f"seq {entry.seq}: record is not valid JSON")
+            problem("invalid-json", f"seq {entry.seq}: record is not valid JSON", seq=entry.seq)
         expected_seq = entry.seq + 1
         expected_previous = entry.record_hash
         head_seq, head_hash = entry.seq, entry.record_hash
     hashes = {e.seq: e.record_hash for e in entries}
     for cp in sorted(set(trusted), key=lambda c: (c.seq, c.source)):
+        kind, _, name = cp.source.partition(" ")
+        where = {"source_kind": kind, "source_name": name}
         if head_seq < cp.seq:
-            problems.append(
+            problem(
+                "truncated",
                 f"log ends at seq {head_seq} but checkpoint says {cp.seq} (records removed "
-                f"from the end) [{cp.source}]"
+                f"from the end) [{cp.source}]",
+                head=head_seq,
+                checkpoint=cp.seq,
+                **where,
             )
         elif hashes.get(cp.seq) != cp.head_hash:
-            problems.append(f"seq {cp.seq}: hash differs from the checkpoint [{cp.source}]")
-    return VerifyResult(not problems, count, head_seq, head_hash, problems, len(set(trusted)))
+            problem(
+                "checkpoint-hash-mismatch",
+                f"seq {cp.seq}: hash differs from the checkpoint [{cp.source}]",
+                seq=cp.seq,
+                **where,
+            )
+    return VerifyResult(
+        not problems, count, head_seq, head_hash, problems, len(set(trusted)), issues
+    )
 
 
 def db_entries(session: Session) -> list[Entry]:

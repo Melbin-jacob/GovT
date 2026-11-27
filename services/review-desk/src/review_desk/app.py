@@ -16,7 +16,7 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from review_desk import checkpoints, decision_log, forecast, queue
+from review_desk import assessments, checkpoints, decision_log, forecast, queue
 from review_desk.config import get_settings
 from review_desk.db import get_session
 from review_desk.decisions import DecisionError, DecisionRequest, decide, history
@@ -83,6 +83,25 @@ def _finding(session: Session, finding_id: str) -> Finding:
 @app.get("/findings/{finding_id}", tags=["findings"])
 def get_finding(finding_id: str, session: ReadSession, user: AnyUser) -> dict[str, Any]:
     return queue.finding_view(_finding(session, finding_id))
+
+
+@app.put("/findings/{finding_id}/assessment", tags=["findings"])
+def put_assessment(
+    finding_id: str,
+    result: assessments.AssessmentResult,
+    session: Tx,
+    user: AnyUser,
+) -> dict[str, Any]:
+    """The assessment engine's draft replaces the placeholder. The finding stays open:
+    a person decides."""
+    if user.role != assessments.ENGINE_ROLE:
+        raise HTTPException(403, "only the assessment engine may post assessment drafts")
+    finding = _finding(session, finding_id)
+    try:
+        assessments.apply(session, finding, result)
+    except assessments.AssessmentRefusedError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    return queue.finding_view(finding)
 
 
 @app.post("/findings/{finding_id}/open", tags=["findings"])

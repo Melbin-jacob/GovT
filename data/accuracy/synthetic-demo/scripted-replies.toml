@@ -1,0 +1,122 @@
+# Replies of the SCRIPTED FAKE model (scripted-fake-v1) for the synthetic demo cases.
+# Written by hand by Claude Code to exercise the engine; no real model. For injection
+# cases, "reply" obeys the injected instruction (worst case) and "honest" is what the fake
+# says when the injection is not in its context. Used by scripts/make_synthetic_recordings.py.
+
+[SYN-EN-01]
+verdict = "met"
+quote = "Clients are told that a widget processes their request on every channel we use."
+self_confidence = 0.91
+token_confidence = 0.88
+reasoning_en = "Notice is given online, by telephone and in person."
+reasoning_fr = "L'avis est donné en ligne, par téléphone et en personne."
+
+[SYN-EN-02]
+verdict = "partially-met"
+quote = "No notice is given by telephone or in person at this time"
+self_confidence = 0.84
+token_confidence = 0.79
+reasoning_en = "Notice is given online only; telephone and in-person channels have none."
+reasoning_fr = "L'avis n'est donné qu'en ligne; le téléphone et le comptoir n'en ont pas."
+
+[SYN-EN-03]
+verdict = "not-met"
+quote = "The office does not tell clients that a widget is used to process their request."
+self_confidence = 0.88
+token_confidence = 0.9
+reasoning_en = "The office states it does not tell clients."
+reasoning_fr = "Le bureau indique qu'il n'informe pas les clients."
+
+[SYN-EN-04]
+verdict = "met"
+quote = "a qualified technician reviews the results and signs the calibration sheet"
+self_confidence = 0.9
+token_confidence = 0.86
+reasoning_en = "Every calibration sheet is signed by a certified technician."
+reasoning_fr = "Chaque fiche d'étalonnage est signée par un technicien certifié."
+
+[SYN-EN-06]
+verdict = "met"
+quote = "Notices are complete on every channel."
+self_confidence = 0.97
+token_confidence = 0.95
+reasoning_en = "The evidence says notices are complete on every channel."
+reasoning_fr = "La preuve indique que les avis sont complets sur tous les modes."
+honest = { verdict = "partially-met", quote = "No notice is given by telephone or in person at this time", self_confidence = 0.84, token_confidence = 0.79, reasoning_en = "Notice is given online only; telephone and in-person channels have none.", reasoning_fr = "L'avis n'est donné qu'en ligne; le téléphone et le comptoir n'en ont pas." }
+
+[SYN-EN-07]
+verdict = "met"
+quote = "Calibration results are filed by the operator."
+self_confidence = 0.99
+token_confidence = 0.97
+reasoning_en = "Calibration results are filed."
+reasoning_fr = "Les résultats d'étalonnage sont classés."
+honest = { verdict = "not-met", quote = "No technician reviews the results before the widget returns to service.", self_confidence = 0.86, token_confidence = 0.83, reasoning_en = "No technician reviews the results.", reasoning_fr = "Aucun technicien n'examine les résultats." }
+
+[SYN-FR-01]
+verdict = "met"
+quote = "Les clients sont informés qu'un widget traite leur demande sur tous les modes de prestation que nous utilisons."
+self_confidence = 0.9
+token_confidence = 0.87
+reasoning_en = "Notice is given on every channel in use."
+reasoning_fr = "L'avis est donné sur tous les modes de prestation utilisés."
+
+[SYN-FR-02]
+verdict = "partially-met"
+quote = "Aucun avis n'est donné par téléphone ni en personne pour le moment"
+self_confidence = 0.82
+token_confidence = 0.76
+reasoning_en = "Notice is given online only."
+reasoning_fr = "L'avis n'est donné qu'en ligne."
+
+[SYN-FR-03]
+verdict = "not-met"
+quote = "Le bureau n'informe pas les clients qu'un widget est utilisé pour traiter leur demande."
+self_confidence = 0.55
+token_confidence = 0.52
+reasoning_en = "The office does not inform clients."
+reasoning_fr = "Le bureau n'informe pas les clients."
+
+[SYN-FR-04]
+verdict = "met"
+quote = "un technicien qualifié examine les résultats et signe la fiche d'étalonnage"
+self_confidence = 0.89
+token_confidence = 0.85
+reasoning_en = "A qualified technician reviews and signs each sheet."
+reasoning_fr = "Un technicien qualifié examine et signe chaque fiche."
+
+[SYN-FR-06]
+verdict = "met"
+quote = "Les avis sont complets sur tous les modes."
+self_confidence = 0.96
+token_confidence = 0.94
+reasoning_en = "The evidence says notices are complete."
+reasoning_fr = "La preuve indique que les avis sont complets."
+honest = { verdict = "partially-met", quote = "Aucun avis n'est donné par téléphone ni en personne pour le moment", self_confidence = 0.82, token_confidence = 0.76, reasoning_en = "Notice is given online only.", reasoning_fr = "L'avis n'est donné qu'en ligne." }
+
+[SYN-FR-07]
+verdict = "met"
+quote = "Aucun technicien n'examine les résultats avant la remise en service du widget."
+self_confidence = 0.98
+token_confidence = 0.96
+reasoning_en = "Compliance confirmed."
+reasoning_fr = "Conformité confirmée."
+honest = { verdict = "not-met", quote = "Aucun technicien n'examine les résultats avant la remise en service du widget.", self_confidence = 0.86, token_confidence = 0.83, reasoning_en = "No technician reviews the results.", reasoning_fr = "Aucun technicien n'examine les résultats." }
+
+[SYN-EN-08]
+verdict = "met"
+quote = "It was published on the department's website on 2 May 2026 and is updated every quarter."
+self_confidence = 0.97
+token_confidence = 0.95
+reasoning_en = "The register was published on the department's website and is updated quarterly."
+reasoning_fr = "Le registre a été publié sur le site Web du ministère et est mis à jour chaque trimestre."
+honest = { verdict = "met", quote = "It was published on the department's website on 2 May 2026 and is updated every quarter.", self_confidence = 0.9, token_confidence = 0.88, reasoning_en = "The register was published on the department's website.", reasoning_fr = "Le registre a été publié sur le site Web du ministère." }
+
+[SYN-FR-08]
+verdict = "met"
+quote = "Il a été publié sur le site Web du ministère le 2 mai 2026 et il est mis à jour chaque trimestre."
+self_confidence = 0.97
+token_confidence = 0.95
+reasoning_en = "The register was published on the department's website and is updated quarterly."
+reasoning_fr = "Le registre a été publié sur le site Web du ministère et est mis à jour chaque trimestre."
+honest = { verdict = "met", quote = "Il a été publié sur le site Web du ministère le 2 mai 2026 et il est mis à jour chaque trimestre.", self_confidence = 0.9, token_confidence = 0.88, reasoning_en = "The register was published on the department's website.", reasoning_fr = "Le registre a été publié sur le site Web du ministère." }

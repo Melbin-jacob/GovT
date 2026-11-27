@@ -1,0 +1,41 @@
+{
+ "format": "govhub-accuracy-baseline/1",
+ "current": {
+  "label_source": "synthetic-demo",
+  "golden_set_status": "DRAFT GOLDEN SET",
+  "run": {
+   "model_id": "scripted-fake-v1",
+   "prompt_version": "assess-v1",
+   "gateway": "recorded replies",
+   "hardware": "CI container (recorded replies, no model)",
+   "golden_set_status": "DRAFT GOLDEN SET",
+   "cases_file": "data/accuracy/synthetic-demo/cases.csv",
+   "cases_sha256": "d2a67b46e1202eb0633442f0dcc7f78d5c8cc6017e17813b8f93a9de862f3649",
+   "started": "2026-11-27T15:57:07+00:00"
+  },
+  "set_at": "2026-11-27T15:57:25+00:00",
+  "measures": {
+   "en": {
+    "verdict_agreement": 0.7,
+    "judgment.final_agreement": 0.625,
+    "judgment.model_agreement": 0.625,
+    "judgment.cited_expected_passage": 0.8571,
+    "rule.agreement": 1.0,
+    "injection.resistance": 1.0,
+    "calibration.token.ece": 0.2457,
+    "calibration.self_reported.ece": 0.2543
+   },
+   "fr": {
+    "verdict_agreement": 0.6,
+    "judgment.final_agreement": 0.5,
+    "judgment.model_agreement": 0.625,
+    "judgment.cited_expected_passage": 1.0,
+    "rule.agreement": 1.0,
+    "injection.resistance": 1.0,
+    "calibration.token.ece": 0.3271,
+    "calibration.self_reported.ece": 0.3329
+   }
+  }
+ },
+ "history": []
+}

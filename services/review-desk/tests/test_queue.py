@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi.testclient import TestClient
-from review_desk_support import OFFICER, REVIEW_TABLES, VIEWER, load_report
+from review_desk_support import OFFICER, REVIEW_TABLES, VIEWER, decide, load_report
 
 from review_desk.models import Base
 
@@ -63,3 +63,52 @@ def test_open_starts_a_timed_session(desk: TestClient, impact_report: dict[str, 
     assert opened["session_id"] == 1
     assert desk.get(f"/findings/{finding['id']}", headers=OFFICER).json()["control_id"]
     assert desk.get("/findings/nope", headers=OFFICER).status_code == 404
+
+
+ENGINE = {"X-GovHub-User": "assessment-engine", "X-GovHub-Role": "assessment-engine"}
+
+
+def _draft(**overrides: Any) -> dict[str, Any]:
+    return {
+        "assessment_id": "a-1",
+        "run_id": "r-1",
+        "method": "model",
+        "verdict": "partially-met",
+        "confidence": 0.82,
+        "rationale": {"en": "Online only.", "fr": "En ligne seulement."},
+        "model_id": "qwen3-8b",
+        "prompt_version": "assess-v1",
+        "cited_passage_id": "doc:2",
+        "cited_quote": "No notice is given by telephone",
+        "evidence_language": "en",
+        "flagged_passage_ids": [],
+        **overrides,
+    }
+
+
+def test_engine_draft_replaces_the_placeholder_but_keeps_the_finding_open(
+    desk: TestClient, impact_report: dict[str, Any]
+) -> None:
+    finding = load_report(desk, impact_report)[0]
+    resp = desk.put(f"/findings/{finding['id']}/assessment", json=_draft(), headers=ENGINE)
+    assert resp.status_code == 200, resp.json()
+    view = resp.json()
+    assert (view["verdict"], view["confidence"], view["placeholder"]) == (
+        "partially-met",
+        0.82,
+        False,
+    )
+    assert view["state"] == finding["state"]  # never closed by the engine
+    assert view["assessment"]["cited_quote"] == "No notice is given by telephone"
+    assert view["rationale"] == "Online only."
+
+
+def test_only_the_engine_may_post_drafts_and_never_on_decided_findings(
+    desk: TestClient, impact_report: dict[str, Any]
+) -> None:
+    finding = load_report(desk, impact_report)[0]
+    url = f"/findings/{finding['id']}/assessment"
+    assert desk.put(url, json=_draft(), headers=OFFICER).status_code == 403
+    assert desk.put(url, json=_draft(verdict="compliant"), headers=ENGINE).status_code == 422
+    decide(desk, finding["id"], {"action": "accept", "annotation": "ok"})
+    assert desk.put(url, json=_draft(), headers=ENGINE).status_code == 409

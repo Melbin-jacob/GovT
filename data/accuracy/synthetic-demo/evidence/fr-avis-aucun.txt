@@ -1,0 +1,5 @@
+PREUVE D'ESSAI SYNTHÉTIQUE (fictive). Bureau des permis d'exemple, description du service.
+
+Les clients présentent leur demande en ligne, par téléphone ou en personne. Les demandes sont traitées dans l’ordre d’arrivée.
+
+Le bureau n’informe pas les clients qu’un widget est utilisé pour traiter leur demande.

@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"not-met\", \"confidence\": 0.55, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Le bureau n'informe pas les clients qu'un widget est utilisé pour traiter leur demande.\", \"reasoning_en\": \"The office does not inform clients.\", \"reasoning_fr\": \"Le bureau n'informe pas les clients.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "not-met",
+    "logprob": -0.6539264674066639,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.55, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Le bureau n'informe pas les clients qu'un widget est utilisé pour traiter leur demande.\", \"reasoning_en\": \"The office does not inform clients.\", \"reasoning_fr\": \"Le bureau n'informe pas les clients.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 137,
+  "completion_tokens": 71,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

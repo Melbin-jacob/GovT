@@ -153,3 +153,20 @@ def test_live_check_against_mock() -> None:
     assert any("re-run is idempotent: unchanged" in line for line in lines)
     (row,) = tasks(sn_app)
     assert (row["correlation_id"], row["state"]) == (SMOKE_ID, "3")
+
+
+def test_due_date_basis_in_both_languages(
+    mock: tuple[ServiceNowClient, FastAPI, TestClient],
+) -> None:
+    _, sn_app, api = mock
+    report = copy.deepcopy(REPORT)
+    report["tasks"][0]["due_date_basis_text"] = {
+        "en": "PLACEHOLDER: impact level IV = 30 days (default)",
+        "fr": "PLACEHOLDER : niveau d'incidence IV = 30 jours (valeur par défaut)",
+    }
+    api.post("/tasks/sync-impact-report", json=report)
+    description = tasks(sn_app)[0]["description"]
+    assert description.endswith(
+        "Due date basis: PLACEHOLDER: impact level IV = 30 days (default)\n"
+        "Base de l'échéance : PLACEHOLDER : niveau d'incidence IV = 30 jours (valeur par défaut)"
+    )

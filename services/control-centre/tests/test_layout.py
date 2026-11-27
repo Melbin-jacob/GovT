@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import runpy
 from pathlib import Path
 
 import pytest
@@ -41,10 +42,10 @@ def test_owner_provided_french_strings_are_exact() -> None:
 
 
 def test_french_strings_document_is_current() -> None:
-    doc = Path(__file__).parents[3] / "docs" / "fr-ui-strings.md"
-    assert doc.read_text("utf-8") == i18n.fr_strings_markdown(), (
-        "run: uv run control-centre fr-strings docs/fr-ui-strings.md"
-    )
+    root = Path(__file__).parents[3]
+    script = runpy.run_path(str(root / "scripts" / "fr_strings.py"))
+    doc = root / "docs" / "fr-ui-strings.md"
+    assert doc.read_text("utf-8") == script["markdown"](), "run: python3 scripts/fr_strings.py"
 
 
 def test_root_is_a_bilingual_language_choice(ui: TestClient) -> None:

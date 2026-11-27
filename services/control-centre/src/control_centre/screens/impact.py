@@ -13,16 +13,6 @@ from control_centre.web import BackendsDep, LangDep, SettingsDep, render
 
 router = APIRouter()
 
-REASON_KINDS = {
-    "clause changed",
-    "clause split",
-    "clause merged",
-    "clause removed",
-    "clause added",
-    "control changed",
-    "control added",
-}
-
 
 def servicenow_numbers(backends: Backends) -> dict[str, str] | None:
     """correlation ID -> task number for the hub's reassessment tasks; None if unavailable."""
@@ -34,14 +24,14 @@ def servicenow_numbers(backends: Backends) -> dict[str, str] | None:
 
 
 def report_request(
-    settings: Settings, catalog: str, version: str, from_v: str, to_v: str, as_of: str
+    settings: Settings, lang: str, catalog: str, version: str, from_v: str, to_v: str, as_of: str
 ) -> dict[str, Any]:
     return {
         "catalog": catalog,
         "catalog_version": version,
         "source": {"instrument": settings.default_instrument, "from": from_v, "to": to_v},
         "as_of": as_of,
-        "lang": settings.report_lang,
+        "lang": lang,  # the report ID does not depend on it
     }
 
 
@@ -80,13 +70,12 @@ def impact(
             versions=versions, version=chosen, from_version=old, to_version=new, as_of=date
         )
         if old != new:
-            body = report_request(settings, str(catalog), str(chosen), old, new, date)
+            body = report_request(settings, lang, str(catalog), str(chosen), old, new, date)
             report = backends.rulebook.post("/impact-reports", body)
             context.update(
                 report=report,
                 forecast=backends.desk.post("/forecast", report),
                 servicenow=servicenow_numbers(backends),
-                reason_kinds=REASON_KINDS,
             )
     return render(
         request, lang, "impact.html", title_key="impact.title", screen="impact", **context

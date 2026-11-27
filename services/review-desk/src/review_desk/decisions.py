@@ -128,6 +128,9 @@ def decide(
         "verdict-after": verdict_after,
         "confidence-at-review": finding.confidence,
         "placeholder-finding": finding.placeholder,
+        **(
+            {"assessment-id": finding.assessment.get("assessment_id")} if finding.assessment else {}
+        ),
         "reviewer": reviewer.as_record(),
         "timestamp": now.isoformat(),
         "annotation": request.annotation,

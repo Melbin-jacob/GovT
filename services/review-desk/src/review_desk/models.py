@@ -62,11 +62,16 @@ class Finding(Base):
     control_id: Mapped[str] = mapped_column(String(200))
     statement: Mapped[str | None] = mapped_column(Text, nullable=True)
     evidence_requested: Mapped[str | None] = mapped_column(Text, nullable=True)
-    reasons: Mapped[list[str]] = mapped_column(JSONB)
+    # Coded reasons from the impact report ({"code", "params", "text": {"en", "fr"}}); older
+    # reports gave plain English strings.
+    reasons: Mapped[list[Any]] = mapped_column(JSONB)
     obligation_change: Mapped[bool] = mapped_column(Boolean)
     verdict: Mapped[str] = mapped_column(String(30))
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     rationale: Mapped[str] = mapped_column(Text)
+    # The assessment engine's latest draft for this finding (method, model, citation,
+    # flags, rationale in both languages); None while the finding is a placeholder.
+    assessment: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     placeholder: Mapped[bool] = mapped_column(Boolean)
     due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     state: Mapped[str] = mapped_column(String(30))

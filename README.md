@@ -13,7 +13,7 @@ Directive on Automated Decision-Making. See `CLAUDE.md` for project conventions.
 ```
 services/rulebook/           Milestone 1: OSCAL catalogs, profiles, diffs (FastAPI)
 services/connector-hub/      Milestone 3: ServiceNow inventory and tasks (MLflow, open API: later)
-services/assessment-engine/  later: five-verdict assessments
+services/assessment-engine/  Milestone 5: rule-based checks in code, judgment checks drafted by a model
 services/review-desk/        Milestone 3: review queue, hash-chained log, POA&M, forecast
 services/control-centre/     Milestone 4: bilingual web UI for the demo (OIDC, tenants: later)
 shared/                      common models, OSCAL helpers, model-gateway interface (stub)
@@ -27,7 +27,7 @@ schemas/                     vendored NIST OSCAL 1.1.3 JSON schemas
 docs/                        design notes
 ```
 
-## Status: Milestones 1 to 4
+## Status: Milestones 1 to 5
 
 | Done | Item |
 |---|---|
@@ -38,7 +38,8 @@ docs/                        design notes
 | ✅ | **M2** Clause-to-control links, suggestion report, fictional inventory, impact report with ranked systems and ServiceNow-shaped tasks |
 | ✅ | **M3** connector-hub (ServiceNow inventory and tasks, mock ServiceNow), review-desk (ranked queue, five decisions, hash-chained log, OSCAL POA&M, forecast) |
 | ✅ | **M4** control-centre web UI in English and French: policy change, impact report, review queue with the five decisions, decision log with external checkpoints, inventory; WCAG 2.1 AA basics, axe-scanned end-to-end test in CI |
-| ⏳ later | assessment-engine (findings are placeholders until then), sign-in (OIDC), tenants, LLM drafting |
+| ✅ | **M5** assessment-engine: evidence upload (encrypted), rule-based checks in code, judgment checks drafted by a self-hosted model with prompt-injection defences, OSCAL assessment-results; accuracy harness (Appendix B) and release gate, EN and FR; CI uses a scripted fake model only |
+| ⏳ later | sign-in (OIDC), tenants, AI drafting of new controls (Milestone 6) |
 
 Definition of done, checked in CI on every push: `make setup && make test` on a clean
 checkout, both catalogs validate, committed catalogs match the CSV, and `make up` serves the
@@ -358,4 +359,34 @@ make demo-ui                         # writes e2e-output/: screenshots, axe resu
 ```
 
 CI runs it after the other demos and keeps `e2e-output/` as the `ui-e2e-output` artifact.
+
+## Milestone 5: assessment engine and accuracy harness
+
+The engine assesses each open finding. Rule-based checks are plain code against facts
+recorded for the system (`data/rules/*.rules.toml`, unverified drafts for the annotators).
+Judgment checks are drafted by a **self-hosted** model from the best evidence passages.
+The result is one of five verdicts, a confidence score, a word-for-word quote from the
+evidence, and the reasoning in English and French. Anything unsupported or below the
+**PLACEHOLDER 0.70** confidence threshold becomes *unable to determine*. The model never
+closes a finding: drafts replace the placeholders in the review queue and a person decides.
+
+- Evidence is untrusted. It goes to the model only as delimited data. Instruction-like
+  text (English and French) is flagged and shown on the finding page, and a *met* verdict
+  is never accepted while flagged text is in front of the model.
+- Evidence may be personal or Protected. It is stored only on its own volume, encrypted by
+  the service when `ASSESSMENT_EVIDENCE_KEY` is set (and by the platform where it allows),
+  and never logged. Retention is a PLACEHOLDER for control-centre.
+- Each run is also an OSCAL 1.1.3 **assessment-results** document, validated against the
+  NIST schema.
+
+```bash
+make demo-assessment   # after make up and make demo-review: drafts on synthetic evidence
+make accuracy          # harness on the synthetic cases (recorded replies) + release gate
+```
+
+The Compose stack uses a **scripted fake model** (recorded replies, no real model). To use
+a real one, see **docs/model-setup.md** (llama.cpp on CPU with Qwen3-4B/8B; vLLM on a GPU
+VM with Mistral Small 3.2 24B). Labelled cases for the harness: **docs/accuracy-cases.md**.
+Scores are per language, human-labelled and synthetic never mixed, and labelled
+**DRAFT GOLDEN SET** until the golden set is confirmed.
 

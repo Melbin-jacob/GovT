@@ -1,0 +1,150 @@
+# Rule-based checks of the Directive on Automated Decision-Making, section 6
+# (golden set: data/golden/dadm-section6.csv, DRAFT GOLDEN SET until confirmed).
+#
+# STATUS: unverified draft, written by Claude Code; approved as a draft by the project
+# owner on 2026-11-27. Annotators confirm or correct each rule alongside the golden set.
+# These are interpretations of the golden-set checks, never policy text. Where a rule
+# depends on Appendix C (requirements by impact level), the level condition here is an
+# assumption to verify ("appendix_c" notes).
+#
+# Logic: see data/rules/example-widgets.rules.toml.
+
+[meta]
+catalog = "dadm-section6"
+status = "unverified-draft"
+synthetic = false
+
+[facts]
+lifecycle = { type = "text", en = "Lifecycle: development, pilot, production or retired", fr = "Cycle de vie : développement, projet pilote, production ou retiré" }
+impact_level = { type = "int", en = "AIA impact level (1 to 4)", fr = "Niveau d'incidence de l'EIA (1 à 4)" }
+production_date = { type = "date", en = "Date the system went (or will go) into production", fr = "Date de mise en production (réelle ou prévue)" }
+development_start_date = { type = "date", en = "Date development (the concept stage) started", fr = "Date de début du développement (étape de conception)" }
+aia_completed_date = { type = "date", en = "Date the AIA was completed", fr = "Date d'achèvement de l'EIA" }
+aia_approved_date = { type = "date", en = "Date the final AIA results were approved", fr = "Date d'approbation des résultats finaux de l'EIA" }
+aia_last_approval_date = { type = "date", en = "Date of the latest scheduled AIA review and approval", fr = "Date du dernier examen et de la dernière approbation périodiques de l'EIA" }
+aia_review_interval_days = { type = "int", en = "AIA review interval set by the department, in days", fr = "Intervalle d'examen de l'EIA fixé par le ministère, en jours" }
+released_versions_safeguarded = { type = "bool", en = "All released versions of the software components are obtained and safeguarded", fr = "Toutes les versions publiées des composants logiciels sont obtenues et protégées" }
+version_inventory_kept = { type = "bool", en = "An inventory of released versions and where they are stored is kept", fr = "Un inventaire des versions publiées et de leur lieu de stockage est tenu" }
+decision_log_kept = { type = "bool", en = "Decisions and assessments made or assisted by the system are logged", fr = "Les décisions et évaluations prises ou appuyées par le système sont consignées" }
+monitoring_interval_days = { type = "int", en = "Scheduled interval for outcome monitoring, in days", fr = "Intervalle prévu de surveillance des résultats, en jours" }
+last_monitoring_run_date = { type = "date", en = "Date of the latest outcome-monitoring run", fr = "Date de la dernière surveillance des résultats" }
+complaints_log_kept = { type = "bool", en = "Client complaints are documented", fr = "Les plaintes des clients sont documentées" }
+impacts_log_kept = { type = "bool", en = "Unexpected impacts are documented", fr = "Les incidences imprévues sont documentées" }
+overrides_log_kept = { type = "bool", en = "Staff overrides of the system's decisions are documented", fr = "Les dérogations du personnel aux décisions du système sont documentées" }
+peer_review_published_date = { type = "date", en = "Date the peer review or its plain-language summary was published", fr = "Date de publication de l'examen par les pairs ou de son résumé en langage clair" }
+gba_plus_completed = { type = "bool", en = "A GBA Plus was completed during development or modification", fr = "Une ACS Plus a été réalisée pendant le développement ou la modification" }
+roles_trained_ratio = { type = "number", en = "Share of roles (develop, use, manage, decide) with training records (0 to 1)", fr = "Proportion des rôles (développer, utiliser, gérer, décider) ayant des dossiers de formation (0 à 1)" }
+continuity_plan_covers_system = { type = "bool", en = "An IT and business continuity plan covers the system", fr = "Un plan de continuité des TI et des activités couvre le système" }
+legal_consultation_date = { type = "date", en = "Date legal services were first consulted", fr = "Date de la première consultation des services juridiques" }
+production_approval_date = { type = "date", en = "Date approval for production was obtained", fr = "Date d'obtention de l'approbation de mise en production" }
+production_approval_level_ok = { type = "bool", en = "The approver's level matches the one required for the impact level", fr = "Le niveau de l'approbateur correspond à celui exigé pour le niveau d'incidence" }
+fairness_summary_approved = { type = "bool", en = "The summary on fair, effective, transparent and compliant use is approved", fr = "Le résumé sur l'utilisation équitable, efficace, transparente et conforme est approuvé" }
+tbs_submission_date = { type = "date", en = "Date the summary was submitted to the Treasury Board of Canada Secretariat", fr = "Date de présentation du résumé au Secrétariat du Conseil du Trésor du Canada" }
+
+[[rule]]
+control = "DADM-6.1.1-A"
+en = "Met when the AIA was completed on or before the production date."
+fr = "Respecté lorsque l'EIA a été réalisée au plus tard à la date de mise en production."
+met = { before = ["aia_completed_date", "production_date"] }
+
+[[rule]]
+control = "DADM-6.1.1-B"
+en = "Met when the final AIA results were approved on or before the production date."
+fr = "Respecté lorsque les résultats finaux de l'EIA ont été approuvés au plus tard à la date de mise en production."
+met = { before = ["aia_approved_date", "production_date"] }
+
+[[rule]]
+control = "DADM-6.1.2"
+rollup = true
+en = "Roll-up: met when every Appendix C requirement at the system's impact level is met. Unable to determine until the Appendix C requirement list per level is mapped (TODO)."
+fr = "Regroupement : respecté lorsque chaque exigence de l'annexe C au niveau d'incidence du système est respectée. Impossible à déterminer tant que la liste des exigences de l'annexe C par niveau n'est pas établie (à faire)."
+
+[[rule]]
+control = "DADM-6.1.3-A"
+en = "Met when the latest scheduled AIA review and approval is within the interval the department set."
+fr = "Respecté lorsque le dernier examen et la dernière approbation périodiques de l'EIA se situent dans l'intervalle fixé par le ministère."
+met = { fact = "aia_last_approval_date", within_days_fact = "aia_review_interval_days" }
+
+[[rule]]
+control = "DADM-6.2.5"
+en = "Met when all released versions are obtained and safeguarded and their inventory is kept; partially met when only one of the two holds."
+fr = "Respecté lorsque toutes les versions publiées sont obtenues et protégées et que leur inventaire est tenu; partiellement respecté lorsqu'une seule des deux conditions est remplie."
+met = { all = [{ fact = "released_versions_safeguarded", is_true = true }, { fact = "version_inventory_kept", is_true = true }] }
+partial = { any = [{ fact = "released_versions_safeguarded", is_true = true }, { fact = "version_inventory_kept", is_true = true }] }
+
+[[rule]]
+control = "DADM-6.2.7"
+en = "Met when the decisions and assessments made or assisted by the system are logged."
+fr = "Respecté lorsque les décisions et évaluations prises ou appuyées par le système sont consignées."
+met = { fact = "decision_log_kept", is_true = true }
+
+[[rule]]
+control = "DADM-6.3.2-A"
+en = "Applies in production. Met when outcomes are monitored on a set schedule and the latest run is within that interval."
+fr = "S'applique en production. Respecté lorsque les résultats sont surveillés selon un calendrier fixé et que la dernière surveillance se situe dans cet intervalle."
+applies_when = { fact = "lifecycle", equals = "production" }
+met = { fact = "last_monitoring_run_date", within_days_fact = "monitoring_interval_days" }
+
+[[rule]]
+control = "DADM-6.3.3"
+en = "Applies in production. Met when complaints, unexpected impacts and overrides are all documented; partially met when some are."
+fr = "S'applique en production. Respecté lorsque les plaintes, les incidences imprévues et les dérogations sont toutes documentées; partiellement respecté lorsque certaines le sont."
+applies_when = { fact = "lifecycle", equals = "production" }
+met = { all = [{ fact = "complaints_log_kept", is_true = true }, { fact = "impacts_log_kept", is_true = true }, { fact = "overrides_log_kept", is_true = true }] }
+partial = { any = [{ fact = "complaints_log_kept", is_true = true }, { fact = "impacts_log_kept", is_true = true }, { fact = "overrides_log_kept", is_true = true }] }
+
+[[rule]]
+control = "DADM-6.3.6-B"
+appendix_c = "Assumed to apply at impact levels III and IV (a secondary source; verify against Appendix C)."
+en = "Applies at impact levels III and IV (assumption to verify against Appendix C). Met when the peer review or its summary was published on or before the production date."
+fr = "S'applique aux niveaux d'incidence III et IV (hypothèse à vérifier selon l'annexe C). Respecté lorsque l'examen par les pairs ou son résumé a été publié au plus tard à la date de mise en production."
+applies_when = { fact = "impact_level", at_least = 3 }
+met = { before = ["peer_review_published_date", "production_date"] }
+
+[[rule]]
+control = "DADM-6.3.7"
+appendix_c = "Applicability by impact level to verify against Appendix C."
+en = "Met when a GBA Plus was completed during development or modification."
+fr = "Respecté lorsqu'une ACS Plus a été réalisée pendant le développement ou la modification."
+met = { fact = "gba_plus_completed", is_true = true }
+
+[[rule]]
+control = "DADM-6.3.8"
+appendix_c = "Training required by role and level to verify against Appendix C."
+en = "Met when every role has training records; partially met when some roles do."
+fr = "Respecté lorsque chaque rôle a des dossiers de formation; partiellement respecté lorsque certains rôles en ont."
+met = { fact = "roles_trained_ratio", at_least = 1.0 }
+partial = { fact = "roles_trained_ratio", at_least = 0.01 }
+
+[[rule]]
+control = "DADM-IT-CONTINUITY"
+appendix_c = "Applicability by impact level to verify against Appendix C."
+en = "Met when an IT and business continuity plan covers the system."
+fr = "Respecté lorsqu'un plan de continuité des TI et des activités couvre le système."
+met = { fact = "continuity_plan_covers_system", is_true = true }
+
+[[rule]]
+control = "DADM-LEGAL"
+en = "Met when legal services were consulted on or before the date development (the concept stage) started."
+fr = "Respecté lorsque les services juridiques ont été consultés au plus tard à la date de début du développement (étape de conception)."
+met = { before = ["legal_consultation_date", "development_start_date"] }
+
+[[rule]]
+control = "DADM-APPROVAL"
+appendix_c = "Required approver by impact level to verify against Appendix C."
+en = "Met when approval at the required level was obtained on or before the production date; partially met when approval was obtained in time but at another level."
+fr = "Respecté lorsque l'approbation au niveau exigé a été obtenue au plus tard à la date de mise en production; partiellement respecté lorsqu'elle a été obtenue à temps mais à un autre niveau."
+met = { all = [{ before = ["production_approval_date", "production_date"] }, { fact = "production_approval_level_ok", is_true = true }] }
+partial = { before = ["production_approval_date", "production_date"] }
+
+[[rule]]
+control = "DADM-6.5.2"
+en = "Met when the summary on fair, effective, transparent and compliant use is approved."
+fr = "Respecté lorsque le résumé sur l'utilisation équitable, efficace, transparente et conforme est approuvé."
+met = { fact = "fairness_summary_approved", is_true = true }
+
+[[rule]]
+control = "DADM-6.5.2.1"
+en = "Met when the summary was submitted to the Treasury Board of Canada Secretariat on or before the production date."
+fr = "Respecté lorsque le résumé a été présenté au Secrétariat du Conseil du Trésor du Canada au plus tard à la date de mise en production."
+met = { before = ["tbs_submission_date", "production_date"] }

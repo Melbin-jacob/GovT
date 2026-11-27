@@ -9,7 +9,7 @@ import uuid
 from collections.abc import Mapping
 from typing import Any, Literal
 
-OscalKind = Literal["catalog", "profile", "plan-of-action-and-milestones"]
+OscalKind = Literal["catalog", "profile", "plan-of-action-and-milestones", "assessment-results"]
 
 # Fixed namespace for deterministic (uuid5) identifiers minted by the hub.
 HUB_UUID_NAMESPACE = uuid.UUID("5d0c8a4e-6b0f-5c38-9a52-6a1f0f1e2b7d")
