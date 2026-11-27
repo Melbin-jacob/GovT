@@ -24,10 +24,11 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from review_desk import decision_log
+from review_desk import decision_log, poam
 from review_desk.identity import Reviewer
 from review_desk.models import VERDICTS, DecisionRecord, Finding, ReviewSession
 from review_desk.queue import OPEN_STATES
+from review_desk.tasks import NullTaskSink, TaskSink
 
 Action = Literal[
     "accept", "accept-with-remediation", "reject", "request-more-evidence", "override-verdict"
@@ -101,10 +102,12 @@ def decide(
     request: DecisionRequest,
     reviewer: Reviewer,
     *,
-    side_effects: dict[str, Any] | None = None,
+    sink: TaskSink | None = None,
     now: datetime | None = None,
 ) -> DecisionRecord:
-    """Apply the decision and append its log record, in the caller's transaction."""
+    """Apply the decision, perform its side effects (POA&M item, ServiceNow tasks through
+    connector-hub) and append one log record with their outcomes, in the caller's
+    transaction."""
     if finding.state not in OPEN_STATES:
         raise DecisionError(409, f"finding is already {finding.state}")
     now = now or datetime.now(UTC)
@@ -132,11 +135,104 @@ def decide(
     }
     if request.remediation is not None:
         record["remediation"] = request.remediation.model_dump(mode="json")
-    if side_effects:
-        record["side-effects"] = side_effects
+    record["side-effects"] = _side_effects(
+        session, finding, request, reviewer, record, sink or NullTaskSink(), now
+    )
     finding.verdict = verdict_after
     finding.state = NEXT_STATE[request.action]
     return decision_log.append(session, record)
+
+
+PRIORITY = {"IV": 1, "unknown": 1, "III": 2, "II": 3, "I": 4}
+
+
+def _side_effects(
+    session: Session,
+    finding: Finding,
+    request: DecisionRequest,
+    reviewer: Reviewer,
+    record: dict[str, Any],
+    sink: TaskSink,
+    now: datetime,
+) -> dict[str, Any]:
+    effects: dict[str, Any] = {}
+    common = {
+        "tenant": finding.tenant,
+        "owner_email": finding.owner_email,
+        "system_id": finding.system_id,
+        "priority": PRIORITY.get(finding.impact_level, 3),
+    }
+    if request.action == "accept-with-remediation":
+        assert request.remediation is not None  # noqa: S101 - validated
+        item = poam.item_uuid(finding.id, record["uuid"])
+        task = sink.upsert(
+            {
+                **common,
+                "correlation_id": f"POAM-{item}",
+                "type": "remediation",
+                "short_description": (f"Remediate {finding.control_id} on {finding.system_name}")[
+                    :160
+                ],
+                "description": (
+                    f"{request.remediation.description}\n\nReviewer note: "
+                    f"{request.annotation or '-'}\nPOA&M item: {item}"
+                ),
+                "due_date": request.remediation.due_date.isoformat(),
+                "reference": item,
+                "note": f"Accepted with remediation by {reviewer.id}",
+            }
+        )
+        version, item_id = poam.add_item(
+            session,
+            finding,
+            decision_uuid=record["uuid"],
+            remediation_description=request.remediation.description,
+            due_date=request.remediation.due_date,
+            annotation=request.annotation,
+            reviewer=reviewer.id,
+            decided_at=now,
+            servicenow_task=task.get("number"),
+        )
+        effects["poam"] = {
+            "system-id": finding.system_id,
+            "version": version.version,
+            "item-uuid": item_id,
+            "document-hash": version.content_hash,
+        }
+        effects["remediation-task"] = _task_outcome(task)
+    if request.action == "request-more-evidence":
+        task = sink.upsert(
+            {
+                **common,
+                "correlation_id": f"EVID-{finding.id}",
+                "type": "evidence-request",
+                "short_description": (
+                    f"Provide evidence for {finding.control_id} ({finding.system_name})"
+                )[:160],
+                "description": (
+                    f"{request.annotation}\n\nEvidence that would satisfy it: "
+                    f"{finding.evidence_requested or '-'}"
+                ),
+                "due_date": finding.due_date.isoformat() if finding.due_date else None,
+                "reference": finding.id,
+                "note": f"Evidence requested by {reviewer.id}",
+            }
+        )
+        effects["evidence-task"] = _task_outcome(task)
+    if finding.task_id:
+        note = sink.note(
+            finding.task_id,
+            f"{finding.control_id}: {request.action} by {reviewer.id} "
+            f"(verdict {record['verdict-after']}). {request.annotation}".strip(),
+        )
+        effects["work-note"] = note.get("status", "sent")
+    return effects
+
+
+def _task_outcome(task: dict[str, Any]) -> dict[str, Any]:
+    if task.get("status") != "sent":
+        return {"status": task.get("status", "not sent")}
+    return {"status": "sent", "number": task.get("number"), "action": task.get("action")}
 
 
 def history(session: Session, finding_id: str) -> list[dict[str, Any]]:

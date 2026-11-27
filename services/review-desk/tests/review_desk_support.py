@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 FIXTURES = Path(__file__).parent / "fixtures"
 # Every review-desk table; a test fails if a new table is missing (no leaks between tests).
-REVIEW_TABLES = ("findings", "review_sessions", "decision_log")
+REVIEW_TABLES = ("findings", "review_sessions", "decision_log", "poam_versions")
 OFFICER = {"X-GovHub-User": "governance-officer-01", "X-GovHub-Role": "governance-officer"}
 REVIEWER = {"X-GovHub-User": "reviewer-02", "X-GovHub-Role": "reviewer"}
 VIEWER = {"X-GovHub-User": "viewer-03", "X-GovHub-Role": "viewer"}

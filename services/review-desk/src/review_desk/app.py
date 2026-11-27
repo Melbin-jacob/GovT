@@ -6,20 +6,23 @@ real authentication: identity comes from placeholder headers (see identity.py).
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from review_desk import decision_log, queue
+from review_desk.config import get_settings
 from review_desk.db import get_session
 from review_desk.decisions import DecisionError, DecisionRequest, decide, history
 from review_desk.deps import AnyUser, AuthorizedReviewer, ReadSession, Tx
-from review_desk.models import Finding, ReviewSession
+from review_desk.models import Finding, PoamVersion, ReviewSession
+from review_desk.tasks import HttpTaskSink, NullTaskSink, TaskSink
 
 RANKING = "impact level, verdict severity, uncertainty (lowest confidence first), due date"
 app = FastAPI(title="Canadian AI Governance Hub - Review desk", version="0.1.0")
@@ -103,18 +106,62 @@ def _decision_error(_request: Request, exc: DecisionError) -> JSONResponse:
     return JSONResponse(status_code=exc.status, content={"detail": str(exc)})
 
 
+def get_task_sink() -> TaskSink:
+    """connector-hub over the internal network, or a null sink (overridden in tests)."""
+    url = get_settings().connector_hub_url
+    return HttpTaskSink(url) if url else NullTaskSink()
+
+
+Sink = Annotated[TaskSink, Depends(get_task_sink)]
+
+
 @app.post("/findings/{finding_id}/decisions", tags=["decisions"])
 def post_decision(
-    finding_id: str, request: DecisionRequest, session: Tx, reviewer: AuthorizedReviewer
+    finding_id: str,
+    request: DecisionRequest,
+    session: Tx,
+    reviewer: AuthorizedReviewer,
+    sink: Sink,
 ) -> dict[str, Any]:
     """Record a human decision: accept, accept-with-remediation, reject,
-    request-more-evidence or override-verdict. Appends one hash-chained log record."""
+    request-more-evidence or override-verdict. Performs the side effects (POA&M item,
+    ServiceNow tasks through connector-hub) and appends one hash-chained log record."""
     finding = _finding(session, finding_id)
-    row = decide(session, finding, request, reviewer)
+    row = decide(session, finding, request, reviewer, sink=sink)
+    record = json.loads(row.record_text)
     return {
         "finding": queue.finding_view(finding),
+        "side_effects": record["side-effects"],
         "log": {"seq": row.seq, "record_hash": row.record_hash, "previous_hash": row.previous_hash},
     }
+
+
+@app.get("/poam", tags=["poam"])
+def list_poams(session: ReadSession, user: AnyUser) -> list[dict[str, Any]]:
+    rows = session.scalars(select(PoamVersion).order_by(PoamVersion.system_id, PoamVersion.version))
+    latest: dict[str, PoamVersion] = {r.system_id: r for r in rows}
+    return [
+        {
+            "system_id": r.system_id,
+            "version": r.version,
+            "items": len(r.document["plan-of-action-and-milestones"]["poam-items"]),
+        }
+        for r in latest.values()
+    ]
+
+
+@app.get("/poam/{system_id}", tags=["poam"])
+def get_poam(
+    system_id: str, session: ReadSession, user: AnyUser, version: int | None = None
+) -> dict[str, Any]:
+    """The system's OSCAL 1.1.3 POA&M (latest version unless ``version`` is given)."""
+    query = select(PoamVersion).where(PoamVersion.system_id == system_id)
+    if version is not None:
+        query = query.where(PoamVersion.version == version)
+    row = session.scalars(query.order_by(PoamVersion.version.desc()).limit(1)).first()
+    if row is None:
+        raise HTTPException(404, f"no POA&M for {system_id}")
+    return row.document
 
 
 @app.get("/findings/{finding_id}/decisions", tags=["decisions"])

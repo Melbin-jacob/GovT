@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Any
 
 from sqlalchemy import (
     BigInteger,
@@ -98,4 +99,18 @@ class DecisionRecord(Base):
     record_text: Mapped[str] = mapped_column(Text)
     previous_hash: Mapped[str] = mapped_column(String(71))
     record_hash: Mapped[str] = mapped_column(String(71), unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PoamVersion(Base):
+    """One immutable version of a system's OSCAL POA&M document."""
+
+    __tablename__ = "poam_versions"
+    __table_args__ = (UniqueConstraint("system_id", "version", name="uq_poam_system_version"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    system_id: Mapped[str] = mapped_column(String(100), index=True)
+    version: Mapped[int] = mapped_column(Integer)
+    document: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
