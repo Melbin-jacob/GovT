@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from trestle.oscal import OSCAL_VERSION as TRESTLE_OSCAL_VERSION
+from trestle.oscal.assessment_results import AssessmentResults
 from trestle.oscal.catalog import Catalog
 from trestle.oscal.poam import PlanOfActionAndMilestones
 from trestle.oscal.profile import Profile
@@ -28,6 +29,7 @@ _MODELS: dict[OscalKind, Any] = {
     "catalog": Catalog,
     "profile": Profile,
     "plan-of-action-and-milestones": PlanOfActionAndMilestones,
+    "assessment-results": AssessmentResults,
 }
 
 

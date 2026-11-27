@@ -15,8 +15,8 @@ from govhub_shared.oscal import OscalValidationError, schema_dir, validate
 def test_vendored_schemas_match_source_checksums() -> None:
     directory = schema_dir()
     source = (directory / "SOURCE.md").read_text(encoding="utf-8")
-    rows = re.findall(r"`(oscal_\w+_schema\.json)` \| \S+ \| `([0-9a-f]{64})`", source)
-    assert len(rows) == 3
+    rows = re.findall(r"`(oscal_[\w-]+_schema\.json)` \| \S+ \| `([0-9a-f]{64})`", source)
+    assert len(rows) == 4
     for name, expected in rows:
         actual = hashlib.sha256((directory / name).read_bytes()).hexdigest()
         assert actual == expected, f"{name} differs from the NIST release"

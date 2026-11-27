@@ -7,7 +7,13 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = Path(__file__).parent / "fixtures"
 # Every table, truncated before each test (a test checks the list is complete).
-TABLES: tuple[str, ...] = ("evidence_documents", "evidence_passages", "system_facts")
+TABLES: tuple[str, ...] = (
+    "evidence_documents",
+    "evidence_passages",
+    "system_facts",
+    "assessments",
+    "assessment_results_documents",
+)
 
 
 def minimal_pdf(lines: list[str]) -> bytes:
@@ -55,3 +61,41 @@ def docx_bytes(paragraphs: list[str]) -> bytes:
     buf = io.BytesIO()
     doc.save(buf)
     return buf.getvalue()
+
+
+class ScriptedGateway:
+    """Test double: returns scripted replies in order and keeps the requests."""
+
+    def __init__(self, *contents: str, model_id: str = "scripted-test-model") -> None:
+        self.contents = list(contents)
+        self.model_id = model_id
+        self.requests: list[object] = []
+
+    def chat(self, request: object) -> object:
+        from govhub_shared.model_gateway import ChatResponse, GatewayError
+
+        self.requests.append(request)
+        if not self.contents:
+            raise GatewayError("no more scripted replies")
+        return ChatResponse(content=self.contents.pop(0), model_id=self.model_id)
+
+
+def reply(
+    verdict: str,
+    *,
+    passage: str | None = "P1",
+    quote: str = "",
+    confidence: float = 0.9,
+) -> str:
+    import json
+
+    return json.dumps(
+        {
+            "verdict": verdict,
+            "confidence": confidence,
+            "cited_passage_id": passage,
+            "cited_quote": quote,
+            "reasoning_en": "The notice is given online only.",
+            "reasoning_fr": "L'avis est donné en ligne seulement.",
+        }
+    )

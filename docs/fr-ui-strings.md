@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-354 strings: 3 provided by the project owner, 351 unverified.
+365 strings: 3 provided by the project owner, 362 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -316,7 +316,18 @@ French half of ServiceNow task text. `{name}` marks a value filled in at run tim
 |---|---|---|---|
 | `fact` | {label} = {value} (source : {source}) | {label} = {value} (source: {source}) | Unverified, written by Claude Code |
 | `fact.no-source` | {label} = {value} | {label} = {value} | Unverified, written by Claude Code |
+| `judgment.downgraded` | Le verdict proposé par le modèle ({model_verdict}) a été remplacé par « impossible à déterminer » : {reason} | The model's draft verdict ({model_verdict}) was set to unable to determine: {reason} | Unverified, written by Claude Code |
+| `judgment.drafted` | Ébauche rédigée par le modèle {model} (invite {prompt}); une personne décide. {reasoning} | Drafted by the model {model} (prompt {prompt}); a person decides. {reasoning} | Unverified, written by Claude Code |
 | `list.and` | et | and | Unverified, written by Claude Code |
+| `reason.flagged-support` | le seul passage qui appuie « respecté » contient un texte ressemblant à des instructions (injection d'invite possible). | the only passage supporting "met" contains instruction-like text (possible prompt injection). | Unverified, written by Claude Code |
+| `reason.invalid-verdict` | le modèle a donné un verdict hors des cinq permis. | the model gave a verdict outside the five allowed. | Unverified, written by Claude Code |
+| `reason.low-confidence` | la confiance {confidence} est inférieure au seuil {threshold}. | the confidence {confidence} is below the threshold {threshold}. | Unverified, written by Claude Code |
+| `reason.model-unavailable` | le serveur du modèle était injoignable. | the model server could not be reached. | Unverified, written by Claude Code |
+| `reason.no-citation` | le modèle n'a cité aucun passage de preuve. | the model did not cite an evidence passage. | Unverified, written by Claude Code |
+| `reason.no-evidence` | aucun passage de preuve ne correspond encore à cette exigence. | no evidence passage matches this requirement yet. | Unverified, written by Claude Code |
+| `reason.quote-not-found` | la phrase citée ne figure pas dans le passage cité. | the quoted sentence is not in the cited passage. | Unverified, written by Claude Code |
+| `reason.unknown-passage` | le modèle a cité un passage qui n'avait pas été fourni. | the model cited a passage that was not provided. | Unverified, written by Claude Code |
+| `reason.unparseable` | la réponse du modèle était illisible. | the model's reply could not be read. | Unverified, written by Claude Code |
 | `rule.met` | Contrôle fondé sur une règle (règle provisoire non vérifiée) : {rule} Faits utilisés : {facts}. | Rule-based check (unverified draft rule): {rule} Facts used: {facts}. | Unverified, written by Claude Code |
 | `rule.missing` | Contrôle fondé sur une règle (règle provisoire non vérifiée) : {rule} Faits manquants : {missing}. | Rule-based check (unverified draft rule): {rule} Missing facts: {missing}. | Unverified, written by Claude Code |
 | `rule.no-rule` | Aucune règle n'est encore rédigée pour ce contrôle fondé sur une règle. | No rule is written for this rule-based check yet. | Unverified, written by Claude Code |

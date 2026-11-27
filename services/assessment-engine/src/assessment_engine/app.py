@@ -12,14 +12,23 @@ from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import Body, Depends, FastAPI, File, Header, HTTPException, Query, UploadFile
+from pydantic import BaseModel, Field
 from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from assessment_engine import evidence, rules
+from assessment_engine import engine, evidence, rules
 from assessment_engine.config import get_settings
+from assessment_engine.controls import ControlSource, RulebookControls
 from assessment_engine.db import get_session
-from assessment_engine.models import EvidenceDocument, SystemFact
+from assessment_engine.models import (
+    Assessment,
+    AssessmentResultsDocument,
+    EvidenceDocument,
+    SystemFact,
+)
+from assessment_engine.settings_file import AssessmentConfig, load_config
+from govhub_shared.model_gateway import ChatGateway, gateway_from_env
 
 app = FastAPI(title="Canadian AI Governance Hub - Assessment engine", version="0.1.0")
 ReadSession = Annotated[Session, Depends(get_session)]
@@ -175,3 +184,74 @@ def rule_checks(
         "as_of": as_of.isoformat(),
         "results": [rules.assess_rule(ruleset, cid, facts, as_of).as_dict() for cid in ids],
     }
+
+
+# --- assessment runs -------------------------------------------------------------------
+
+
+def get_gateway() -> ChatGateway:
+    """The model gateway from MODEL_GATEWAY_* (overridden in tests with recordings)."""
+    return gateway_from_env()
+
+
+def get_controls() -> ControlSource:
+    return RulebookControls(get_settings().rulebook_url)
+
+
+def get_config() -> AssessmentConfig:
+    return load_config(Path(get_settings().assessment_config_path))
+
+
+class RunBody(BaseModel):
+    system_id: str
+    catalog: str
+    catalog_version: str
+    control_ids: list[str] = Field(min_length=1)
+    as_of: date
+    findings: dict[str, str] = Field(default_factory=dict, description="control -> finding ID")
+
+
+@app.post("/assessments", tags=["assessments"], status_code=201)
+def run_assessments(
+    body: RunBody,
+    session: ReadSession,
+    gateway: Annotated[ChatGateway, Depends(get_gateway)],
+    source: Annotated[ControlSource, Depends(get_controls)],
+    config: Annotated[AssessmentConfig, Depends(get_config)],
+) -> dict[str, Any]:
+    """Assess controls for one system. Results are drafts: a person decides."""
+    try:
+        run_id, rows, doc = engine.run(
+            session,
+            engine.RunRequest(**body.model_dump()),
+            gateway=gateway,
+            source=source,
+            rules_dir=Path(get_settings().rules_dir),
+            config=config,
+        )
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    session.commit()
+    return {
+        "run_id": run_id,
+        "assessments": [engine.assessment_view(r) for r in rows],
+        "assessment_results": {"run_id": run_id, "content_hash": doc.content_hash},
+        "threshold": {"value": config.threshold, "status": config.threshold_status},
+    }
+
+
+@app.get("/assessments/{assessment_id}", tags=["assessments"])
+def get_assessment(assessment_id: str, session: ReadSession) -> dict[str, Any]:
+    row = session.get(Assessment, assessment_id)
+    if row is None:
+        raise HTTPException(404, "assessment not found")
+    return engine.assessment_view(row)
+
+
+@app.get("/runs/{run_id}/assessment-results", tags=["assessments"])
+def get_assessment_results(run_id: str, session: ReadSession) -> dict[str, Any]:
+    """The run's OSCAL 1.1.3 assessment-results document."""
+    row = session.get(AssessmentResultsDocument, run_id)
+    if row is None:
+        raise HTTPException(404, "assessment run not found")
+    return row.document
