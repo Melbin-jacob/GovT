@@ -1,0 +1,105 @@
+{
+  "format": "govhub-source-document/1",
+  "content": "full",
+  "instrument": "example-widgets",
+  "title": "Directive sur les widgets d'exemple (synthétique)",
+  "effective_date": "2025-01-01",
+  "lang": "fr",
+  "source_url": "https://example.invalid/directive-sur-les-widgets",
+  "synthetic": true,
+  "file": {
+    "name": "example-widgets.2025-01-01.fr.html",
+    "sha256": "4aea3ccd6b2c32026dbff0cb98c85af417dc096db29a0a25ec975de6aeea6922"
+  },
+  "clauses": [
+    {
+      "number": "6.1.1",
+      "section": "6.1",
+      "heading": "6.1 Enregistrement",
+      "text": "Chaque ministère doit enregistrer chaque widget avant sa mise en oeuvre.",
+      "text_sha256": "e72e7e3a705bbf56fb6295f2944e67a4bb634b5da9827a8e8feccedbb9113c8f",
+      "match_sha256": "3c0d878087daeceaee9f6aa16e41c6e81021e426349d810b196892dbd980b170"
+    },
+    {
+      "number": "6.1.2",
+      "section": "6.1",
+      "heading": "6.1 Enregistrement",
+      "text": "Le registre doit consigner le propriétaire, l’emplacement, le modèle et la version du micrologiciel de chaque widget.",
+      "text_sha256": "4c671c1d169c95bde8b4fa6f41c4ddd3cf7f4b5bf582382723fcbab15a00438a",
+      "match_sha256": "33dba1067f0a490428c43800a12280de68f788ca13f6869084da7efa7b7a80ab"
+    },
+    {
+      "number": "6.2.1",
+      "section": "6.2",
+      "heading": "6.2 Évaluation des risques",
+      "text": "Les ministères doivent réaliser une évaluation des risques du widget avant sa mise en service.",
+      "text_sha256": "a40d183ee565e1070405029a606c719994c4fe1b555eea63e7f622830ef1cfb0",
+      "match_sha256": "9bd78d5c3b91d28050f74b133b0449a07fb994e2be6e8f05e7bb434e96a3c983"
+    },
+    {
+      "number": "6.2.2",
+      "section": "6.2",
+      "heading": "6.2 Évaluation des risques",
+      "text": "L’évaluation des risques du widget doit être mise à jour lorsque l’objet du widget change.",
+      "text_sha256": "cc96919fa9717b11b930557d766305e48a25af4fea9f2870c250e9c0d9c396de",
+      "match_sha256": "9f330b914ff35b25b4bbdb32e54d81d4a025e22bb97f42c4405c83524b8cf2ce"
+    },
+    {
+      "number": "6.3.1",
+      "section": "6.3",
+      "heading": "6.3 Étalonnage",
+      "text": "Les widgets doivent être étalonnés au moins une fois par année.",
+      "text_sha256": "6c18b7fc673779ec389318c2f2401b6e24ddc2560714876447122317fc4933e5",
+      "match_sha256": "29fa69b4b71369474badc6bc874a10013ef46d129b27ff314f5c23683645696d"
+    },
+    {
+      "number": "6.3.2",
+      "section": "6.3",
+      "heading": "6.3 Étalonnage",
+      "text": "Les résultats d’étalonnage doivent être examinés par un technicien qualifié.",
+      "text_sha256": "f28a9306ba016011100abd5ce7f72a26d0c1f31f671229224b393add8fed99bc",
+      "match_sha256": "e82afba0f094a07231d759fbb77f3fd96d3dfc58a688f5bc4432e515e901347e"
+    },
+    {
+      "number": "6.3.3",
+      "section": "6.3",
+      "heading": "6.3 Étalonnage",
+      "text": "Les widgets défectueux doivent être retirés du service jusqu’à leur réparation.",
+      "text_sha256": "bf20b09751a975f7b62ae4f7fc9033874a57cf565f8ea6919528ef8be8d38014",
+      "match_sha256": "d59234ca012217bb2ffa01ff17d6f34aa980c6a186184210c81340231ec49f1c"
+    },
+    {
+      "number": "6.4.1",
+      "section": "6.4",
+      "heading": "6.4 Registres",
+      "text": "Les opérateurs doivent consigner chaque étalonnage.",
+      "text_sha256": "f98981daad3ec24868c9e15cd7d4c0e5d5976c63c3ff7ebd1dca4a9c46f3909d",
+      "match_sha256": "7042cc14fac9f1576c40560abb4e1886e5b722407bd606838a0531ebe35bc554"
+    },
+    {
+      "number": "6.4.2",
+      "section": "6.4",
+      "heading": "6.4 Registres",
+      "text": "Les opérateurs doivent conserver le journal d’étalonnage pendant deux ans.",
+      "text_sha256": "f624e2183642e125b04f7f3ca0857688a5bca21278f897108d70c11f3e485f6c",
+      "match_sha256": "da9455c34ca0e78dbcc6fb250bd889908ad67e5c287be00f6a1023bd7b69cd89"
+    },
+    {
+      "number": "6.5.1",
+      "section": "6.5",
+      "heading": "6.5 Transparence et rapports",
+      "text": "Les clients sont informés lorsqu’un widget sert à traiter leur demande.",
+      "text_sha256": "29de289366888a74c71537aae1ba8713d92768504ebf952ea1d6ff2adbcc3e4a",
+      "match_sha256": "81a0b7b7b4b6c58b0e51537445b24b3092ea7eb57ec37a74fedaa7789fd82ba2"
+    },
+    {
+      "number": "6.5.2",
+      "section": "6.5",
+      "heading": "6.5 Transparence et rapports",
+      "text": "Les ministères font rapport chaque année sur le nombre de widgets en service. Le rapport porte sur l’exercice financier.",
+      "text_sha256": "94011878f4b54791cf3b91043ad4445b8a14db94b0bd8951c39dc63793def171",
+      "match_sha256": "9ef0fd685e36f18609eac41592bc5c2601614caa9ec0dd989210d511b75baba7"
+    }
+  ],
+  "warnings": []
+}

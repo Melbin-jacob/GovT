@@ -24,6 +24,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - `data/golden/` — hand-mapped golden set CSVs. `data/catalogs/` — generated catalogs.
   `data/profiles/` — OSCAL profiles.
 - `schemas/` — vendored NIST OSCAL JSON schemas (see `schemas/oscal-1.1.3/SOURCE.md`).
+- `data/sources/` — source registry and metadata-only JSON; `raw/` (official text) is gitignored.
+- `data/inventory/` — fictional inventory; `data/config/` — PLACEHOLDER due dates.
+- `data/demo/` — synthetic demo data (Directive on Example Widgets). Keep it obviously fictional.
 - `docs/` — design notes and the decision log.
 
 ## OSCAL rules
@@ -62,6 +65,14 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   golden set's `.settings.toml`. Any commit that changes the golden-set CSV or groups file
   must advance `SOURCE_DATE` (CI: `rulebook check-source-date`).
 
+## Official policy text (source documents)
+- Official text is supplied by the deploying organization; EGCS does not distribute it.
+  It lives only in `data/sources/raw/` (gitignored, excluded from Docker builds) and in a
+  deployment's database. Commit only `*.meta.json` (numbers and hashes), never text.
+- CI and tests use the synthetic "Directive on Example Widgets" under `data/demo/`. Tests
+  on real text must skip with a clear message when the raw files are absent.
+- Matching normalizes typography (`rulebook/sources/normalize.py`); stored text never is.
+
 ## Rulebook service rules
 - A catalog version is (name, semantic version, language). Stored versions are immutable:
   the API returns 409 for changed content and a DB trigger refuses UPDATE/DELETE. Schema
@@ -76,6 +87,12 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   localhost); `make test` starts the Compose database if the variable is unset.
 - Text written by an assistant that is not from the CSV (titles, remarks, example profile)
   is listed in `docs/decisions.md` as unverified.
+
+## Impact reports
+- Reports never read the clock (`as_of` is an input); `report_id` is a content hash.
+- Renumbering or typography alone never triggers re-review; substance changes do.
+- Tasks are returned as ServiceNow-shaped `sc_task` JSON, never incidents, and are not sent
+  until connector-hub exists. Due-date values are PLACEHOLDERS until the organization sets them.
 
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes

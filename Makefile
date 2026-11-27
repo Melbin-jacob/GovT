@@ -1,4 +1,4 @@
-.PHONY: setup lint typecheck test up down check import-golden migrate
+.PHONY: setup lint typecheck test up down check import-golden migrate demo
 
 setup:  ## Install all workspace packages and dev tools
 	uv sync --all-packages --frozen
@@ -22,8 +22,12 @@ up:  ## Build and start postgres + rulebook (API on http://localhost:8000)
 down:  ## Stop the stack
 	docker compose down
 
-import-golden:  ## Regenerate data/catalogs from the golden-set CSV
+import-golden:  ## Regenerate catalogs from the golden-set CSVs (real and synthetic demo)
 	uv run rulebook import-golden data/golden/dadm-section6.csv
+	uv run rulebook import-golden data/demo/golden/example-widgets.csv --out-dir data/demo/catalogs
 
 migrate:  ## Apply database migrations to RULEBOOK_DATABASE_URL
 	uv run rulebook migrate
+
+demo:  ## Run the synthetic policy-diff -> impact-report demo against `make up`
+	scripts/demo-impact.sh http://localhost:8000 demo-output

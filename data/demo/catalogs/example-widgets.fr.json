@@ -1,0 +1,538 @@
+{
+  "catalog": {
+    "uuid": "b21dc340-7a58-59e1-9fe5-6fc7c40a1911",
+    "metadata": {
+      "title": "Directive sur les widgets d'exemple — contrôles (données de démonstration SYNTHÉTIQUES)",
+      "last-modified": "2026-11-27T00:00:00+00:00",
+      "version": "1.0.0",
+      "oscal-version": "1.1.3",
+      "props": [
+        {
+          "name": "catalog-name",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "example-widgets"
+        },
+        {
+          "name": "language",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "fr"
+        },
+        {
+          "name": "source-document",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "Directive sur les widgets d'exemple (synthétique)"
+        },
+        {
+          "name": "source-amended",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "2023-01-01"
+        },
+        {
+          "name": "statement-status",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "synthetic-test-data"
+        },
+        {
+          "name": "source-file",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "example-widgets.csv"
+        },
+        {
+          "name": "source-instrument",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "example-widgets"
+        },
+        {
+          "name": "source-version",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "2023-01-01"
+        }
+      ],
+      "links": [
+        {
+          "href": "https://example.invalid/directive-sur-les-widgets",
+          "rel": "reference",
+          "text": "Directive sur les widgets d'exemple (synthétique)"
+        }
+      ],
+      "remarks": "Données de test SYNTHÉTIQUES, pas une politique. Généré à partir de example-widgets.csv par l'importateur de l'ensemble de référence du rulebook."
+    },
+    "groups": [
+      {
+        "id": "widgets-6.1",
+        "class": "section",
+        "title": "Enregistrement",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.1"
+          }
+        ],
+        "controls": [
+          {
+            "id": "WID-6.1.1",
+            "title": "WID-6.1.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.1.1"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.1.1_smt",
+                "name": "statement",
+                "prose": "Chaque widget est enregistré avant sa mise en service."
+              }
+            ]
+          },
+          {
+            "id": "WID-6.1.2",
+            "title": "WID-6.1.2",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.1.2"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.1.2_smt",
+                "name": "statement",
+                "prose": "Le registre consigne le propriétaire, l'emplacement et le modèle de chaque widget."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "widgets-6.2",
+        "class": "section",
+        "title": "Étalonnage",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.2"
+          }
+        ],
+        "controls": [
+          {
+            "id": "WID-6.2.1",
+            "title": "WID-6.2.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.2.1"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.2.1_smt",
+                "name": "statement",
+                "prose": "Les widgets sont étalonnés au moins une fois par année."
+              }
+            ]
+          },
+          {
+            "id": "WID-6.2.2",
+            "title": "WID-6.2.2",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.2.2"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.2.2_smt",
+                "name": "statement",
+                "prose": "Un technicien qualifié examine les résultats d'étalonnage."
+              }
+            ]
+          },
+          {
+            "id": "WID-6.2.3",
+            "title": "WID-6.2.3",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.3"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.2.3"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.2.3_smt",
+                "name": "statement",
+                "prose": "Les widgets défectueux sont retirés du service jusqu'à leur réparation."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "widgets-6.3",
+        "class": "section",
+        "title": "Registres",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.3"
+          }
+        ],
+        "controls": [
+          {
+            "id": "WID-6.3.1",
+            "title": "WID-6.3.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.3.1"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.3.1_smt",
+                "name": "statement",
+                "prose": "Chaque étalonnage est consigné et le journal est conservé deux ans."
+              }
+            ]
+          },
+          {
+            "id": "WID-6.3.2",
+            "title": "WID-6.3.2",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.3.2"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.3.2_smt",
+                "name": "statement",
+                "prose": "Le registre des widgets est publié lorsque le ministère le choisit."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "widgets-6.4",
+        "class": "section",
+        "title": "Transparence et rapports",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.4"
+          }
+        ],
+        "controls": [
+          {
+            "id": "WID-6.4.1",
+            "title": "WID-6.4.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.4.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.4.1"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.4.1_smt",
+                "name": "statement",
+                "prose": "Les clients sont informés lorsqu'un widget traite leur demande."
+              }
+            ]
+          },
+          {
+            "id": "WID-6.4.2",
+            "title": "WID-6.4.2",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.4.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              },
+              {
+                "name": "source-clause",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.4.2"
+              }
+            ],
+            "links": [
+              {
+                "href": "#2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+                "rel": "reference"
+              }
+            ],
+            "parts": [
+              {
+                "id": "WID-6.4.2_smt",
+                "name": "statement",
+                "prose": "Les ministères font rapport chaque année sur les widgets en service."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "2f3b8b17-c0f7-5bbe-9da1-1b7fffd47e87",
+          "title": "Directive sur les widgets d'exemple (synthétique) (2023-01-01)",
+          "props": [
+            {
+              "name": "source-instrument",
+              "ns": "https://egcsgroup.com/ns/oscal",
+              "value": "example-widgets"
+            },
+            {
+              "name": "source-version",
+              "ns": "https://egcsgroup.com/ns/oscal",
+              "value": "2023-01-01"
+            },
+            {
+              "name": "language",
+              "ns": "https://egcsgroup.com/ns/oscal",
+              "value": "fr"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": "https://example.invalid/directive-sur-les-widgets",
+              "hashes": [
+                {
+                  "algorithm": "SHA-256",
+                  "value": "4685528e5b1dc717a22dfb180fb5f588101b4445751d04db2d196ff47461b62b"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

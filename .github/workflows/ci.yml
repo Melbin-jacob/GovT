@@ -34,8 +34,13 @@ jobs:
       - run: make lint
       - run: make typecheck
       - run: make test
-      - name: Committed catalogs match the golden-set CSV
-        run: uv run rulebook import-golden data/golden/dadm-section6.csv --check
+      - name: Committed catalogs match the golden-set CSVs
+        run: |
+          uv run rulebook import-golden data/golden/dadm-section6.csv --check
+          uv run rulebook import-golden data/demo/golden/example-widgets.csv \
+            --out-dir data/demo/catalogs --check
+      - name: Committed source metadata matches the synthetic source files
+        run: uv run rulebook import-source --check data/demo/sources/*.txt data/demo/sources/*.html
 
   golden-set-hygiene:
     name: Golden set changes advance SOURCE_DATE
@@ -76,20 +81,31 @@ jobs:
       - name: API smoke test (store golden catalogs, retire, diff)
         run: |
           set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("data/catalogs/dadm-section6.en.json"))["catalog"]["metadata"]["version"])')
+          next=$(python3 -c "v='$version'.split('.'); print(f'{v[0]}.{int(v[1]) + 1}.0')")
           for lang in en fr; do
             curl --fail -sS -X POST localhost:8000/catalogs -H 'content-type: application/json' \
               --data-binary @data/catalogs/dadm-section6.$lang.json
             echo
           done
           curl --fail -sS -X POST \
-            localhost:8000/catalogs/dadm-section6/versions/1.0.0/retire-control/DADM-6.3.5
+            "localhost:8000/catalogs/dadm-section6/versions/$version/retire-control/DADM-6.3.5"
           echo
-          curl --fail -sS "localhost:8000/catalogs/dadm-section6/diff?from=1.0.0&to=1.1.0" \
+          curl --fail -sS "localhost:8000/catalogs/dadm-section6/diff?from=$version&to=$next" \
             | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["summary"]); assert d["retired"] == ["DADM-6.3.5"]'
       - name: Example profile resolves inside the image
         run: >-
           docker compose exec -T rulebook
           rulebook resolve-profile data/profiles/dadm-level-ii-plus.json --ids
+      - name: Demo - policy diff to impact report (synthetic data)
+        run: scripts/demo-impact.sh http://localhost:8000 demo-output
+      - name: Keep demo output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-output
+          path: demo-output/
+          if-no-files-found: ignore
       - name: Logs on failure
         if: failure()
         run: docker compose logs

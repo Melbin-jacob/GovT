@@ -80,3 +80,13 @@ def test_hub_props_are_compared(golden_en: dict[str, Any]) -> None:
                 ctrl["props"][1]["value"] = "judgment"
     (change,) = _diff(golden_en, after).changed
     assert change.changes[0].field == "prop:hub:check-type"
+
+
+def test_catalog_negation_only_change(golden_en: dict[str, Any]) -> None:
+    before, after = copy.deepcopy(golden_en), copy.deepcopy(golden_en)
+    set_statement(before, "DADM-6.4.1", "Clients must be informed.")
+    set_statement(after, "DADM-6.4.1", "Clients must not be informed.")
+    (change,) = _diff(before, after).changed
+    assert change.flags == ["obligation-change"]
+    assert change.changes[0].obligations_before == ["must"]
+    assert change.changes[0].obligations_after == ["must not"]

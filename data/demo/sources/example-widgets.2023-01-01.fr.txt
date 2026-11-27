@@ -1,0 +1,27 @@
+# DONNÉES DE TEST SYNTHÉTIQUES — Directive sur les widgets d'exemple (politique fictive)
+# 6. Exigences
+# 6.1 Enregistrement
+
+6.1.1 Chaque ministère doit enregistrer chaque widget avant sa mise en œuvre.
+
+6.1.2 Le registre doit consigner le propriétaire, l'emplacement et le modèle de chaque widget.
+
+# 6.2 Étalonnage
+
+6.2.1 Les widgets devraient être étalonnés au moins une fois par année.
+
+6.2.2 Les résultats d'étalonnage doivent être examinés par un technicien qualifié.
+
+6.2.3 Les widgets défectueux doivent être retirés du service jusqu'à leur réparation.
+
+# 6.3 Registres
+
+6.3.1 Les opérateurs doivent consigner chaque étalonnage et doivent conserver le journal pendant deux ans.
+
+6.3.2 Le registre des widgets peut être publié sur le site Web du ministère.
+
+# 6.4 Transparence et rapports
+
+6.4.1 Les clients sont informés lorsqu'un widget sert à traiter leur demande.
+
+6.4.2 Les ministères font rapport chaque année sur le nombre de widgets en service.

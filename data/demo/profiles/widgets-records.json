@@ -1,0 +1,39 @@
+{
+  "profile": {
+    "uuid": "1b097818-d2ee-5cc6-8091-7028bc67d12b",
+    "metadata": {
+      "title": "Example Widgets — records and reporting checks (SYNTHETIC)",
+      "last-modified": "2026-11-27T00:00:00+00:00",
+      "version": "1.0.0",
+      "oscal-version": "1.1.3",
+      "props": [
+        {
+          "name": "profile-name",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "widgets-records"
+        }
+      ],
+      "remarks": "SYNTHETIC demo profile."
+    },
+    "imports": [
+      {
+        "href": "../catalogs/example-widgets.en.json",
+        "include-controls": [
+          {
+            "matching": [
+              {
+                "pattern": "WID-6.3.*"
+              },
+              {
+                "pattern": "WID-6.4.*"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "merge": {
+      "as-is": true
+    }
+  }
+}

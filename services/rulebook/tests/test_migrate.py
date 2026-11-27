@@ -10,10 +10,13 @@ import time
 from collections.abc import Iterator
 
 import pytest
+from alembic.script import ScriptDirectory
 from conftest import _ensure_database
 from sqlalchemy import create_engine, inspect, make_url, text
 
-from rulebook.migrate import MIGRATION_LOCK_KEY, downgrade, upgrade
+from rulebook.migrate import MIGRATION_LOCK_KEY, alembic_config, downgrade, upgrade
+
+HEAD = ScriptDirectory.from_config(alembic_config("postgresql://unused")).get_current_head()
 
 
 @pytest.fixture
@@ -55,7 +58,7 @@ def test_concurrent_upgrades_all_succeed(scratch_url: str) -> None:
         t.join(timeout=60)
     assert not any(t.is_alive() for t in threads), "migrations deadlocked"
     assert errors == []
-    assert _head(scratch_url) == "0001"
+    assert _head(scratch_url) == HEAD
 
 
 def test_upgrade_waits_for_the_lock(scratch_url: str) -> None:
@@ -75,6 +78,15 @@ def test_upgrade_waits_for_the_lock(scratch_url: str) -> None:
             conn.commit()
             worker.join(timeout=60)
         assert done.is_set()
-        assert _head(scratch_url) == "0001"
+        assert _head(scratch_url) == HEAD
     finally:
         holder.dispose()
+
+
+def test_every_table_is_truncated_between_tests() -> None:
+    """A table missing from conftest.TABLES leaks rows between tests."""
+    from conftest import TABLES
+
+    from rulebook.models import Base
+
+    assert set(Base.metadata.tables) <= set(TABLES)

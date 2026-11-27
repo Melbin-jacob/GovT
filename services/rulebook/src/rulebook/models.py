@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -16,7 +18,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -84,3 +86,80 @@ class CatalogControl(Base):
     position: Mapped[int] = mapped_column(Integer)
 
     version: Mapped[CatalogVersion] = relationship(back_populates="controls")
+
+
+class SourceVersion(Base):
+    """One immutable source document (instrument, effective date, language) with its text."""
+
+    __tablename__ = "source_versions"
+    __table_args__ = (
+        UniqueConstraint("instrument", "effective_date", "lang", name="uq_source_version_lang"),
+        CheckConstraint("lang IN ('en', 'fr')", name="ck_source_versions_lang"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    instrument: Mapped[str] = mapped_column(String(100))
+    effective_date: Mapped[date] = mapped_column(Date)
+    lang: Mapped[str] = mapped_column(String(2))
+    document: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    file_sha256: Mapped[str] = mapped_column(String(64))
+    synthetic: Mapped[bool] = mapped_column(Boolean)
+    created_by: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class StoredProfile(Base):
+    """A named OSCAL profile (configuration: replaceable, unlike catalog versions)."""
+
+    __tablename__ = "profiles"
+
+    name: Mapped[str] = mapped_column(String(200), primary_key=True)
+    document: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    updated_by: Mapped[str] = mapped_column(String(200))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class InventorySnapshot(Base):
+    """One imported inventory. The newest snapshot is the current inventory."""
+
+    __tablename__ = "inventory_snapshots"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    source: Mapped[str] = mapped_column(String(200))
+    imported_by: Mapped[str] = mapped_column(String(200))
+    imported_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    systems: Mapped[list[AISystem]] = relationship(
+        back_populates="snapshot", order_by="AISystem.system_id"
+    )
+
+
+class AISystem(Base):
+    __tablename__ = "ai_systems"
+    __table_args__ = (
+        UniqueConstraint("snapshot_id", "system_id", name="uq_ai_systems_snapshot_system"),
+        CheckConstraint("impact_level BETWEEN 1 AND 4", name="ck_ai_systems_impact_level"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    snapshot_id: Mapped[int] = mapped_column(
+        ForeignKey("inventory_snapshots.id", ondelete="CASCADE")
+    )
+    system_id: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(300))
+    tenant: Mapped[str] = mapped_column(String(100), index=True)
+    department: Mapped[str] = mapped_column(String(300))
+    owner: Mapped[str] = mapped_column(String(300))
+    owner_email: Mapped[str] = mapped_column(String(300))
+    impact_level: Mapped[int] = mapped_column(Integer)
+    lifecycle: Mapped[str] = mapped_column(String(20))
+    profiles: Mapped[list[str]] = mapped_column(ARRAY(String(200)))
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    snapshot: Mapped[InventorySnapshot] = relationship(back_populates="systems")
