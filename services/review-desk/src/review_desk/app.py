@@ -189,6 +189,25 @@ def export_log(session: ReadSession, user: AnyUser) -> str:
     return "\n".join(decision_log.export_lines(session)) + "\n"
 
 
+@app.post("/decision-log/verify-export", tags=["decision log"])
+async def verify_export(
+    request: Request,
+    user: AnyUser,
+    expect_seq: int | None = None,
+    expect_head: str | None = None,
+) -> dict[str, Any]:
+    """Verify an exported JSON Lines file sent as the request body (same check as
+    ``review-desk verify-log --file``). Nothing is stored."""
+    body = (await request.body()).decode("utf-8")
+    try:
+        entries = decision_log.file_entries(body.splitlines())
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(422, f"not a decision-log export: {exc}") from exc
+    return decision_log.verify_entries(
+        entries, expect_seq=expect_seq, expect_head=expect_head
+    ).as_dict()
+
+
 @app.get("/decision-log/checkpoint", tags=["decision log"])
 def get_checkpoint(session: ReadSession, user: AnyUser) -> dict[str, Any]:
     """Current head (seq, hash). Keep it outside the hub to detect truncation later."""

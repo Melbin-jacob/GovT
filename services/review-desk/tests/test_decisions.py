@@ -248,3 +248,21 @@ def test_concurrent_decisions_keep_one_chain(
     assert errors == []
     result = desk.get("/decision-log/verify", headers=OFFICER).json()
     assert result["ok"] is True and result["records"] == 12
+
+
+def test_verify_uploaded_export(desk: TestClient, findings: list[dict[str, Any]]) -> None:
+    _decide_all(desk, findings)
+    export = desk.get("/decision-log/export", headers=OFFICER).text
+    head = desk.get("/decision-log/checkpoint", headers=OFFICER).json()
+    ok = desk.post("/decision-log/verify-export", content=export, headers=OFFICER).json()
+    assert ok["ok"] is True and ok["records"] == 5
+    tampered = export.replace("Evidence is sufficient.", "Evidence is excellent.")
+    bad = desk.post("/decision-log/verify-export", content=tampered, headers=OFFICER).json()
+    assert bad["ok"] is False
+    assert bad["problems"] == ["seq 1: record content does not match its hash (modified)"]
+    cut = "\n".join(export.splitlines()[:2])
+    params = {"expect_seq": head["head_seq"], "expect_head": head["head_hash"]}
+    short = desk.post("/decision-log/verify-export", content=cut, headers=OFFICER, params=params)
+    assert short.json()["ok"] is False
+    junk = desk.post("/decision-log/verify-export", content="not json", headers=OFFICER)
+    assert junk.status_code == 422
