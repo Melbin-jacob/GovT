@@ -9,3 +9,7 @@
 {% macro placeholder(t) -%}
 <span class="badge badge-placeholder">{{ t('label.placeholder') }}</span>
 {%- endmacro %}
+
+{% macro gap(field, t) -%}
+<span class="badge badge-gap">{{ t('gap.missing', field=t('gap.' ~ field)) }}</span>
+{%- endmacro %}

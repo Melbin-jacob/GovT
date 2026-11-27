@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     default_instrument: str = "example-widgets"
     default_catalog: str = "example-widgets"
     default_as_of: str = "2026-12-01"
+    # Language the impact report (and so its task IDs, ServiceNow tasks and findings) is
+    # produced in. The UI around it follows the page language.
+    report_lang: str = "en"
 
 
 @lru_cache
