@@ -125,6 +125,8 @@ services:
       MODEL_GATEWAY_ALLOWED_HOSTS: ${MODEL_GATEWAY_ALLOWED_HOSTS:-fake-model}
     volumes:
       - evidence:/evidence
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # a model server on the host (docs/model-setup.md)
     ports:
       - "127.0.0.1:8005:8000"
     depends_on:

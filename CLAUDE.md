@@ -112,6 +112,18 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   Its head is checkpointed outside the database (ServiceNow work note + checkpoint file on
   a separate volume); a checkpoint failure is reported, never blocks a decision.
 
+## Assessment engine
+- Rule-based checks: plain code in `data/rules/*.rules.toml` (unverified drafts until the
+  annotators confirm them); a missing fact gives unable-to-determine, never a guess.
+- Judgment checks: evidence goes to the model only as delimited data; a verdict must quote
+  the cited passage word for word (clause-diff normalization); below the confidence
+  threshold, unparseable, or met with flagged (instruction-like) text in context gives
+  unable-to-determine. The model never closes a finding.
+- Evidence is never committed, never logged; real labelled cases stay in
+  `data/accuracy/private/` (gitignored). Recordings are committed for synthetic cases only.
+- Accuracy: human-labelled and synthetic scores are never mixed; every report says
+  DRAFT GOLDEN SET until confirmed; `make accuracy` (release gate) must pass.
+
 ## Web UI (control-centre)
 - Server-rendered (FastAPI + Jinja2), plain forms; nothing loaded from another origin (CSP).
 - Every UI string in both `locales/en.toml` and `locales/fr.toml`; French strings written by
