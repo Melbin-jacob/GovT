@@ -127,7 +127,7 @@ jobs:
         run: make demo-ui
       - name: UI test summary (axe results and timings)
         if: always()
-        run: cat e2e-output/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+        run: tee -a "$GITHUB_STEP_SUMMARY" < e2e-output/summary.md || true
       - name: Keep UI screenshots, axe results and timings
         if: always()
         uses: actions/upload-artifact@v4
