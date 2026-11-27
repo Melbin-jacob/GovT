@@ -103,6 +103,8 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - review-desk trusts placeholder identity headers until control-centre exists: bind it to
   localhost or the internal network only, never expose it.
 - The decision log is append-only and hash-chained; never update or delete its rows.
+  Its head is checkpointed outside the database (ServiceNow work note + checkpoint file on
+  a separate volume); a checkpoint failure is reported, never blocks a decision.
 
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes

@@ -8,16 +8,18 @@ Protection in depth:
 - the database refuses UPDATE, DELETE and TRUNCATE on the log (triggers);
 - appends are serialized with a transaction-level advisory lock, so the chain never forks;
 - ``verify`` recomputes every hash and link, from the database or an exported file;
-- a hash chain alone cannot notice records cut off at the *end*. ``checkpoint`` returns
-  (sequence number, head hash); store it elsewhere (e.g. print it into a ServiceNow work
-  note or a signed report) and pass it to ``verify`` to detect truncation.
+- a hash chain alone cannot notice records cut off at the *end*. After each decision (or
+  every N) the service stores (sequence number, head hash) outside the database: as a work
+  note on the task in ServiceNow and in an append-only file (``checkpoints.py``). ``verify``
+  takes those as trusted checkpoints, so a database owner who disables the triggers and
+  deletes the newest records is still caught.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -75,10 +77,12 @@ class VerifyResult:
     head_seq: int
     head_hash: str
     problems: list[str]
+    checkpoints_checked: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "ok": self.ok,
+            "checkpoints_checked": self.checkpoints_checked,
             "records": self.records,
             "head_seq": self.head_seq,
             "head_hash": self.head_hash,
@@ -86,13 +90,28 @@ class VerifyResult:
         }
 
 
+@dataclass(frozen=True)
+class Checkpoint:
+    """A (seq, head hash) pair recorded outside the database; ``source`` says where."""
+
+    seq: int
+    head_hash: str
+    source: str = "given"
+
+
 def verify_entries(
     entries: Iterable[Entry],
     *,
     expect_seq: int | None = None,
     expect_head: str | None = None,
+    checkpoints: Sequence[Checkpoint] = (),
 ) -> VerifyResult:
+    """Check the chain. Every trusted checkpoint must also still hold: the log reaches its
+    seq and has the same hash there. That is what catches records removed from the end."""
     entries = list(entries)
+    trusted = list(checkpoints)
+    if expect_seq is not None and expect_head is not None:
+        trusted.append(Checkpoint(expect_seq, expect_head))
     problems: list[str] = []
     expected_seq, expected_previous, count = 1, GENESIS, 0
     head_seq, head_hash = 0, GENESIS
@@ -120,22 +139,16 @@ def verify_entries(
         expected_seq = entry.seq + 1
         expected_previous = entry.record_hash
         head_seq, head_hash = entry.seq, entry.record_hash
-    if expect_seq is not None and expect_head is not None:
-        if head_seq < expect_seq:
+    hashes = {e.seq: e.record_hash for e in entries}
+    for cp in sorted(set(trusted), key=lambda c: (c.seq, c.source)):
+        if head_seq < cp.seq:
             problems.append(
-                f"log ends at seq {head_seq} but checkpoint says {expect_seq} (records removed "
-                "from the end)"
+                f"log ends at seq {head_seq} but checkpoint says {cp.seq} (records removed "
+                f"from the end) [{cp.source}]"
             )
-        elif problems == [] and _hash_at(entries, expect_seq) not in (None, expect_head):
-            problems.append(f"seq {expect_seq}: hash differs from the checkpoint")
-    return VerifyResult(not problems, count, head_seq, head_hash, problems)
-
-
-def _hash_at(entries: Iterable[Entry], seq: int) -> str | None:
-    for entry in entries:
-        if entry.seq == seq:
-            return entry.record_hash
-    return None
+        elif hashes.get(cp.seq) != cp.head_hash:
+            problems.append(f"seq {cp.seq}: hash differs from the checkpoint [{cp.source}]")
+    return VerifyResult(not problems, count, head_seq, head_hash, problems, len(set(trusted)))
 
 
 def db_entries(session: Session) -> list[Entry]:
@@ -144,9 +157,18 @@ def db_entries(session: Session) -> list[Entry]:
 
 
 def verify_db(
-    session: Session, *, expect_seq: int | None = None, expect_head: str | None = None
+    session: Session,
+    *,
+    expect_seq: int | None = None,
+    expect_head: str | None = None,
+    checkpoints: Sequence[Checkpoint] = (),
 ) -> VerifyResult:
-    return verify_entries(db_entries(session), expect_seq=expect_seq, expect_head=expect_head)
+    return verify_entries(
+        db_entries(session),
+        expect_seq=expect_seq,
+        expect_head=expect_head,
+        checkpoints=checkpoints,
+    )
 
 
 def export_lines(session: Session) -> Iterator[str]:

@@ -309,6 +309,14 @@ docker compose exec review-desk review-desk export-log --out /tmp/log.jsonl
   `verify-log --file export.jsonl --expect-seq N --expect-head HASH` checks an export
   and detects records removed from the end. The database refuses UPDATE, DELETE and
   TRUNCATE on the log.
+- **Checkpoints outside the database:** after every decision (or every N,
+  `REVIEW_DESK_CHECKPOINT_EVERY`; 0 = off) the head (seq, hash) is written as a work note
+  on the finding's `u_govhub_task` and appended to `REVIEW_DESK_CHECKPOINT_FILE`
+  (Compose: its own `checkpoints` volume, not the database's). Trust them when verifying:
+  `verify-log --trust-file [PATH] --trust-servicenow`, or
+  `GET /decision-log/verify?trust=file&trust=servicenow`; `GET /decision-log/checkpoint-status`
+  compares the latest checkpoint from each source with the database. A database owner who
+  switches the triggers off and deletes the newest records is then still detected.
 - `GET /poam/{system}`: the system's OSCAL 1.1.3 POA&M (every version kept).
 - `POST /forecast` (impact report) or `GET /forecast` (open queue): reviewer hours per
   tenant against weekly capacity. Until 20 timed decisions exist, the rate is the

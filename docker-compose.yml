@@ -85,6 +85,11 @@ services:
     environment:
       REVIEW_DESK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/review_desk
       CONNECTOR_HUB_URL: http://connector-hub:8000
+      # Decision-log checkpoints on their own volume, not the database's.
+      REVIEW_DESK_CHECKPOINT_FILE: /checkpoints/decision-log.jsonl
+      REVIEW_DESK_CHECKPOINT_EVERY: "1"
+    volumes:
+      - checkpoints:/checkpoints
     ports:
       - "127.0.0.1:8002:8000"
     depends_on:
@@ -100,3 +105,4 @@ services:
 
 volumes:
   pgdata:
+  checkpoints:

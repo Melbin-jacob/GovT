@@ -17,6 +17,10 @@ class TaskSink(Protocol):
 
     def note(self, correlation_id: str, text: str) -> dict[str, Any]: ...
 
+    def task_notes(self) -> list[tuple[str, str]] | None:
+        """(task number, work notes) of the hub's reassessment tasks; None if unavailable."""
+        ...
+
 
 class NullTaskSink:
     reason = "not sent: connector-hub not configured (CONNECTOR_HUB_URL)"
@@ -26,6 +30,9 @@ class NullTaskSink:
 
     def note(self, correlation_id: str, text: str) -> dict[str, Any]:
         return {"status": self.reason}
+
+    def task_notes(self) -> list[tuple[str, str]] | None:
+        return None
 
 
 class HttpTaskSink:
@@ -48,3 +55,12 @@ class HttpTaskSink:
 
     def note(self, correlation_id: str, text: str) -> dict[str, Any]:
         return self._post(f"/tasks/{correlation_id}/notes", {"text": text})
+
+    def task_notes(self) -> list[tuple[str, str]] | None:
+        try:
+            response = self.http.get("/tasks/notes", params={"type": "reassessment"})
+        except httpx.HTTPError:
+            return None
+        if response.status_code >= 400:
+            return None
+        return [(t["number"], t["work_notes"]) for t in response.json()]

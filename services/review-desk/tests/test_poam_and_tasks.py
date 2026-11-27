@@ -70,9 +70,10 @@ def test_remediation_creates_poam_item_and_task(
     reassessment = next(
         t for t in _tasks(servicenow, "reassessment") if t["correlation_id"] == finding["task_id"]
     )
+    decision_note, checkpoint_note = reassessment["work_notes"][-2:]
+    assert "WID-6.1.2: accept-with-remediation by governance-officer-01" in decision_note
     assert (
-        "WID-6.1.2: accept-with-remediation by governance-officer-01"
-        in reassessment["work_notes"][-1]
+        checkpoint_note == f"GovHub decision-log checkpoint seq=1 head={body['log']['record_hash']}"
     )
 
     doc = desk.get(f"/poam/{finding['system_id']}", headers=OFFICER).json()

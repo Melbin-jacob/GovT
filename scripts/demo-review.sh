@@ -94,7 +94,7 @@ for i in $(seq 0 $((n - 1))); do
 done
 
 echo "== 7. Verify the decision log; export; tamper with a copy; verify again"
-call GET "$DESK/decision-log/verify" > "$OUT/verify.json"
+call GET "$DESK/decision-log/verify?trust=file&trust=servicenow" > "$OUT/verify.json"
 call GET "$DESK/decision-log/checkpoint" > "$OUT/checkpoint.json"
 call GET "$DESK/decision-log/export" > "$OUT/decision-log.jsonl"
 python3 - "$OUT" <<'PY'

@@ -93,10 +93,15 @@ print(
     f"\n[7] Decision log: {verify['records']} records, ok={verify['ok']}, "
     f"head #{checkpoint['head_seq']} {checkpoint['head_hash'][:23]}..."
 )
+print(
+    f"    external checkpoints checked: {verify['checkpoints_checked']} "
+    f"(sources: {verify['trusted_sources']})"
+)
 print(f"    exported copy:  ok={export_ok['ok']}")
 print(f"    tampered copy:  ok={tampered['ok']}  {tampered['problems']}")
 print(f"    truncated copy: ok={truncated['ok']}  {truncated['problems']}")
 check(verify["ok"] and export_ok["ok"], "log should verify")
+check(verify["checkpoints_checked"] > 0, "no external checkpoints were written")
 check(not tampered["ok"] and "seq 2" in tampered["problems"][0], "tampering not detected")
 check(
     not truncated["ok"] and truncated["problems"][-1].startswith("log ends at seq 3"),
