@@ -5,6 +5,7 @@ requires-python = "==3.12.*"
 [manifest]
 members = [
     "govhub",
+    "govhub-assessment-engine",
     "govhub-connector-hub",
     "govhub-control-centre",
     "govhub-review-desk",
@@ -448,6 +449,7 @@ source = { virtual = "." }
 [package.dev-dependencies]
 dev = [
     { name = "axe-playwright-python" },
+    { name = "govhub-assessment-engine" },
     { name = "govhub-connector-hub" },
     { name = "govhub-control-centre" },
     { name = "govhub-review-desk" },
@@ -467,6 +469,7 @@ dev = [
 [package.metadata.requires-dev]
 dev = [
     { name = "axe-playwright-python", specifier = "==0.1.8" },
+    { name = "govhub-assessment-engine", editable = "services/assessment-engine" },
     { name = "govhub-connector-hub", editable = "services/connector-hub" },
     { name = "govhub-control-centre", editable = "services/control-centre" },
     { name = "govhub-review-desk", editable = "services/review-desk" },
@@ -479,6 +482,39 @@ dev = [
     { name = "ruff", specifier = ">=0.8" },
     { name = "types-jsonschema", specifier = ">=4.26.0.20261006" },
     { name = "types-regex", specifier = ">=2026.11.24.20261126" },
+]
+
+[[package]]
+name = "govhub-assessment-engine"
+version = "0.1.0"
+source = { editable = "services/assessment-engine" }
+dependencies = [
+    { name = "alembic" },
+    { name = "cryptography" },
+    { name = "fastapi" },
+    { name = "govhub-shared" },
+    { name = "httpx" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-multipart" },
+    { name = "sqlalchemy" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "alembic", specifier = ">=1.14" },
+    { name = "cryptography", specifier = ">=44" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "govhub-shared", editable = "shared" },
+    { name = "httpx", specifier = ">=0.28" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
+    { name = "pydantic", specifier = ">=2.9,<3" },
+    { name = "pydantic-settings", specifier = ">=2.6" },
+    { name = "python-multipart", specifier = ">=0.0.12" },
+    { name = "sqlalchemy", specifier = ">=2.0.36,<2.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
 
 [[package]]
