@@ -40,6 +40,10 @@ jobs:
           uv run rulebook import-golden data/golden/dadm-section6.csv --check
           uv run rulebook import-golden data/demo/golden/example-widgets.csv \
             --out-dir data/demo/catalogs --check
+      - name: French UI strings list is current; EN/FR keys match
+        run: |
+          uv run control-centre check-strings
+          uv run control-centre fr-strings --check docs/fr-ui-strings.md
       - name: Committed source metadata matches the synthetic source files
         run: uv run rulebook import-source --check data/demo/sources/*.txt data/demo/sources/*.html
 
