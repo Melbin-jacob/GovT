@@ -1,0 +1,24 @@
+[project]
+name = "govhub-control-centre"
+version = "0.1.0"
+description = "Control centre: bilingual (EN/FR) web UI for the demo; sign-in comes later"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "httpx>=0.28",
+    "jinja2>=3.1.4",
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.6",
+    "python-multipart>=0.0.12",
+]
+
+[project.scripts]
+control-centre = "control_centre.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/control_centre"]

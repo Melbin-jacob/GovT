@@ -1,0 +1,41 @@
+# French UI strings. Same keys as en.toml (checked by tests and `control-centre
+# check-strings`). Policy content never comes from here: it comes from the catalogs.
+#
+# Provenance: every string below was written by Claude Code and is UNVERIFIED, except
+# the keys listed in [provenance], whose wording the project owner provided. The list
+# with each string's status is docs/fr-ui-strings.md (generated; CI checks it is current).
+
+[provenance]
+provided_by_project_owner = ["footer.notice", "note.synthetic", "note.fictional"]
+
+[strings]
+"site.title" = "Carrefour de gouvernance de l'IA (prototype)"
+"footer.notice" = "Prototype par Envision Global Consultancy Services Inc. Ce n'est pas un site Web du gouvernement du Canada."
+"banner.demo" = "Démo seulement : aucune authentification."
+"banner.detail" = "Toute personne qui accède à cette page agit comme l'examinateur de démonstration. Ne l'exposez pas."
+"lang.switch" = "English"
+"choose.heading" = "Choisissez votre langue"
+"choose.intro" = "Prototype pour examiner des systèmes d'IA au regard des règles de gouvernance. Un modèle ne fait que rédiger une ébauche; une personne décide."
+"nav.skip" = "Passer au contenu principal"
+"nav.label" = "Écrans de la démo"
+"nav.policy" = "Changement de politique"
+"nav.impact" = "Rapport d'incidence"
+"nav.review" = "File d'examen"
+"nav.log" = "Registre des décisions"
+"nav.inventory" = "Inventaire des systèmes"
+"home.title" = "Aperçu de la démo"
+"home.intro" = "Suivez un changement de règle, du texte de la politique jusqu'à une décision humaine consignée, en cinq écrans."
+"home.policy" = "comparer deux versions d'une directive, disposition par disposition"
+"home.impact" = "voir les contrôles et les systèmes touchés par le changement, et l'effort d'examen"
+"home.review" = "examiner les constatations classées et consigner une décision"
+"home.log" = "vérifier que le registre des décisions n'a pas été modifié"
+"home.inventory" = "voir les systèmes d'IA et les lacunes dans leurs dossiers"
+"home.ai" = "Aucun modèle d'IA n'est encore utilisé : les constatations sont provisoires jusqu'à ce que le moteur d'évaluation existe."
+"note.label" = "Remarque :"
+"note.synthetic" = "Données d'essai synthétiques, pas une politique réelle"
+"note.fictional" = "Systèmes et responsables fictifs"
+"label.placeholder" = "VALEUR PROVISOIRE"
+"error.title" = "Une erreur s'est produite"
+"error.service" = "Le service {service} n'a pas pu traiter la demande."
+"error.unreachable" = "injoignable"
+"error.home" = "Retour à l'aperçu de la démo"

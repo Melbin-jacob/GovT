@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="alert alert-error" role="alert">
+  <p>{{ t('error.service', service=error.service) }}</p>
+  <p><code>{{ error.status or t('error.unreachable') }}</code> {{ error.detail }}</p>
+</div>
+<p><a href="/{{ lang }}/">{{ t('error.home') }}</a></p>
+{% endblock %}

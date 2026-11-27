@@ -1,0 +1,11 @@
+{% macro note(kind, t) -%}
+<p class="note note-{{ kind }}" data-note="{{ kind }}"><span class="note-label">{{ t('note.label') }}</span> {{ t('note.' ~ kind) }}</p>
+{%- endmacro %}
+
+{% macro badge(flag, t) -%}
+<span class="badge badge-{{ flag }}">{{ t('flag.' ~ flag) }}</span>
+{%- endmacro %}
+
+{% macro placeholder(t) -%}
+<span class="badge badge-placeholder">{{ t('label.placeholder') }}</span>
+{%- endmacro %}

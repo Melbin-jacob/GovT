@@ -80,6 +80,11 @@ jobs:
           curl --fail -sS http://127.0.0.1:8001/health
           curl --fail -sS http://127.0.0.1:8002/ready
           curl --fail -sS http://127.0.0.1:8003/__mock/health
+      - name: Control centre UI is up (localhost only, both languages)
+        run: |
+          curl --fail -sS http://127.0.0.1:8004/health
+          curl --fail -sS http://127.0.0.1:8004/ | grep -q 'href="/fr/"'
+          curl --fail -sS http://127.0.0.1:8004/fr/ | grep -q 'lang="fr"'
       - name: Vendored OSCAL schemas resolve inside the image
         run: >-
           docker compose exec -T rulebook python -c
