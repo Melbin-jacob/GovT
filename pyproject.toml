@@ -37,6 +37,10 @@ dev = [
     "httpx>=0.28",
     "types-regex>=2026.11.24.20261126",
     "types-jsonschema>=4.26.0.20261006",
+    # End-to-end UI test (services/control-centre/e2e). Pinned: the browser build must
+    # match the Playwright version; axe-core ships inside axe-playwright-python.
+    "playwright==1.63.0",
+    "axe-playwright-python==0.1.8",
 ]
 
 [tool.ruff]
@@ -55,6 +59,7 @@ known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk"
 # Tests drive git via subprocess, use fake mock credentials, and contain French text
 # with typographic characters.
 "**/tests/**" = ["S101", "S105", "S106", "S107", "S603", "S607", "RUF001", "RUF002", "RUF003"]
+"**/e2e/**" = ["S101", "RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -75,6 +80,7 @@ pythonpath = [
     "services/connector-hub/tests",
     "services/review-desk/tests",
     "services/control-centre/tests",
+    "services/control-centre/e2e",
 ]
 addopts = "-ra --import-mode=importlib"
 filterwarnings = [

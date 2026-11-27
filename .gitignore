@@ -24,6 +24,7 @@ data/sources/raw/
 # Output of `make demo`
 demo-output/
 demo-review-output/
+e2e-output/
 
 # Local decision-log checkpoint files (review-desk default path)
 var/

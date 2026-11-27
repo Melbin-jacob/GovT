@@ -116,6 +116,25 @@ jobs:
         run: scripts/demo-impact.sh http://localhost:8000 demo-output
       - name: Demo - task to human decision (mock ServiceNow, synthetic data)
         run: scripts/demo-review.sh demo-review-output
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.32"
+      - name: Install the end-to-end test tools and Chromium
+        run: |
+          make setup
+          uv run playwright install --with-deps chromium
+      - name: Demo - UI click-through in English and French (Playwright, axe)
+        run: make demo-ui
+      - name: UI test summary (axe results and timings)
+        if: always()
+        run: cat e2e-output/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Keep UI screenshots, axe results and timings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-e2e-output
+          path: e2e-output/
+          if-no-files-found: ignore
       - name: Keep demo output
         if: always()
         uses: actions/upload-artifact@v4
