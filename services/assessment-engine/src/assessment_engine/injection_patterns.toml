@@ -1,0 +1,21 @@
+# Instruction-like text in evidence (prompt-injection attempts), English and French.
+# Matched against the normalized text (lower case, typographic quotes/apostrophes/spaces
+# folded, accents kept). A match flags the passage: it is shown on the finding page and
+# can never be the only support for a "met" verdict. Patterns cannot catch every attack;
+# the prompt also passes evidence strictly as delimited data. Reviewable by annotators.
+
+[patterns]
+ignore-instructions-en = '\b(ignore|disregard|forget|override)\b.{0,30}\b(previous|prior|above|earlier|all|any|your|the)\b.{0,20}\b(instructions?|prompts?|rules|directions)\b'
+role-change-en = '\b(you are now|act as|pretend to be|from now on you)\b'
+set-verdict-en = '\b(mark|rate|classify|set|label|record|report|treat|consider)\b.{0,40}\bas\b.{0,10}\b(met|compliant|satisfied|passed|fully met|not applicable)\b'
+output-control-en = '\b(respond|reply|answer|output|return)\b.{0,20}\b(only|with|json)\b.{0,30}\b(verdict|met|confidence|json)\b'
+system-prompt = '(system prompt|new instructions|nouvelles instructions|invite systeme|invite système|<\s*/?\s*(system|instructions?)\s*>|\[\s*/?\s*inst\s*\]|\bassistant\s*:)'
+verdict-field = '\b(verdict|confidence|confiance)\s*[:=]\s*"?(met|respecte|respecté|1(\.0)?|0\.9\d*)'
+ignore-instructions-fr = '\b(ignore[rz]?|oublie[rz]?|ne tenez pas compte|faites abstraction)\b.{0,30}\b(instructions?|consignes|directives|regles|règles|invites?)\b'
+role-change-fr = '\b(vous etes maintenant|vous êtes maintenant|agissez comme|faites comme si|a partir de maintenant|à partir de maintenant)\b'
+set-verdict-fr = '\b(marque[rz]?|indique[rz]?|classe[rz]?|considere[rz]?|considére[rz]?|note[rz]?|declare[rz]?|déclare[rz]?)\b.{0,40}\bcomme\b.{0,10}\b(respecte|respecté|respectée|conforme|satisfait|satisfaite|sans objet)\b'
+output-control-fr = '\b(repondez|répondez|retournez|renvoyez)\b.{0,20}\b(uniquement|seulement|par|avec)\b.{0,30}\b(verdict|respect|json|confiance)\b'
+
+[stop_words]
+en = ["a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "has", "have", "in", "is", "it", "its", "of", "on", "or", "that", "the", "this", "to", "was", "were", "will", "with", "which", "who", "not", "no", "shall", "must", "may", "should", "each", "any", "all", "every"]
+fr = ["le", "la", "les", "un", "une", "des", "du", "de", "d", "l", "et", "ou", "est", "sont", "au", "aux", "en", "dans", "par", "pour", "sur", "que", "qui", "ne", "pas", "ce", "cette", "ces", "son", "sa", "ses", "leur", "leurs", "il", "elle", "ils", "elles", "doit", "doivent", "peut", "peuvent", "chaque", "tout", "tous", "toute", "toutes"]

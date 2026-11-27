@@ -15,6 +15,8 @@ dependencies = [
     "alembic>=1.14",
     "python-multipart>=0.0.12",
     "cryptography>=44",
+    "pypdf>=5.1",
+    "python-docx>=1.1",
 ]
 
 [project.scripts]
