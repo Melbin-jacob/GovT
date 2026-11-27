@@ -12,6 +12,7 @@ build/
 .env
 .env.*
 !.env.example
+!.env.servicenow.example
 .DS_Store
 .idea/
 .vscode/
