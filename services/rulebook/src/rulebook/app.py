@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from govhub_shared.oscal import OscalValidationError, ProfileResolutionError, resolve_profile
 from rulebook import store
+from rulebook.api_drafts import router as drafts_router
 from rulebook.api_impact import router as impact_router
 from rulebook.api_inventory import router as inventory_router
 from rulebook.api_source_diff import router as source_diff_router
@@ -34,6 +35,7 @@ app.include_router(sources_router)
 app.include_router(source_diff_router)
 app.include_router(inventory_router)
 app.include_router(impact_router)
+app.include_router(drafts_router)
 
 
 @app.exception_handler(store.StoreError)

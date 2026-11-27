@@ -371,7 +371,7 @@ def _control(row: GoldenRow, lang: Lang, resource_uuid: str | None = None) -> di
     if row.obligation:
         props.append(_hub_prop("obligation", row.obligation))
     if row.status == "withdrawn":
-        props.append(_hub_prop("status", "withdrawn"))
+        props.append({"name": "status", "value": "withdrawn"})  # OSCAL core prop
     for name, value in (
         ("drafted-by", row.drafted_by),
         ("approved-by", row.approved_by),

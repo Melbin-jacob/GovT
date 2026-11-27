@@ -164,3 +164,57 @@ class AISystem(Base):
     data_gaps: Mapped[list[str]] = mapped_column(ARRAY(String(100)), default=list)
 
     snapshot: Mapped[InventorySnapshot] = relationship(back_populates="systems")
+
+
+class DraftBatch(Base):
+    """Drafted control changes for one source change, waiting for human approval."""
+
+    __tablename__ = "draft_batches"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    catalog: Mapped[str] = mapped_column(String(200))
+    base_version: Mapped[str] = mapped_column(String(50))
+    instrument: Mapped[str] = mapped_column(String(200))
+    from_version: Mapped[str] = mapped_column(String(50))
+    to_version: Mapped[str] = mapped_column(String(50))
+    status: Mapped[str] = mapped_column(String(20))  # open | published
+    new_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    plan: Mapped[dict[str, Any]] = mapped_column(JSONB)  # groups, clause texts, ID prefix
+    created_by: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class DraftItem(Base):
+    """One proposed change: edit, new control, retirement or clause-reference update.
+    ``drafts`` holds the EN and FR drafts (from the model or a person)."""
+
+    __tablename__ = "draft_items"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    batch_id: Mapped[str] = mapped_column(ForeignKey("draft_batches.id"), index=True)
+    seq: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(20))  # edit | new | retire | reference
+    old_clauses: Mapped[list[Any]] = mapped_column(JSONB)
+    new_clauses: Mapped[list[Any]] = mapped_column(JSONB)
+    target_control: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    proposed_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    group_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    flags: Mapped[list[Any]] = mapped_column(JSONB)  # e.g. obligation-change, split
+    drafts: Mapped[dict[str, Any]] = mapped_column(JSONB)  # {"en": {...}, "fr": {...}}
+    status: Mapped[str] = mapped_column(String(20))  # pending | ready | approved | rejected
+    last_edited_by: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    decided_by: Mapped[str | None] = mapped_column(String(200), nullable=True)
+
+
+class ApprovalRecord(Base):
+    """Append-only, hash-chained log of every drafting and approval action."""
+
+    __tablename__ = "approval_log"
+
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    batch_id: Mapped[str] = mapped_column(String(36), index=True)
+    item_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    action: Mapped[str] = mapped_column(String(40))
+    record_text: Mapped[str] = mapped_column(Text)
+    previous_hash: Mapped[str] = mapped_column(String(71))
+    record_hash: Mapped[str] = mapped_column(String(71))
