@@ -27,7 +27,7 @@
       <th scope="row"><a href="/{{ lang }}/review/{{ f.id }}">{{ f.system_name }}<span class="visually-hidden">, {{ f.control_id }}</span></a><br><span class="muted">{{ f.system_id }}</span></th>
       <td>{{ f.control_id }}{% if f.obligation_change %}<br>{{ m.badge('obligation-change', t) }}{% endif %}</td>
       <td>{{ f.impact_level or t('impact.level_unknown') }}</td>
-      <td>{{ t('verdict.' ~ f.verdict) }}{% if f.placeholder %}<br>{{ m.placeholder(t) }}{% endif %}</td>
+      <td>{{ t('verdict.' ~ f.verdict) }}{% if f.placeholder %}<br>{{ m.placeholder(t) }}{% elif f.get('assessment') %}<br><span class="muted">{{ t('assessment.method.' ~ f.assessment.method) }}</span>{% endif %}{% if f.get('assessment') and f.assessment.flagged_passage_ids %}<br>{{ m.badge('flagged-evidence', t) }}{% endif %}</td>
       <td>{% if f.confidence is none %}{{ t('finding.no_confidence') }}{% else %}{{ '%.2f'|format(f.confidence) }}{% endif %}</td>
       <td>{{ t('state.' ~ f.state) }}</td>
       <td>{{ f.due_date or t('policy.none') }}</td>

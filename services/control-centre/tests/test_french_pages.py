@@ -16,8 +16,10 @@ from pathlib import Path
 
 import pytest
 from cc_support import (
+    MODEL_DRAFT,
     FakeHub,
     fixture,
+    stub_engine,
     stub_impact,
     stub_inventory,
     stub_log,
@@ -29,6 +31,7 @@ from control_centre import i18n
 
 ROOT = Path(__file__).parents[3]
 EXPLANATIONS = ROOT / "services/rulebook/src/rulebook/locales/explanations.en.toml"
+ENGINE_MESSAGES = ROOT / "services/assessment-engine/src/assessment_engine/locales/messages.en.toml"
 # English that review-desk and the old report format produced (must never reach FR pages).
 REVIEW_DESK_ENGLISH = [
     "Placeholder finding: the assessment engine does not exist yet",
@@ -53,6 +56,8 @@ def english_phrases() -> set[str]:
     phrases = set(REVIEW_DESK_ENGLISH)
     for template in tomllib.loads(EXPLANATIONS.read_text("utf-8"))["templates"].values():
         phrases.update(_fragments(template))
+    for template in tomllib.loads(ENGINE_MESSAGES.read_text("utf-8"))["messages"].values():
+        phrases.update(_fragments(template))
     en, fr = i18n.strings("en"), i18n.strings("fr")
     for key, text in en.items():
         if text != fr[key]:
@@ -61,8 +66,10 @@ def english_phrases() -> set[str]:
 
 
 def main_text(page: str) -> str:
-    """Visible text of <main> (the footer is bilingual by design and marked lang="en")."""
+    """Visible text of <main>, without passages marked as another language (evidence is
+    data in its own language; the footer is bilingual by design)."""
     main = page.split("<main", 1)[1].split("</main>", 1)[0]
+    main = re.sub(r'<blockquote class="quote" lang="en">.*?</blockquote>', " ", main, flags=re.S)
     main = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", main, flags=re.S)
     return htmlmod.unescape(re.sub(r"<[^>]+>", " ", main))
 
@@ -110,6 +117,12 @@ def french_pages(ui: TestClient, hub: FakeHub) -> dict[str, str]:
         },
     )
     out["log-failed"] = ui.get("/fr/decision-log?verify=true&trust=servicenow").text
+    # A finding with a model draft that was downgraded because of flagged evidence.
+    hub.desk.on(
+        "GET", f"/findings/{fid}", {**finding, "placeholder": False, "assessment": MODEL_DRAFT}
+    )
+    stub_engine(hub, finding["system_id"])
+    out["finding-assessed"] = ui.get(f"/fr/review/{fid}?notice=assessed").text
     return out
 
 
@@ -142,6 +155,8 @@ def test_no_english_generated_text_on_any_french_page(ui: TestClient, hub: FakeH
         ("log-failed", "Le registre se termine à l'enregistrement 3"),
         ("log-failed", "Enregistrement 2 : son contenu ne correspond plus"),
         ("policy", "Les dispositions identiques sont jumelées d'abord."),
+        ("finding-assessed", "injection d'invite possible"),
+        ("finding-assessed", "Un texte ressemblant à des instructions a été trouvé"),
     ],
 )
 def test_french_pages_show_the_french_text(

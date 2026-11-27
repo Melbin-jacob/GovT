@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     connector_hub_url: str = Field(
         default="http://127.0.0.1:8001", validation_alias="CONNECTOR_HUB_URL"
     )
+    assessment_engine_url: str = Field(
+        default="http://127.0.0.1:8005", validation_alias="ASSESSMENT_ENGINE_URL"
+    )
     # Placeholder identity sent to review-desk. TODO(control-centre): OIDC sign-in.
     demo_user: str = "demo-reviewer-01"
     demo_role: str = "reviewer"

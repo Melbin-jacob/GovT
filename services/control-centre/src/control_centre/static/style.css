@@ -137,3 +137,5 @@ details { margin: 0.5rem 0; }
 input[type="radio"] { width: 1.1rem; height: 1.1rem; vertical-align: middle; }
 ul.effects { margin: 0; padding-left: 1.1rem; }
 .field select, .field input[type="date"] { max-width: 20rem; }
+blockquote.quote { margin: 0.25rem 0; padding: 0.25rem 0.75rem; border-left: 4px solid var(--rule); background: #f8f8f8; }
+.badge-flagged-evidence { background: var(--warn-bg); color: var(--warn-text); }

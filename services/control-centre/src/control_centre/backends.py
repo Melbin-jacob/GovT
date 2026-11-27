@@ -46,12 +46,18 @@ class Service:
     def text(self, path: str) -> str:
         return self.call("GET", path).text
 
+    def upload(self, path: str, filename: str, data: bytes) -> Any:
+        return self.call("POST", path, files={"file": (filename, data)}).json()
+
 
 class Backends:
-    def __init__(self, rulebook: Service, desk: Service, connector: Service) -> None:
+    def __init__(
+        self, rulebook: Service, desk: Service, connector: Service, engine: Service
+    ) -> None:
         self.rulebook = rulebook
         self.desk = desk
         self.connector = connector
+        self.engine = engine
 
     @classmethod
     def from_settings(cls, settings: Settings) -> Backends:
@@ -64,4 +70,5 @@ class Backends:
             Service("rulebook", client(settings.rulebook_url)),
             Service("review-desk", client(settings.review_desk_url, identity)),
             Service("connector-hub", client(settings.connector_hub_url)),
+            Service("assessment-engine", client(settings.assessment_engine_url, identity)),
         )

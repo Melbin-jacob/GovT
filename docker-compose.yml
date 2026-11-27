@@ -147,10 +147,13 @@ services:
       RULEBOOK_URL: http://rulebook:8000
       REVIEW_DESK_URL: http://review-desk:8000
       CONNECTOR_HUB_URL: http://connector-hub:8000
+      ASSESSMENT_ENGINE_URL: http://assessment-engine:8000
     ports:
       - "127.0.0.1:8004:8000"
     depends_on:
       review-desk:
+        condition: service_healthy
+      assessment-engine:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]

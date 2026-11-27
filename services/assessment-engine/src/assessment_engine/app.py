@@ -27,6 +27,7 @@ from assessment_engine.models import (
     EvidenceDocument,
     SystemFact,
 )
+from assessment_engine.review_desk import HttpReviewDesk, ReviewDesk, draft_of
 from assessment_engine.settings_file import AssessmentConfig, load_config
 from govhub_shared.model_gateway import ChatGateway, gateway_from_env
 
@@ -255,3 +256,68 @@ def get_assessment_results(run_id: str, session: ReadSession) -> dict[str, Any]:
     if row is None:
         raise HTTPException(404, "assessment run not found")
     return row.document
+
+
+def get_review_desk() -> ReviewDesk:
+    return HttpReviewDesk(get_settings().review_desk_url)
+
+
+class SystemRunBody(BaseModel):
+    as_of: date
+    control_ids: list[str] | None = Field(default=None, description="Default: all open")
+
+
+@app.post("/systems/{system_id}/assess-open-findings", tags=["assessments"])
+def assess_open_findings(
+    system_id: str,
+    body: SystemRunBody,
+    session: ReadSession,
+    gateway: Annotated[ChatGateway, Depends(get_gateway)],
+    source: Annotated[ControlSource, Depends(get_controls)],
+    config: Annotated[AssessmentConfig, Depends(get_config)],
+    desk: Annotated[ReviewDesk, Depends(get_review_desk)],
+) -> dict[str, Any]:
+    """Assess the system's open findings in review-desk and post the drafts back. The
+    findings stay open: a person decides."""
+    findings = [
+        f
+        for f in desk.open_findings(system_id)
+        if body.control_ids is None or f["control_id"] in body.control_ids
+    ]
+    groups: dict[tuple[str, str], dict[str, str]] = {}
+    for f in findings:
+        groups.setdefault((f["catalog"], f["catalog_version"]), {})[f["control_id"]] = f["id"]
+    runs = []
+    for (catalog, version), by_control in sorted(groups.items()):
+        request = engine.RunRequest(
+            system_id=system_id,
+            catalog=catalog,
+            catalog_version=version,
+            control_ids=sorted(by_control),
+            as_of=body.as_of,
+            findings=by_control,
+        )
+        try:
+            run_id, rows, doc = engine.run(
+                session,
+                request,
+                gateway=gateway,
+                source=source,
+                rules_dir=Path(get_settings().rules_dir),
+                config=config,
+            )
+        except LookupError as exc:
+            raise HTTPException(404, str(exc)) from exc
+        session.commit()
+        pushed = {r.control_id: desk.push(str(r.finding_id), draft_of(r)) for r in rows}
+        runs.append(
+            {
+                "run_id": run_id,
+                "catalog": catalog,
+                "catalog_version": version,
+                "assessments": [engine.assessment_view(r) for r in rows],
+                "review_desk": pushed,
+                "assessment_results": {"run_id": run_id, "content_hash": doc.content_hash},
+            }
+        )
+    return {"system_id": system_id, "findings": len(findings), "runs": runs}

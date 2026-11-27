@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-365 strings: 3 provided by the project owner, 362 unverified.
+403 strings: 3 provided by the project owner, 400 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -23,6 +23,20 @@ strings before any use outside the demo.
 | `action.reject.hint` | La constatation est erronée ou ne s'applique pas. | The finding is wrong or does not apply. | Unverified, written by Claude Code |
 | `action.request-more-evidence` | Demander d'autres preuves | Request more evidence | Unverified, written by Claude Code |
 | `action.request-more-evidence.hint` | Envoie une demande de preuves au responsable du système; la constatation reste dans la file. | Sends an evidence request to the system owner; the finding stays in the queue. | Unverified, written by Claude Code |
+| `assessment.cited` | Preuve citée | Cited evidence | Unverified, written by Claude Code |
+| `assessment.flagged` | Un texte ressemblant à des instructions a été trouvé dans {n} passage(s) de preuve. | Instruction-like text was found in {n} evidence passage(s). | Unverified, written by Claude Code |
+| `assessment.flagged_detail` | Il a été traité comme des données, jamais comme des instructions, et ne peut pas être le seul appui d'un verdict « respecté ». Vérifiez-le avant de décider. | It was treated as data, never as instructions, and cannot be the only support for a met verdict. Check it before you decide. | Unverified, written by Claude Code |
+| `assessment.heading` | Ébauche d'évaluation | Assessment draft | Unverified, written by Claude Code |
+| `assessment.human_decides` | Le moteur d'évaluation ne fait que proposer ce verdict; une personne décide. | The assessment engine only drafts this verdict; a person decides. | Unverified, written by Claude Code |
+| `assessment.method` | Évalué par | Assessed by | Unverified, written by Claude Code |
+| `assessment.method.model` | Ébauche du modèle | Model draft | Unverified, written by Claude Code |
+| `assessment.method.rule` | Règle (code simple) | Rule (plain code) | Unverified, written by Claude Code |
+| `assessment.model` | Modèle | Model | Unverified, written by Claude Code |
+| `assessment.model_verdict` | Le modèle a proposé | The model proposed | Unverified, written by Claude Code |
+| `assessment.none` | Aucune évaluation pour l'instant : cette constatation est provisoire. | No assessment yet: this finding is a placeholder. | Unverified, written by Claude Code |
+| `assessment.prompt` | invite | prompt | Unverified, written by Claude Code |
+| `assessment.run` | Évaluer cette constatation | Assess this finding | Unverified, written by Claude Code |
+| `assessment.run_hint` | Le moteur d'évaluation propose un verdict à partir des preuves; la constatation reste ouverte pour votre décision. | The assessment engine drafts a verdict from the evidence; the finding stays open for your decision. | Unverified, written by Claude Code |
 | `banner.demo` | Démo seulement : aucune authentification. | Demo only: no authentication. | Unverified, written by Claude Code |
 | `banner.detail` | Toute personne qui accède à cette page agit comme l'examinateur de démonstration. Ne l'exposez pas. | Anyone who can reach this page acts as the demo reviewer. Do not expose it. | Unverified, written by Claude Code |
 | `choose.heading` | Choisissez votre langue | Choose your language | Unverified, written by Claude Code |
@@ -59,6 +73,24 @@ strings before any use outside the demo.
 | `error.service` | Le service {service} n'a pas pu traiter la demande. | The {service} service could not complete the request. | Unverified, written by Claude Code |
 | `error.title` | Une erreur s'est produite | Something went wrong | Unverified, written by Claude Code |
 | `error.unreachable` | injoignable | unreachable | Unverified, written by Claude Code |
+| `evidence.caption` | Preuves pour {system} | Evidence for {system} | Unverified, written by Claude Code |
+| `evidence.extraction.error` | Illisible | Could not be read | Unverified, written by Claude Code |
+| `evidence.extraction.no-text` | Aucun texte (numérisé?) | No text (scanned?) | Unverified, written by Claude Code |
+| `evidence.extraction.ok` | Texte extrait | Text extracted | Unverified, written by Claude Code |
+| `evidence.extraction.unsupported` | Type de fichier non pris en charge | File type not supported | Unverified, written by Claude Code |
+| `evidence.file` | Fichier | File | Unverified, written by Claude Code |
+| `evidence.heading` | Preuves | Evidence | Unverified, written by Claude Code |
+| `evidence.lang.en` | Anglais | English | Unverified, written by Claude Code |
+| `evidence.lang.fr` | Français | French | Unverified, written by Claude Code |
+| `evidence.lang.unknown` | Inconnue | Unknown | Unverified, written by Claude Code |
+| `evidence.language` | Langue | Language | Unverified, written by Claude Code |
+| `evidence.none` | Aucune preuve n'a été téléversée pour ce système. | No evidence has been uploaded for this system. | Unverified, written by Claude Code |
+| `evidence.passages` | Passages | Passages | Unverified, written by Claude Code |
+| `evidence.status` | Extraction du texte | Text extraction | Unverified, written by Claude Code |
+| `evidence.unavailable` | Le moteur d'évaluation est indisponible pour le moment. | The assessment engine is unavailable right now. | Unverified, written by Claude Code |
+| `evidence.upload` | Téléverser | Upload | Unverified, written by Claude Code |
+| `evidence.upload_hint` | Texte, Markdown, HTML, PDF ou Word (DOCX), jusqu'à 20 Mo. Conservé uniquement dans ce déploiement. | Text, Markdown, HTML, PDF or Word (DOCX), up to 20 MB. Stored only in this deployment. | Unverified, written by Claude Code |
+| `evidence.upload_label` | Ajouter un fichier de preuve | Add an evidence file | Unverified, written by Claude Code |
 | `finding.ai_note` | Un modèle d'IA ne fait que rédiger une ébauche; une personne décide. Cette constatation est provisoire jusqu'à ce que le moteur d'évaluation existe. | An AI model only drafts; a person decides. This finding is a placeholder until the assessment engine exists. | Unverified, written by Claude Code |
 | `finding.back` | Retour à la file d'examen | Back to the review queue | Unverified, written by Claude Code |
 | `finding.confidence` | Confiance | Confidence | Unverified, written by Claude Code |
@@ -75,6 +107,8 @@ strings before any use outside the demo.
 | `finding.title` | Constatation | Finding | Unverified, written by Claude Code |
 | `finding.verdict` | Verdict | Verdict | Unverified, written by Claude Code |
 | `flag.added` | Ajoutée | Added | Unverified, written by Claude Code |
+| `flag.draft-rule` | Règle provisoire, non vérifiée | Draft rule, unverified | Unverified, written by Claude Code |
+| `flag.flagged-evidence` | Texte ressemblant à des instructions | Instruction-like text | Unverified, written by Claude Code |
 | `flag.language-divergence` | L'anglais et le français diffèrent | English and French differ | Unverified, written by Claude Code |
 | `flag.merge` | Fusionnée | Merged | Unverified, written by Claude Code |
 | `flag.obligation-change` | Obligation modifiée | Obligation changed | Unverified, written by Claude Code |
@@ -211,6 +245,10 @@ strings before any use outside the demo.
 | `note.fictional` | Systèmes et responsables fictifs | Fictional systems and owners | Provided by the project owner |
 | `note.label` | Remarque : | Note: | Unverified, written by Claude Code |
 | `note.synthetic` | Données d'essai synthétiques, pas une politique réelle | Synthetic test data, not real policy | Provided by the project owner |
+| `notice.assess-failed` | Le moteur d'évaluation n'a pas pu évaluer cette constatation. | The assessment engine could not assess this finding. | Unverified, written by Claude Code |
+| `notice.assessed` | Le moteur d'évaluation a fourni une ébauche. | The assessment engine returned a draft. | Unverified, written by Claude Code |
+| `notice.upload-failed` | Le fichier de preuve n'a pas pu être enregistré. | The evidence file could not be stored. | Unverified, written by Claude Code |
+| `notice.uploaded` | Le fichier de preuve a été enregistré. | The evidence file was stored. | Unverified, written by Claude Code |
 | `policy.changes` | Changements | Changes | Unverified, written by Claude Code |
 | `policy.clauses` | {n} dispositions | {n} clauses | Unverified, written by Claude Code |
 | `policy.compare` | Comparer | Compare | Unverified, written by Claude Code |

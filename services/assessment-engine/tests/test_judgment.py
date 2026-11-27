@@ -169,8 +169,10 @@ def test_run_produces_assessments_and_oscal_assessment_results(
 ) -> None:
     files = {"file": ("notice.txt", f"{ONLINE}\n\n{PHONE}".encode())}
     engine_api.post("/systems/SYS-001/evidence", files=files)
-    facts = {"widgets_in_service": {"value": 4, "source": "register"},
-             "last_calibration_date": {"value": "2026-01-15", "source": "log"}}  # fmt: skip
+    facts = {
+        "widgets_in_service": {"value": 4, "source": "register"},
+        "last_calibration_date": {"value": "2026-01-15", "source": "log"},
+    }
     engine_api.put("/systems/SYS-001/facts", json={"facts": facts})
     body = {
         "system_id": "SYS-001",
@@ -206,8 +208,13 @@ def test_run_produces_assessments_and_oscal_assessment_results(
 
 
 def test_unknown_control_is_404(engine_api: TestClient, scripted: ScriptedGateway) -> None:
-    body = {"system_id": "SYS-001", "catalog": "example-widgets", "catalog_version": "1.0.0",
-            "control_ids": ["WID-9.9.9"], "as_of": "2026-12-01"}  # fmt: skip
+    body = {
+        "system_id": "SYS-001",
+        "catalog": "example-widgets",
+        "catalog_version": "1.0.0",
+        "control_ids": ["WID-9.9.9"],
+        "as_of": "2026-12-01",
+    }
     assert engine_api.post("/assessments", json=body).status_code == 404
 
 
@@ -215,3 +222,62 @@ def test_scripted_gateway_raises_when_exhausted() -> None:
     with pytest.raises(GatewayError):
         ScriptedGateway().chat(object())
     assert date(2026, 1, 1)
+
+
+class FakeDesk:
+    def __init__(self, findings: list[dict[str, Any]]) -> None:
+        self.findings = findings
+        self.pushed: dict[str, dict[str, Any]] = {}
+
+    def open_findings(self, system_id: str) -> list[dict[str, Any]]:
+        return [f for f in self.findings if f["system_id"] == system_id]
+
+    def push(self, finding_id: str, draft: dict[str, Any]) -> str:
+        self.pushed[finding_id] = draft
+        return "sent"
+
+
+def test_assess_open_findings_posts_drafts_to_review_desk(
+    engine_api: TestClient, scripted: ScriptedGateway
+) -> None:
+    from assessment_engine.app import get_review_desk
+
+    desk = FakeDesk(
+        [
+            {
+                "id": "f-notice",
+                "system_id": "SYS-001",
+                "control_id": "WID-6.4.1",
+                "catalog": "example-widgets",
+                "catalog_version": "1.0.0",
+                "state": "open",
+            },
+            {
+                "id": "f-cal",
+                "system_id": "SYS-001",
+                "control_id": "WID-6.2.1",
+                "catalog": "example-widgets",
+                "catalog_version": "1.0.0",
+                "state": "open",
+            },
+        ]
+    )
+    app.dependency_overrides[get_review_desk] = lambda: desk
+    try:
+        engine_api.post(
+            "/systems/SYS-001/evidence", files={"file": ("n.txt", f"{ONLINE}\n\n{PHONE}".encode())}
+        )
+        out = engine_api.post(
+            "/systems/SYS-001/assess-open-findings", json={"as_of": "2026-12-01"}
+        ).json()
+    finally:
+        app.dependency_overrides.pop(get_review_desk, None)
+    (run,) = out["runs"]
+    assert run["review_desk"] == {"WID-6.2.1": "sent", "WID-6.4.1": "sent"}
+    notice = desk.pushed["f-notice"]
+    assert notice["method"] == "model" and notice["verdict"] == "partially-met"
+    assert notice["cited_quote"] == "No notice is given by telephone"
+    assert notice["rationale"]["fr"].startswith("Ébauche rédigée")
+    calibration = desk.pushed["f-cal"]
+    assert calibration["method"] == "rule" and calibration["verdict"] == "unable-to-determine"
+    assert calibration["missing_facts"] == ["last_calibration_date", "widgets_in_service"]

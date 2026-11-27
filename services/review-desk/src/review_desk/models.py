@@ -69,6 +69,9 @@ class Finding(Base):
     verdict: Mapped[str] = mapped_column(String(30))
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     rationale: Mapped[str] = mapped_column(Text)
+    # The assessment engine's latest draft for this finding (method, model, citation,
+    # flags, rationale in both languages); None while the finding is a placeholder.
+    assessment: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     placeholder: Mapped[bool] = mapped_column(Boolean)
     due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     state: Mapped[str] = mapped_column(String(30))
