@@ -9,19 +9,20 @@ from __future__ import annotations
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govhub_shared.obligations import OBLIGATION_CODES
-from rulebook import approval_log, drafts
+from rulebook import approval, approval_log, drafts
+from rulebook.config import get_settings
 from rulebook.db import get_session
 from rulebook.identity import ENGINE_ROLE, ActorDep
 from rulebook.models import DraftBatch, DraftItem
 
 router = APIRouter(prefix="/drafts", tags=["drafts"])
 SessionDep = Annotated[Session, Depends(get_session)]
-CHECK_TYPES = ("rule-based", "judgment")
 
 
 class BatchRequest(BaseModel):
@@ -150,3 +151,105 @@ def put_model_draft(
 @router.get("/log/verify")
 def verify_log(session: SessionDep) -> dict[str, Any]:
     return approval_log.verify(session).as_dict()
+
+
+class EditRequest(BaseModel):
+    languages: dict[str, dict[str, Any]] = Field(
+        default_factory=dict,
+        description='{"en": {"statement": ..., "guidance": ..., "objective": ..., '
+        '"check_type": ..., "obligation": ..., "no_change": false}, "fr": {...}}',
+    )
+    proposed_id: str | None = None
+
+
+class DecisionRequest(BaseModel):
+    reason: str = ""
+
+
+class PublishRequest(BaseModel):
+    source_date: str | None = Field(default=None, description="Default: see publish-defaults")
+
+
+def _approval(call: Any) -> Any:
+    try:
+        return call()
+    except approval.ApprovalError as exc:
+        raise HTTPException(exc.status, {"code": exc.code, "message": str(exc)}) from exc
+
+
+@router.put("/items/{item_id}")
+def edit_item(
+    item_id: str, body: EditRequest, session: SessionDep, actor: ActorDep
+) -> dict[str, Any]:
+    """A person writes or corrects drafts (reviewer or governance officer)."""
+    item = get_item(session, item_id)
+    batch = get_batch(session, item.batch_id)
+    for lang, fields in body.languages.items():
+        LanguageDraft(status="drafted", **{k: v for k, v in fields.items() if k != "status"})
+        if fields.get("obligation") not in (None, *OBLIGATION_CODES):
+            raise HTTPException(422, f"{lang}: obligation must be one of {list(OBLIGATION_CODES)}")
+    _approval(lambda: approval.edit(session, batch, item, actor, body.languages, body.proposed_id))
+    session.commit()
+    return drafts.item_view(item)
+
+
+@router.post("/items/{item_id}/approve")
+def approve_item(item_id: str, session: SessionDep, actor: ActorDep) -> dict[str, Any]:
+    item = get_item(session, item_id)
+    batch = get_batch(session, item.batch_id)
+    _approval(lambda: approval.decide(session, batch, item, actor, "approve", ""))
+    session.commit()
+    return drafts.item_view(item)
+
+
+@router.post("/items/{item_id}/reject")
+def reject_item(
+    item_id: str, body: DecisionRequest, session: SessionDep, actor: ActorDep
+) -> dict[str, Any]:
+    item = get_item(session, item_id)
+    batch = get_batch(session, item.batch_id)
+    _approval(lambda: approval.decide(session, batch, item, actor, "reject", body.reason))
+    session.commit()
+    return drafts.item_view(item)
+
+
+@router.get("/batches/{batch_id}/publish-defaults")
+def publish_defaults(batch_id: str, session: SessionDep) -> dict[str, Any]:
+    """The SOURCE_DATE default and the date it must be later than."""
+    batch = get_batch(session, batch_id)
+    return {
+        **approval.source_date_bounds(session, batch),
+        "version": batch.plan["proposed_version"],
+    }
+
+
+@router.post("/batches/{batch_id}/publish")
+def publish_batch(
+    batch_id: str, body: PublishRequest, session: SessionDep, actor: ActorDep
+) -> dict[str, Any]:
+    """Approved drafts become a new immutable catalog version (minor bump)."""
+    batch = get_batch(session, batch_id)
+    source_date = body.source_date or approval.source_date_bounds(session, batch)["default"]
+    result = _approval(
+        lambda: approval.publish(
+            session, batch, actor, source_date, get_settings().approval_checkpoint_file
+        )
+    )
+    batch.plan = {**batch.plan, "change_set": result["change_set"]}
+    session.commit()
+    return dict(result)
+
+
+@router.get("/batches/{batch_id}/change-set")
+def change_set(batch_id: str, session: SessionDep) -> dict[str, Any]:
+    """The published change set, for ``rulebook apply-drafts`` (golden-set CSV)."""
+    batch = get_batch(session, batch_id)
+    if "change_set" not in batch.plan:
+        raise HTTPException(404, "the batch is not published yet")
+    data: dict[str, Any] = batch.plan["change_set"]
+    return data
+
+
+@router.get("/log/export", response_class=PlainTextResponse)
+def export_log(session: SessionDep) -> str:
+    return "\n".join(approval_log.export_lines(session)) + "\n"

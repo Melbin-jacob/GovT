@@ -61,7 +61,8 @@ known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk"
 [tool.ruff.lint.per-file-ignores]
 # Tests drive git via subprocess, use fake mock credentials, and contain French text
 # with typographic characters.
-"**/tests/**" = ["S101", "S105", "S106", "S107", "S603", "S607", "RUF001", "RUF002", "RUF003"]
+# Tests also hold long literal fixtures (policy-like wording, JSON), so E501 is relaxed there.
+"**/tests/**" = ["S101", "S105", "S106", "S107", "S603", "S607", "RUF001", "RUF002", "RUF003", "E501"]
 "**/e2e/**" = ["S101", "RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]

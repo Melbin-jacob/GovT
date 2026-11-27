@@ -135,6 +135,11 @@ class GoldenSettings:
     source_meta_dir: Path
     statement_status: str
     catalog: dict[Lang, CatalogText]
+    # Optional: the official file hash per language when no meta file is at hand (the
+    # rulebook rebuilding a version from its database), and the approval-log head stamped
+    # on a version produced by approved drafts (APPROVAL_LOG_HEAD).
+    source_hashes: dict[Lang, str] | None = None
+    approval_log_head: str | None = None
 
     def meta_path(self, lang: Lang) -> Path:
         name = f"{self.source_instrument}.{self.source_version}.{lang}.meta.json"
@@ -402,8 +407,10 @@ def _source_resource(settings: GoldenSettings, lang: Lang) -> tuple[str, dict[st
     uuid = stable_uuid("source-document", settings.source_instrument, settings.source_version, lang)
     rlink: dict[str, Any] = {"href": settings.catalog[lang].href}
     meta = settings.meta_path(lang)
-    if meta.is_file():
+    file_hash = (settings.source_hashes or {}).get(lang)
+    if file_hash is None and meta.is_file():
         file_hash = json.loads(meta.read_text(encoding="utf-8"))["file"]["sha256"]
+    if file_hash:
         rlink["hashes"] = [{"algorithm": "SHA-256", "value": file_hash}]
     return uuid, {
         "uuid": uuid,
@@ -491,6 +498,11 @@ def build_catalog(
                 _hub_prop("source-file", source_name),
                 _hub_prop("source-instrument", settings.source_instrument),
                 _hub_prop("source-version", settings.source_version),
+                *(
+                    [_hub_prop("approval-log-head", settings.approval_log_head)]
+                    if settings.approval_log_head
+                    else []
+                ),
             ],
             "links": [{"href": src.href, "rel": "reference", "text": src.document}],
             "remarks": src.remarks.format(source=source_name),
@@ -567,6 +579,7 @@ def read_settings(path: Path) -> GoldenSettings:
             settings, "STATEMENT_STATUS", path, "paraphrase-pending-verification"
         ),
         catalog=catalog,
+        approval_log_head=settings.get("APPROVAL_LOG_HEAD") or None,
     )
 
 
