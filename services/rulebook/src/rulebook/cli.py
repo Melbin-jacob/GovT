@@ -140,6 +140,23 @@ def _propose_obligations(args: argparse.Namespace) -> int:
     return 0
 
 
+def _apply_drafts(args: argparse.Namespace) -> int:
+    import json
+
+    from rulebook.apply_drafts import apply
+    from rulebook.golden import import_golden
+
+    change_set = json.loads(Path(args.change_set).read_text(encoding="utf-8"))
+    csv_path = Path(args.csv)
+    for path, text in apply(csv_path, change_set).items():
+        path.write_text(text, encoding="utf-8")
+        print(f"wrote {path}")
+    result = import_golden(csv_path, Path(args.out_dir))
+    for lang, path in result.paths.items():
+        print(f"  {lang}: {path} version {result.version}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rulebook", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -199,6 +216,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--check", action="store_true", help="Write nothing; exit 1 if *.meta.json is stale"
     )
     sub.add_parser("source-schema", help="Print the source-document JSON Schema")
+    ad = sub.add_parser(
+        "apply-drafts",
+        help="Write a published draft change set into the golden set and re-import",
+    )
+    ad.add_argument("change_set", help="Change set JSON (GET /drafts/batches/{id}/change-set)")
+    ad.add_argument("--csv", required=True, help="Golden-set CSV to update")
+    ad.add_argument("--out-dir", default="data/catalogs", help="Where the catalogs go")
     obl = sub.add_parser(
         "propose-obligations",
         help="Fill blank golden-set Obligation cells from linked source clauses (plain code)",
@@ -228,6 +252,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     invj.add_argument("csv")
 
     args = parser.parse_args(argv)
+    if args.command == "apply-drafts":
+        return _apply_drafts(args)
     if args.command == "propose-obligations":
         return _propose_obligations(args)
     if args.command == "inventory-json":
