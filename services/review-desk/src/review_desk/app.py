@@ -16,7 +16,7 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from review_desk import decision_log, queue
+from review_desk import decision_log, forecast, queue
 from review_desk.config import get_settings
 from review_desk.db import get_session
 from review_desk.decisions import DecisionError, DecisionRequest, decide, history
@@ -193,3 +193,25 @@ def export_log(session: ReadSession, user: AnyUser) -> str:
 def get_checkpoint(session: ReadSession, user: AnyUser) -> dict[str, Any]:
     """Current head (seq, hash). Keep it outside the hub to detect truncation later."""
     return decision_log.checkpoint(session)
+
+
+def _rate_config() -> forecast.RateConfig:
+    from pathlib import Path
+
+    return forecast.load_rate_config(Path(get_settings().review_rate_path))
+
+
+@app.post("/forecast", tags=["forecast"])
+def forecast_report(
+    session: ReadSession,
+    user: AnyUser,
+    report: Annotated[dict[str, Any], Body(description="A rulebook impact report")],
+) -> dict[str, Any]:
+    """Reviewer hours an impact report will need, per tenant, against weekly capacity."""
+    return forecast.from_report(session, _rate_config(), report)
+
+
+@app.get("/forecast", tags=["forecast"])
+def forecast_queue(session: ReadSession, user: AnyUser) -> dict[str, Any]:
+    """Reviewer hours for the open review queue."""
+    return forecast.from_queue(session, _rate_config())
