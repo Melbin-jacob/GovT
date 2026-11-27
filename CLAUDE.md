@@ -52,6 +52,13 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 ## Policy content rules
 - **Never invent policy text.** The golden-set CSV is the only source of check wording.
   Do not paraphrase, translate or "fix" it in code. If text is missing, omit the field.
+  AI-drafted wording enters only after a person approves it (Milestone 6), with provenance
+  (`Drafted by`, `Approved by`, `Approval record` columns); approval never makes a control
+  `reviewed`. The exported CSV change keeps the golden set as the record.
+- Optional columns: `Obligation` (codes: must, must-not, should, should-not, may, may-not,
+  restriction; proposed by `rulebook propose-obligations` only from linked clauses, never
+  guessed), `Status` (active/withdrawn), `Group` (groups-file key; new sections of a
+  renumbered directive get neutral group IDs `<prefix>-G<nn>`).
 - **English and French are separate catalogs with identical control IDs.** The parity check
   fails if a control exists in one language and not the other.
 - French guidance, assessment objective and reviewed statement come only from the optional

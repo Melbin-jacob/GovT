@@ -1,9 +1,9 @@
 {
   "catalog": {
-    "uuid": "b21dc340-7a58-59e1-9fe5-6fc7c40a1911",
+    "uuid": "1507d847-6eca-50b1-bf43-b004968214ad",
     "metadata": {
       "title": "Directive sur les widgets d'exemple — contrôles (données de démonstration SYNTHÉTIQUES)",
-      "last-modified": "2026-11-27T00:00:00+00:00",
+      "last-modified": "2026-11-28T00:00:00+00:00",
       "version": "1.0.0",
       "oscal-version": "1.1.3",
       "props": [
@@ -96,6 +96,11 @@
                 "name": "source-clause",
                 "ns": "https://egcsgroup.com/ns/oscal",
                 "value": "6.1.1"
+              },
+              {
+                "name": "obligation",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "must"
               }
             ],
             "links": [
@@ -139,6 +144,11 @@
                 "name": "source-clause",
                 "ns": "https://egcsgroup.com/ns/oscal",
                 "value": "6.1.2"
+              },
+              {
+                "name": "obligation",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "must"
               }
             ],
             "links": [
@@ -195,6 +205,11 @@
                 "name": "source-clause",
                 "ns": "https://egcsgroup.com/ns/oscal",
                 "value": "6.2.1"
+              },
+              {
+                "name": "obligation",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "should"
               }
             ],
             "links": [
@@ -238,6 +253,11 @@
                 "name": "source-clause",
                 "ns": "https://egcsgroup.com/ns/oscal",
                 "value": "6.2.2"
+              },
+              {
+                "name": "obligation",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "must"
               }
             ],
             "links": [
@@ -281,6 +301,11 @@
                 "name": "source-clause",
                 "ns": "https://egcsgroup.com/ns/oscal",
                 "value": "6.2.3"
+              },
+              {
+                "name": "obligation",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "must"
               }
             ],
             "links": [
@@ -337,6 +362,11 @@
                 "name": "source-clause",
                 "ns": "https://egcsgroup.com/ns/oscal",
                 "value": "6.3.1"
+              },
+              {
+                "name": "obligation",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "must"
               }
             ],
             "links": [
@@ -380,6 +410,11 @@
                 "name": "source-clause",
                 "ns": "https://egcsgroup.com/ns/oscal",
                 "value": "6.3.2"
+              },
+              {
+                "name": "obligation",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "may"
               }
             ],
             "links": [
