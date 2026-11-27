@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -15,6 +16,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
 from review_desk.app import app
+from review_desk.config import get_settings
 from review_desk.db import get_session
 from review_desk.migrate import downgrade, ensure_database, upgrade
 
@@ -49,6 +51,17 @@ def review_db(review_engine: Engine) -> Iterator[Session]:
         conn.execute(text("ALTER TABLE decision_log ENABLE TRIGGER USER"))
     with sessionmaker(bind=review_engine, expire_on_commit=False)() as session:
         yield session
+
+
+@pytest.fixture(autouse=True)
+def checkpoint_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+    """Every test gets its own checkpoint file (never the repository's var/)."""
+    path = tmp_path / "checkpoints" / "decision-log.jsonl"
+    monkeypatch.setenv("REVIEW_DESK_CHECKPOINT_FILE", str(path))
+    monkeypatch.delenv("REVIEW_DESK_CHECKPOINT_EVERY", raising=False)
+    get_settings.cache_clear()
+    yield path
+    get_settings.cache_clear()
 
 
 @pytest.fixture

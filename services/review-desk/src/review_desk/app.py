@@ -16,7 +16,7 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from review_desk import decision_log, forecast, queue
+from review_desk import checkpoints, decision_log, forecast, queue
 from review_desk.config import get_settings
 from review_desk.db import get_session
 from review_desk.decisions import DecisionError, DecisionRequest, decide, history
@@ -129,10 +129,21 @@ def post_decision(
     finding = _finding(session, finding_id)
     row = decide(session, finding, request, reviewer, sink=sink)
     record = json.loads(row.record_text)
+    session.commit()  # the checkpoint must describe a committed log
+    settings = get_settings()
+    checkpoint = checkpoints.write(
+        seq=row.seq,
+        head_hash=row.record_hash,
+        every=settings.checkpoint_every,
+        file_path=settings.checkpoint_file,
+        sink=sink,
+        task_correlation_id=finding.task_id,
+    )
     return {
         "finding": queue.finding_view(finding),
         "side_effects": record["side-effects"],
         "log": {"seq": row.seq, "record_hash": row.record_hash, "previous_hash": row.previous_hash},
+        "checkpoint": checkpoint,
     }
 
 
@@ -170,16 +181,72 @@ def get_decisions(finding_id: str, session: ReadSession, user: AnyUser) -> list[
     return history(session, finding_id)
 
 
+def trusted_checkpoints(
+    trust: list[str], sink: TaskSink
+) -> tuple[list[decision_log.Checkpoint], dict[str, Any]]:
+    """Checkpoints from the external sources named in ``trust`` (file, servicenow)."""
+    from pathlib import Path
+
+    found: list[decision_log.Checkpoint] = []
+    sources: dict[str, Any] = {}
+    if "file" in trust:
+        path = get_settings().checkpoint_file
+        from_file = checkpoints.read_file(Path(path)) if path else []
+        sources["file"] = {"path": path, "checkpoints": len(from_file)}
+        found += from_file
+    if "servicenow" in trust:
+        notes = sink.task_notes()
+        from_sn = checkpoints.parse_notes(notes or [])
+        sources["servicenow"] = {
+            "available": notes is not None,
+            "checkpoints": len(from_sn),
+        }
+        found += from_sn
+    return found, sources
+
+
+TrustQ = Annotated[
+    list[str],
+    Query(description="External checkpoint sources to trust: file, servicenow"),
+]
+
+
 @app.get("/decision-log/verify", tags=["decision log"])
 def verify_log(
     session: ReadSession,
     user: AnyUser,
+    sink: Sink,
+    trust: TrustQ = [],  # noqa: B006 - FastAPI query default
     expect_seq: int | None = None,
     expect_head: str | None = None,
 ) -> dict[str, Any]:
-    """Recompute every hash and link. With a checkpoint (seq + head hash) also detects
-    records removed from the end."""
-    return decision_log.verify_db(session, expect_seq=expect_seq, expect_head=expect_head).as_dict()
+    """Recompute every hash and link. Checkpoints from the trusted external sources (or a
+    given seq + head hash) must still match, which detects records removed from the end."""
+    unknown = sorted(set(trust) - {"file", "servicenow"})
+    if unknown:
+        raise HTTPException(422, f"unknown trust source(s) {unknown}; use file, servicenow")
+    found, sources = trusted_checkpoints(trust, sink)
+    result = decision_log.verify_db(
+        session, expect_seq=expect_seq, expect_head=expect_head, checkpoints=found
+    ).as_dict()
+    return {**result, "trusted_sources": sources}
+
+
+@app.get("/decision-log/checkpoint-status", tags=["decision log"])
+def checkpoint_status(session: ReadSession, user: AnyUser, sink: Sink) -> dict[str, Any]:
+    """Latest external checkpoint from each source, compared with the database head."""
+    head = decision_log.checkpoint(session)
+    out: dict[str, Any] = {"database_head": head, "every": get_settings().checkpoint_every}
+    for source in ("file", "servicenow"):
+        found, info = trusted_checkpoints([source], sink)
+        latest = max(found, key=lambda c: c.seq, default=None)
+        out[source] = {
+            **info[source],
+            "latest_seq": latest.seq if latest else None,
+            "latest_hash": latest.head_hash if latest else None,
+            "behind_database": head["head_seq"] - latest.seq if latest else None,
+        }
+    return out
 
 
 @app.get("/decision-log/export", tags=["decision log"], response_class=PlainTextResponse)

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ en('site.title') }} / {{ fr('site.title') }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="choose-language">
+  <header>
+    <div class="demo-banner" role="note">
+      <div class="container">
+        <strong>{{ en('banner.demo') }}</strong>
+        / <strong lang="fr">{{ fr('banner.demo') }}</strong>
+      </div>
+    </div>
+  </header>
+  <main id="main" class="container">
+    <h1 class="visually-hidden">{{ en('choose.heading') }} / <span lang="fr">{{ fr('choose.heading') }}</span></h1>
+    <div class="choose-grid">
+      <section aria-labelledby="choose-en">
+        <h2 id="choose-en">{{ en('site.title') }}</h2>
+        <p>{{ en('choose.intro') }}</p>
+        <p><a class="button" href="/en/">English</a></p>
+      </section>
+      <section lang="fr" aria-labelledby="choose-fr">
+        <h2 id="choose-fr">{{ fr('site.title') }}</h2>
+        <p>{{ fr('choose.intro') }}</p>
+        <p><a class="button" href="/fr/">Français</a></p>
+      </section>
+    </div>
+  </main>
+  {% include "_footer.html" %}
+</body>
+</html>

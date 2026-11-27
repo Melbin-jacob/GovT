@@ -9,13 +9,20 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["shared", "services/rulebook", "services/connector-hub", "services/review-desk"]
+members = [
+    "shared",
+    "services/rulebook",
+    "services/connector-hub",
+    "services/review-desk",
+    "services/control-centre",
+]
 
 [tool.uv.sources]
 govhub-shared = { workspace = true }
 govhub-rulebook = { workspace = true }
 govhub-connector-hub = { workspace = true }
 govhub-review-desk = { workspace = true }
+govhub-control-centre = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -23,12 +30,17 @@ dev = [
     "govhub-rulebook",
     "govhub-connector-hub",
     "govhub-review-desk",
+    "govhub-control-centre",
     "ruff>=0.8",
     "mypy>=1.13",
     "pytest>=8.3",
     "httpx>=0.28",
     "types-regex>=2026.11.24.20261126",
     "types-jsonschema>=4.26.0.20261006",
+    # End-to-end UI test (services/control-centre/e2e). Pinned: the browser build must
+    # match the Playwright version; axe-core ships inside axe-playwright-python.
+    "playwright==1.63.0",
+    "axe-playwright-python==0.1.8",
 ]
 
 [tool.ruff]
@@ -41,17 +53,18 @@ select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "S"]
 ignore = []
 
 [tool.ruff.lint.isort]
-known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk"]
+known-first-party = ["govhub_shared", "rulebook", "connector_hub", "review_desk", "control_centre"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests drive git via subprocess, use fake mock credentials, and contain French text
 # with typographic characters.
 "**/tests/**" = ["S101", "S105", "S106", "S107", "S603", "S607", "RUF001", "RUF002", "RUF003"]
+"**/e2e/**" = ["S101", "RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["govhub_shared", "rulebook", "connector_hub", "review_desk"]
+packages = ["govhub_shared", "rulebook", "connector_hub", "review_desk", "control_centre"]
 plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
@@ -60,11 +73,14 @@ testpaths = [
     "services/rulebook/tests",
     "services/connector-hub/tests",
     "services/review-desk/tests",
+    "services/control-centre/tests",
 ]
 pythonpath = [
     "services/rulebook/tests",
     "services/connector-hub/tests",
     "services/review-desk/tests",
+    "services/control-centre/tests",
+    "services/control-centre/e2e",
 ]
 addopts = "-ra --import-mode=importlib"
 filterwarnings = [

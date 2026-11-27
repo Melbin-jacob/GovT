@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     connector_hub_url: str = Field(default="", validation_alias="CONNECTOR_HUB_URL")
     # Relative paths resolve against the working directory (/app in the container).
     review_rate_path: str = "data/config/review-rate.toml"
+    # Decision-log checkpoints outside the database (checkpoints.py). Every N decisions;
+    # 0 disables. The file must live on a volume separate from the database's.
+    checkpoint_every: int = 1
+    checkpoint_file: str = "var/checkpoints/decision-log.jsonl"
 
 
 @lru_cache

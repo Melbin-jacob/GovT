@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="lead">{{ t('home.intro') }}</p>
+<ol class="screen-list">
+  {% for key, path, label in screens %}
+  <li><a href="/{{ lang }}/{{ path }}">{{ t(label) }}</a>: {{ t('home.' ~ key) }}</li>
+  {% endfor %}
+</ol>
+<p>{{ t('home.ai') }}</p>
+{% endblock %}

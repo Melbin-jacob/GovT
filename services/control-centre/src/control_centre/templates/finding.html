@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block notes %}
+{% if settings.synthetic_data %}{{ m.note('synthetic', t) }}{% endif %}
+{% if settings.fictional_inventory %}{{ m.note('fictional', t) }}{% endif %}
+{% endblock %}
+{% block content %}
+<p><a href="/{{ lang }}/review">{{ t('finding.back') }}</a></p>
+<h2>{{ finding.control_id }} · {{ finding.system_name }}</h2>
+
+{% if decided %}
+<div class="alert alert-ok" role="status" id="result" tabindex="-1">
+  <p>{{ t('decide.recorded', seq=decided) }}</p>
+  <p><a href="/{{ lang }}/decision-log">{{ t('decide.see_log') }}</a></p>
+</div>
+{% endif %}
+
+<dl class="facts">
+  <dt>{{ t('impact.system') }}</dt><dd>{{ finding.system_name }} ({{ finding.system_id }})</dd>
+  <dt>{{ t('impact.tenant') }}</dt><dd>{{ finding.tenant }}</dd>
+  <dt>{{ t('impact.level') }}</dt><dd>{{ finding.impact_level or t('impact.level_unknown') }}</dd>
+  <dt>{{ t('impact.control') }}</dt><dd>{{ finding.control_id }}{% if finding.obligation_change %} {{ m.badge('obligation-change', t) }}{% endif %}</dd>
+  <dt>{{ t('finding.statement') }}</dt>
+  <dd>{% if statement %}{{ statement }}{% else %}<span lang="en">{{ finding.statement }}</span>{% endif %}</dd>
+  {% if finding.evidence_requested %}<dt>{{ t('finding.evidence') }}</dt><dd lang="en">{{ finding.evidence_requested }}</dd>{% endif %}
+  <dt>{{ t('impact.why') }}</dt><dd lang="en">{{ finding.reasons|join('; ') }}</dd>
+  <dt>{{ t('finding.verdict') }}</dt><dd>{{ t('verdict.' ~ finding.verdict) }}{% if finding.placeholder %} {{ m.placeholder(t) }}{% endif %}</dd>
+  <dt>{{ t('finding.confidence') }}</dt><dd>{% if finding.confidence is none %}{{ t('finding.no_confidence') }}{% else %}{{ '%.2f'|format(finding.confidence) }}{% endif %}</dd>
+  <dt>{{ t('finding.rationale') }}</dt><dd lang="en">{{ finding.rationale }}</dd>
+  <dt>{{ t('finding.state') }}</dt><dd data-state="{{ finding.state }}">{{ t('state.' ~ finding.state) }}</dd>
+  <dt>{{ t('impact.due') }}</dt><dd>{{ finding.due_date or t('policy.none') }}</dd>
+  <dt>{{ t('impact.servicenow') }}</dt><dd>{{ finding.servicenow_task or t('policy.none') }}</dd>
+</dl>
+<p class="muted">{{ t('finding.ai_note') }}</p>
+
+{% if decidable %}
+<h2 id="decision" tabindex="-1">{{ t('decide.heading') }}</h2>
+{% if session_id is none %}
+<form method="post" action="/{{ lang }}/review/{{ finding.id }}/open">
+  <p>{{ t('decide.start_hint') }}</p>
+  <button type="submit">{{ t('decide.start') }}</button>
+</form>
+{% else %}
+{% if errors %}
+<div class="alert alert-error" role="alert" id="errors">
+  <p><strong>{{ t('decide.errors') }}</strong></p>
+  <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+<p class="muted">{{ t('decide.timer', session=session_id) }}</p>
+<form method="post" action="/{{ lang }}/review/{{ finding.id }}/decide" novalidate>
+  <input type="hidden" name="session_id" value="{{ session_id }}">
+  <fieldset>
+    <legend>{{ t('decide.action') }}</legend>
+    {% for a in actions %}
+    <div class="choice">
+      <input type="radio" id="action-{{ a }}" name="action" value="{{ a }}" aria-describedby="action-{{ a }}-hint"{% if form.get('action') == a %} checked{% endif %}>
+      <label for="action-{{ a }}">{{ t('action.' ~ a) }}</label>
+      <span id="action-{{ a }}-hint" class="hint">{{ t('action.' ~ a ~ '.hint') }}</span>
+    </div>
+    {% endfor %}
+  </fieldset>
+  <div class="field">
+    <label for="annotation">{{ t('decide.annotation') }}</label>
+    <span id="annotation-hint" class="hint">{{ t('decide.annotation_hint') }}</span>
+    <textarea id="annotation" name="annotation" aria-describedby="annotation-hint" maxlength="4000">{{ form.get('annotation', '') }}</textarea>
+  </div>
+  <fieldset>
+    <legend>{{ t('decide.override') }}</legend>
+    <div class="field">
+      <label for="verdict">{{ t('decide.new_verdict') }}</label>
+      <select id="verdict" name="verdict">
+        <option value="">{{ t('decide.choose') }}</option>
+        {% for v in verdicts %}<option value="{{ v }}"{% if form.get('verdict') == v %} selected{% endif %}>{{ t('verdict.' ~ v) }}</option>{% endfor %}
+      </select>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>{{ t('decide.remediation') }}</legend>
+    <div class="field">
+      <label for="remediation_description">{{ t('decide.remediation_description') }}</label>
+      <textarea id="remediation_description" name="remediation_description" maxlength="2000">{{ form.get('remediation_description', '') }}</textarea>
+    </div>
+    <div class="field">
+      <label for="remediation_due">{{ t('decide.remediation_due') }}</label>
+      <input id="remediation_due" name="remediation_due" type="date" value="{{ form.get('remediation_due', '') }}">
+    </div>
+  </fieldset>
+  <button type="submit">{{ t('decide.submit') }}</button>
+</form>
+{% endif %}
+{% endif %}
+
+<h2>{{ t('finding.history') }}</h2>
+{% if history %}
+<table data-table="history">
+  <caption>{{ t('finding.history_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('log.seq') }}</th>
+    <th scope="col">{{ t('log.when') }}</th>
+    <th scope="col">{{ t('log.reviewer') }}</th>
+    <th scope="col">{{ t('decide.action') }}</th>
+    <th scope="col">{{ t('finding.verdict') }}</th>
+    <th scope="col">{{ t('decide.annotation') }}</th>
+    <th scope="col">{{ t('log.effects') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for d in history %}
+    <tr>
+      <td class="num">{{ d.seq }}</td>
+      <td>{{ d.timestamp[:19]|replace('T', ' ') }} UTC</td>
+      <td>{{ d.reviewer.id }} ({{ d.reviewer.role }})</td>
+      <td>{{ t('action.' ~ d.action) }}</td>
+      <td>{{ t('verdict.' ~ d['verdict-before']) }} → {{ t('verdict.' ~ d['verdict-after']) }}</td>
+      <td>{{ d.annotation }}</td>
+      <td>{% include "_effects.html" %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ t('finding.no_history') }}</p>
+{% endif %}
+{% endblock %}

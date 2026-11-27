@@ -15,7 +15,9 @@ from connector_hub.servicenow import (
     ConnectorConfigError,
     ServiceNowClient,
     ServiceNowError,
+    display,
     load_config,
+    value,
 )
 from connector_hub.task_sync import TaskRequest, sync_impact_report, upsert_request
 from connector_hub.tasks import TaskWriter
@@ -92,6 +94,27 @@ def upsert_task(client: Client, mapping: MappingDep, request: TaskRequest) -> di
     evidence requests)."""
     writer = TaskWriter(client, mapping)
     return {**upsert_request(writer, request), "warnings": writer.warnings}
+
+
+@app.get("/tasks/notes", tags=["tasks"])
+def list_notes(
+    client: Client, mapping: MappingDep, type: str = "reassessment"
+) -> list[dict[str, str]]:
+    """Work notes of the hub's tasks of one type (used to read decision-log checkpoints)."""
+    fields = mapping.task_fields
+    rows = client.query(
+        mapping.task_table,
+        f"{fields['type']}={type}^{fields['correlation_display']}={mapping.correlation_display}",
+        ["number", fields["correlation_id"], fields["work_notes"]],
+    )
+    return [
+        {
+            "number": display(r, "number"),
+            "correlation_id": value(r, fields["correlation_id"]),
+            "work_notes": display(r, fields["work_notes"]),
+        }
+        for r in rows
+    ]
 
 
 @app.post("/tasks/{correlation_id}/notes", tags=["tasks"])

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block notes %}
+{% if settings.synthetic_data %}{{ m.note('synthetic', t) }}{% endif %}
+{% if settings.fictional_inventory %}{{ m.note('fictional', t) }}{% endif %}
+{% endblock %}
+{% block content %}
+<p class="lead">{{ t('impact.intro') }}</p>
+<form class="inline-form" method="get" action="/{{ lang }}/impact">
+  <div class="field">
+    <label for="catalog">{{ t('impact.catalog') }}</label>
+    <select id="catalog" name="catalog">
+      {% for c in catalogs %}<option value="{{ c.name }}"{% if c.name == catalog %} selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+  </div>
+  {% if versions is defined %}
+  <div class="field">
+    <label for="version">{{ t('impact.catalog_version') }}</label>
+    <select id="version" name="version">
+      {% for v in versions %}<option value="{{ v }}"{% if v == version %} selected{% endif %}>{{ v }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="from">{{ t('policy.from') }}</label>
+    <select id="from" name="from">
+      {% for v in source_versions %}<option value="{{ v }}"{% if v == from_version %} selected{% endif %}>{{ v }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="to">{{ t('policy.to') }}</label>
+    <select id="to" name="to">
+      {% for v in source_versions %}<option value="{{ v }}"{% if v == to_version %} selected{% endif %}>{{ v }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="as_of">{{ t('impact.as_of') }}</label>
+    <input id="as_of" name="as_of" type="date" value="{{ as_of }}" aria-describedby="as_of_hint">
+    <span id="as_of_hint" class="hint">{{ t('impact.as_of_hint') }}</span>
+  </div>
+  {% endif %}
+  <div class="field"><button type="submit">{{ t('impact.show') }}</button></div>
+</form>
+
+{% if versions is defined and from_version == to_version %}
+<p class="alert alert-warn">{{ t('policy.same_version') }}</p>
+{% endif %}
+
+{% if report %}
+{% set s = report.summary %}
+<p>{{ t('impact.report_id') }} <code>{{ report.report_id }}</code>
+  {% if lang != report.inputs.lang %}<span class="muted">({{ t('impact.machine_text') }})</span>{% endif %}</p>
+<ul class="summary">
+  <li>{{ t('impact.n_controls') }}: <strong>{{ s.affected_controls }}</strong></li>
+  <li>{{ t('impact.n_systems') }}: <strong>{{ s.affected_systems }}</strong></li>
+  <li>{{ t('impact.n_findings') }}: <strong>{{ s.findings_to_review }}</strong></li>
+  <li>{{ t('summary.obligation-change') }}: <strong>{{ s.obligation_changes }}</strong></li>
+</ul>
+
+<h2>{{ t('impact.controls') }}</h2>
+<table>
+  <caption>{{ t('impact.controls_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('impact.control') }}</th>
+    <th scope="col">{{ t('impact.clauses') }}</th>
+    <th scope="col">{{ t('impact.why') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for c in report.affected_controls %}
+    <tr{% if c.obligation_change %} class="highlight"{% endif %}>
+      <th scope="row">{{ c.id }}{% if c.obligation_change %}<br>{{ m.badge('obligation-change', t) }}{% endif %}</th>
+      <td>{{ c.source_clauses|join(', ') }}</td>
+      <td>
+        {% for r in c.reasons %}
+        <p>{% if r.kind in reason_kinds %}{{ t('reason.' ~ r.kind|replace(' ', '-')) }}{% else %}<span lang="en">{{ r.kind }}</span>{% endif %}:
+          <span lang="en">{{ r.detail }}</span>
+          {% for f in r.flags %}{{ m.badge(f, t) }}{% endfor %}</p>
+        {% endfor %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>{{ t('impact.systems') }}</h2>
+<table data-table="systems">
+  <caption>{{ t('impact.systems_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('impact.rank') }}</th>
+    <th scope="col">{{ t('impact.system') }}</th>
+    <th scope="col">{{ t('impact.tenant') }}</th>
+    <th scope="col">{{ t('impact.level') }}</th>
+    <th scope="col">{{ t('impact.lifecycle') }}</th>
+    <th scope="col">{{ t('impact.controls_affected') }}</th>
+    <th scope="col" class="num">{{ t('impact.n_findings') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for sys in report.systems %}
+    <tr>
+      <td class="num">{{ sys.rank }}</td>
+      <th scope="row">{{ sys.name }}<br><span class="muted">{{ sys.system_id }}</span>
+        {% for g in sys.data_gaps %}<br>{{ m.gap(g, t) }}{% endfor %}</th>
+      <td>{{ sys.tenant }}</td>
+      <td>{% if sys.impact_level %}{{ sys.impact_level }}{% else %}{{ t('impact.level_unknown') }}{% endif %}</td>
+      <td>{{ t('lifecycle.' ~ sys.lifecycle) }}</td>
+      <td>{{ sys.controls|join(', ') }}{% if sys.obligation_changes %}<br>{{ m.badge('obligation-change', t) }}{% endif %}</td>
+      <td class="num">{{ sys.findings_to_review }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>{{ t('impact.tasks') }}</h2>
+{% if servicenow is none %}<p class="alert alert-warn">{{ t('impact.servicenow_unavailable') }}</p>{% endif %}
+<table data-table="tasks">
+  <caption>{{ t('impact.tasks_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('impact.task') }}</th>
+    <th scope="col">{{ t('impact.servicenow') }}</th>
+    <th scope="col">{{ t('impact.assigned_group') }}</th>
+    <th scope="col">{{ t('impact.priority') }}</th>
+    <th scope="col">{{ t('impact.due') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for task in report.tasks %}
+    <tr>
+      <th scope="row"><code>{{ task.task_id }}</code><br><span lang="en">{{ task.short_description }}</span></th>
+      <td>{% if servicenow and task.task_id in servicenow %}<strong>{{ servicenow[task.task_id] }}</strong>{% else %}<span class="muted">{{ t('impact.not_in_servicenow') }}</span>{% endif %}</td>
+      <td>{{ task.assignment_group or t('policy.none') }}</td>
+      <td>{{ task.priority }}</td>
+      <td>{{ task.due_date }}{% if 'PLACEHOLDER' in (task.due_date_basis or '') %} {{ m.placeholder(t) }}{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>{{ t('impact.forecast') }}</h2>
+<p>{{ t('impact.forecast_total', findings=forecast.findings, hours=forecast.reviewer_hours, minutes=forecast.rate.minutes_per_finding) }}
+  {% if forecast.rate.source.startswith('PLACEHOLDER') %}{{ m.placeholder(t) }}
+  <br><span class="muted">{{ t('impact.rate_placeholder', samples=forecast.rate.samples, needed=forecast.rate.min_samples) }}</span>{% endif %}</p>
+<table data-table="capacity">
+  <caption>{{ t('impact.capacity_caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('impact.tenant') }}</th>
+    <th scope="col" class="num">{{ t('impact.n_findings') }}</th>
+    <th scope="col" class="num">{{ t('impact.hours') }}</th>
+    <th scope="col" class="num">{{ t('impact.capacity') }}</th>
+    <th scope="col">{{ t('impact.capacity_flag') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for row in forecast.by_tenant %}
+    <tr{% if row.exceeds_weekly_capacity %} class="highlight"{% endif %}>
+      <th scope="row">{{ row.tenant }}</th>
+      <td class="num">{{ row.findings }}</td>
+      <td class="num">{{ row.reviewer_hours }}</td>
+      <td class="num">{{ row.capacity_hours_per_week }}{% if row.capacity_source == 'PLACEHOLDER' %} {{ m.placeholder(t) }}{% endif %}</td>
+      <td>{% if row.exceeds_weekly_capacity %}<span class="badge badge-over-capacity">{{ t('impact.over_capacity', weeks=row.weeks_needed) }}</span>{% else %}{{ t('impact.within_capacity') }}{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if report.maintenance %}
+<details>
+  <summary>{{ t('impact.maintenance', n=report.maintenance|length) }}</summary>
+  <ul>{% for item in report.maintenance %}<li lang="en">{{ item.kind }}: {{ item.detail }}</li>{% endfor %}</ul>
+</details>
+{% endif %}
+{% if report.excluded_systems %}
+<details>
+  <summary>{{ t('impact.excluded', n=report.excluded_systems|length) }}</summary>
+  <ul>{% for item in report.excluded_systems %}<li>{{ item.system_id }}: <span lang="en">{{ item.reason }}</span></li>{% endfor %}</ul>
+</details>
+{% endif %}
+<p><a href="/{{ lang }}/review">{{ t('impact.next') }}</a></p>
+{% endif %}
+{% endblock %}

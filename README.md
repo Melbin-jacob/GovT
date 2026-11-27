@@ -12,10 +12,10 @@ Directive on Automated Decision-Making. See `CLAUDE.md` for project conventions.
 
 ```
 services/rulebook/           Milestone 1: OSCAL catalogs, profiles, diffs (FastAPI)
-services/connector-hub/      later: ServiceNow, MLflow, open API
+services/connector-hub/      Milestone 3: ServiceNow inventory and tasks (MLflow, open API: later)
 services/assessment-engine/  later: five-verdict assessments
-services/review-desk/        later: review queue, evidence vault, hash-chained log, POA&M
-services/control-centre/     later: OIDC, roles, tenants, residency, bilingual UI
+services/review-desk/        Milestone 3: review queue, hash-chained log, POA&M, forecast
+services/control-centre/     Milestone 4: bilingual web UI for the demo (OIDC, tenants: later)
 shared/                      common models, OSCAL helpers, model-gateway interface (stub)
 data/golden/                 hand-mapped golden set (CSV) — the only source of check wording
 data/sources/                source-document registry + metadata-only JSON (raw/ is gitignored)
@@ -27,7 +27,7 @@ schemas/                     vendored NIST OSCAL 1.1.3 JSON schemas
 docs/                        design notes
 ```
 
-## Status: Milestones 1 and 2
+## Status: Milestones 1 to 4
 
 | Done | Item |
 |---|---|
@@ -37,7 +37,8 @@ docs/                        design notes
 | ✅ | **M2** Source documents: official text imported from local files (never committed), clause diff with renumbering, splits, obligation changes and EN/FR cross-check |
 | ✅ | **M2** Clause-to-control links, suggestion report, fictional inventory, impact report with ranked systems and ServiceNow-shaped tasks |
 | ✅ | **M3** connector-hub (ServiceNow inventory and tasks, mock ServiceNow), review-desk (ranked queue, five decisions, hash-chained log, OSCAL POA&M, forecast) |
-| ⏳ later | assessment-engine (findings are placeholders until then), control-centre (OIDC, tenants), LLM drafting |
+| ✅ | **M4** control-centre web UI in English and French: policy change, impact report, review queue with the five decisions, decision log with external checkpoints, inventory; WCAG 2.1 AA basics, axe-scanned end-to-end test in CI |
+| ⏳ later | assessment-engine (findings are placeholders until then), sign-in (OIDC), tenants, LLM drafting |
 
 Definition of done, checked in CI on every push: `make setup && make test` on a clean
 checkout, both catalogs validate, committed catalogs match the CSV, and `make up` serves the
@@ -309,7 +310,52 @@ docker compose exec review-desk review-desk export-log --out /tmp/log.jsonl
   `verify-log --file export.jsonl --expect-seq N --expect-head HASH` checks an export
   and detects records removed from the end. The database refuses UPDATE, DELETE and
   TRUNCATE on the log.
+- **Checkpoints outside the database:** after every decision (or every N,
+  `REVIEW_DESK_CHECKPOINT_EVERY`; 0 = off) the head (seq, hash) is written as a work note
+  on the finding's `u_govhub_task` and appended to `REVIEW_DESK_CHECKPOINT_FILE`
+  (Compose: its own `checkpoints` volume, not the database's). Trust them when verifying:
+  `verify-log --trust-file [PATH] --trust-servicenow`, or
+  `GET /decision-log/verify?trust=file&trust=servicenow`; `GET /decision-log/checkpoint-status`
+  compares the latest checkpoint from each source with the database. A database owner who
+  switches the triggers off and deletes the newest records is then still detected.
 - `GET /poam/{system}`: the system's OSCAL 1.1.3 POA&M (every version kept).
 - `POST /forecast` (impact report) or `GET /forecast` (open queue): reviewer hours per
   tenant against weekly capacity. Until 20 timed decisions exist, the rate is the
   **PLACEHOLDER** 20 minutes per finding (`data/config/review-rate.toml`).
+
+## Milestone 4: the demo web UI (control-centre)
+
+**Demo only: no authentication.** The UI acts as the placeholder reviewer
+`demo-reviewer-01` and is published on `127.0.0.1:8004` only; never expose it.
+
+```bash
+make up              # includes control-centre on http://127.0.0.1:8004
+make demo-review     # loads the synthetic directive, fictional systems, findings, decisions
+```
+
+Open <http://127.0.0.1:8004/> and choose English or Français. The five screens, in demo
+order: **1** policy change (side-by-side clause diff with renumbered, split and
+obligation-change flags), **2** impact report (affected controls, ranked systems,
+ServiceNow tasks, forecast and capacity), **3** review queue (open a finding, start the
+timed review, record one of the five decisions), **4** decision log (verify the chain and
+the checkpoints kept in a file and in ServiceNow), **5** system inventory (data gaps).
+
+The look loosely follows Canada.ca but carries no Government of Canada logos, wordmark,
+flag symbols or "Canada.ca" text; every page says it is a prototype by Envision Global
+Consultancy Services Inc. and not a Government of Canada website. Screens with the
+Directive on Example Widgets say "Synthetic test data, not real policy"; inventory
+screens say "Fictional systems and owners".
+
+French UI strings: `docs/fr-ui-strings.md` (unverified unless marked provided by the
+project owner).
+
+End-to-end test (Chromium, axe-core accessibility scan of every screen in both
+languages, keyboard-only decision, no request to any other host):
+
+```bash
+uv run playwright install chromium   # once
+make demo-ui                         # writes e2e-output/: screenshots, axe results, timings
+```
+
+CI runs it after the other demos and keeps `e2e-output/` as the `ui-e2e-output` artifact.
+

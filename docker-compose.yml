@@ -1,8 +1,8 @@
 # Local development only. Production runs the same images on Kubernetes/OpenShift.
 #
 # Ports: the rulebook API is published on localhost:8000. connector-hub, review-desk and
-# the mock ServiceNow are published on 127.0.0.1 ONLY: review-desk trusts placeholder
-# identity headers until control-centre exists and must never be reachable from outside.
+# the mock ServiceNow and control-centre are published on 127.0.0.1 ONLY: review-desk and
+# the demo UI trust placeholder identity until sign-in exists; never reachable from outside.
 services:
   postgres:
     image: postgres:16
@@ -85,6 +85,11 @@ services:
     environment:
       REVIEW_DESK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/review_desk
       CONNECTOR_HUB_URL: http://connector-hub:8000
+      # Decision-log checkpoints on their own volume, not the database's.
+      REVIEW_DESK_CHECKPOINT_FILE: /checkpoints/decision-log.jsonl
+      REVIEW_DESK_CHECKPOINT_EVERY: "1"
+    volumes:
+      - checkpoints:/checkpoints
     ports:
       - "127.0.0.1:8002:8000"
     depends_on:
@@ -98,5 +103,27 @@ services:
       timeout: 3s
       retries: 20
 
+  # Web UI for the demo. Demo only: no authentication, so localhost only (like review-desk).
+  control-centre:
+    build:
+      context: .
+      dockerfile: services/control-centre/Dockerfile
+    command: ["control-centre", "serve", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      RULEBOOK_URL: http://rulebook:8000
+      REVIEW_DESK_URL: http://review-desk:8000
+      CONNECTOR_HUB_URL: http://connector-hub:8000
+    ports:
+      - "127.0.0.1:8004:8000"
+    depends_on:
+      review-desk:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
 volumes:
   pgdata:
+  checkpoints:

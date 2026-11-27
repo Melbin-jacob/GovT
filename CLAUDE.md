@@ -21,7 +21,8 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 
 ## Layout
 - `services/<name>/` — one folder per service: connector-hub, rulebook, assessment-engine,
-  review-desk, control-centre. Implemented: rulebook (M1–2), connector-hub and review-desk (M3).
+  review-desk, control-centre. Implemented: rulebook (M1–2), connector-hub and review-desk (M3),
+  control-centre demo UI (M4; sign-in still TODO).
 - `shared/` — `govhub_shared`: constants, OSCAL helpers, model-gateway interface.
 - `data/golden/` — hand-mapped golden set CSVs. `data/catalogs/` — generated catalogs.
   `data/profiles/` — OSCAL profiles.
@@ -103,6 +104,19 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - review-desk trusts placeholder identity headers until control-centre exists: bind it to
   localhost or the internal network only, never expose it.
 - The decision log is append-only and hash-chained; never update or delete its rows.
+  Its head is checkpointed outside the database (ServiceNow work note + checkpoint file on
+  a separate volume); a checkpoint failure is reported, never blocks a decision.
+
+## Web UI (control-centre)
+- Server-rendered (FastAPI + Jinja2), plain forms; nothing loaded from another origin (CSP).
+- Every UI string in both `locales/en.toml` and `locales/fr.toml`; French strings written by
+  an assistant are unverified and listed in `docs/fr-ui-strings.md` (regenerate with
+  `control-centre fr-strings docs/fr-ui-strings.md`; CI checks it). Policy wording comes
+  from the catalogs, never from the UI strings.
+- Never use Government of Canada logos, wordmark, flag symbols or "Canada.ca" text. Keep the
+  demo banner, the bilingual footer and the synthetic/fictional notes.
+- Demo only, no authentication: bind to localhost or the internal network only.
+- `make demo-ui` (Playwright + axe) must pass with zero axe violations.
 
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway.ModelGateway`. Milestone 1 makes

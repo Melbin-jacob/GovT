@@ -1,4 +1,4 @@
-.PHONY: setup lint typecheck test up down check import-golden migrate demo demo-review servicenow-check
+.PHONY: setup lint typecheck test up down check import-golden migrate demo demo-review demo-ui servicenow-check
 
 setup:  ## Install all workspace packages and dev tools
 	uv sync --all-packages --frozen
@@ -34,6 +34,10 @@ demo:  ## Run the synthetic policy-diff -> impact-report demo against `make up`
 
 demo-review:  ## Run the task -> decision -> verified log -> POA&M demo against `make up`
 	scripts/demo-review.sh demo-review-output
+
+demo-ui:  ## Click through the web UI (EN/FR) in Chromium with axe scans; after `make demo-review`
+	CONTROL_CENTRE_URL=$${CONTROL_CENTRE_URL:-http://127.0.0.1:8004} E2E_OUTPUT=e2e-output \
+		uv run pytest services/control-centre/e2e -p no:cacheprovider
 
 servicenow-check:  ## Check a REAL ServiceNow instance (.env.servicenow); never run in CI
 	uv run connector-hub check-servicenow

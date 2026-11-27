@@ -1,0 +1,9 @@
+{% set fx = d.get('side-effects', {}) %}
+{% set rem = fx.get('remediation-task') %}
+{% set evi = fx.get('evidence-task') %}
+<ul class="effects">
+  {% if fx.get('poam') %}<li>{{ t('effect.poam', version=fx.poam.version) }}</li>{% endif %}
+  {% if rem %}<li>{{ t('effect.remediation_task') }}: {{ rem.get('number') or rem.get('status') }}</li>{% endif %}
+  {% if evi %}<li>{{ t('effect.evidence_task') }}: {{ evi.get('number') or evi.get('status') }}</li>{% endif %}
+  {% if fx.get('work-note') %}<li>{{ t('effect.work_note') }}: {{ fx.get('work-note') }}</li>{% endif %}
+</ul>

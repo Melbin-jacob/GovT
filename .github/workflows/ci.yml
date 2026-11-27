@@ -40,6 +40,10 @@ jobs:
           uv run rulebook import-golden data/golden/dadm-section6.csv --check
           uv run rulebook import-golden data/demo/golden/example-widgets.csv \
             --out-dir data/demo/catalogs --check
+      - name: French UI strings list is current; EN/FR keys match
+        run: |
+          uv run control-centre check-strings
+          uv run control-centre fr-strings --check docs/fr-ui-strings.md
       - name: Committed source metadata matches the synthetic source files
         run: uv run rulebook import-source --check data/demo/sources/*.txt data/demo/sources/*.html
 
@@ -80,6 +84,11 @@ jobs:
           curl --fail -sS http://127.0.0.1:8001/health
           curl --fail -sS http://127.0.0.1:8002/ready
           curl --fail -sS http://127.0.0.1:8003/__mock/health
+      - name: Control centre UI is up (localhost only, both languages)
+        run: |
+          curl --fail -sS http://127.0.0.1:8004/health
+          curl --fail -sS http://127.0.0.1:8004/ | grep -q 'href="/fr/"'
+          curl --fail -sS http://127.0.0.1:8004/fr/ | grep -q 'lang="fr"'
       - name: Vendored OSCAL schemas resolve inside the image
         run: >-
           docker compose exec -T rulebook python -c
@@ -107,6 +116,25 @@ jobs:
         run: scripts/demo-impact.sh http://localhost:8000 demo-output
       - name: Demo - task to human decision (mock ServiceNow, synthetic data)
         run: scripts/demo-review.sh demo-review-output
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.32"
+      - name: Install the end-to-end test tools and Chromium
+        run: |
+          make setup
+          uv run playwright install --with-deps chromium
+      - name: Demo - UI click-through in English and French (Playwright, axe)
+        run: make demo-ui
+      - name: UI test summary (axe results and timings)
+        if: always()
+        run: tee -a "$GITHUB_STEP_SUMMARY" < e2e-output/summary.md || true
+      - name: Keep UI screenshots, axe results and timings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-e2e-output
+          path: e2e-output/
+          if-no-files-found: ignore
       - name: Keep demo output
         if: always()
         uses: actions/upload-artifact@v4
