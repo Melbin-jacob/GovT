@@ -94,6 +94,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 ## Impact reports
 - Reports never read the clock (`as_of` is an input); `report_id` is a content hash.
 - Renumbering or typography alone never triggers re-review; substance changes do.
+- The report ID is language-neutral (inputs, coded reasons, systems; never the language or
+  wording). Generated text is never written inline: it is a code with parameters rendered
+  from `rulebook/locales/explanations.{en,fr}.toml` into both languages.
 - Tasks are returned as ServiceNow-shaped `sc_task` JSON, never incidents, and are not sent
   until connector-hub exists. Due-date values are PLACEHOLDERS until the organization sets them.
 
@@ -111,8 +114,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Server-rendered (FastAPI + Jinja2), plain forms; nothing loaded from another origin (CSP).
 - Every UI string in both `locales/en.toml` and `locales/fr.toml`; French strings written by
   an assistant are unverified and listed in `docs/fr-ui-strings.md` (regenerate with
-  `control-centre fr-strings docs/fr-ui-strings.md`; CI checks it). Policy wording comes
+  `python3 scripts/fr_strings.py`; CI checks it). Policy wording comes
   from the catalogs, never from the UI strings.
+- French pages never show English generated text (test scans every French page).
 - Never use Government of Canada logos, wordmark, flag symbols or "Canada.ca" text. Keep the
   demo banner, the bilingual footer and the synthetic/fictional notes.
 - Demo only, no authentication: bind to localhost or the internal network only.

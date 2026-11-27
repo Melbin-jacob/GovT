@@ -3,7 +3,7 @@
 ``locales/en.toml`` and ``locales/fr.toml`` hold the same keys (``check_parity``).
 French strings written by Claude Code are unverified; the ones provided by the project
 owner are listed in ``fr.toml`` under ``[provenance]``. ``docs/fr-ui-strings.md`` is
-generated from these files (``control-centre fr-strings``).
+generated from these files (``python3 scripts/fr_strings.py``).
 """
 
 from __future__ import annotations
@@ -52,37 +52,3 @@ class Translator:
     def __call__(self, key: str, **values: object) -> str:
         text = self._strings[key]  # a missing key is a bug: fail the render
         return text.format(**values) if values else text
-
-
-PROVIDED = "Provided by the project owner"
-UNVERIFIED = "Unverified, written by Claude Code"
-
-
-def fr_strings_markdown() -> str:
-    """docs/fr-ui-strings.md: every French UI string with its provenance."""
-    fr, en, owner = strings("fr"), strings("en"), provided_by_owner()
-
-    def cell(text: str) -> str:
-        return text.replace("|", "\\|")
-
-    lines = [
-        "# French UI strings (control-centre)",
-        "",
-        "Generated from `services/control-centre/src/control_centre/locales/fr.toml` by",
-        "`uv run control-centre fr-strings docs/fr-ui-strings.md`; CI fails if it is stale.",
-        "",
-        "Every French string is **unverified, written by Claude Code**, unless marked",
-        "**provided by the project owner**. Policy wording never comes from these files: it comes",
-        "from the French catalog. Have a qualified translator review the unverified strings",
-        "before any use outside the demo.",
-        "",
-        f"{len(fr)} strings: {len(owner)} provided by the project owner, "
-        f"{len(fr) - len(owner)} unverified.",
-        "",
-        "| Key | French | English | Status |",
-        "|---|---|---|---|",
-    ]
-    for key in sorted(fr):
-        status = PROVIDED if key in owner else UNVERIFIED
-        lines.append(f"| `{key}` | {cell(fr[key])} | {cell(en[key])} | {status} |")
-    return "\n".join(lines) + "\n"

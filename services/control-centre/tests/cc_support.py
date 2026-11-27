@@ -82,7 +82,11 @@ def stub_impact(hub: FakeHub) -> None:
     """Catalogs, the impact report, its forecast and the tasks in (mock) ServiceNow."""
     stub_policy(hub)
     hub.rulebook.on("GET", "/catalogs", fixture("catalogs.json"))
-    hub.rulebook.on("POST", "/impact-reports", fixture("impact.en.json"))
+
+    def report(request: httpx.Request) -> Any:
+        return fixture(f"impact.{json.loads(request.content)['lang']}.json")
+
+    hub.rulebook.on("POST", "/impact-reports", report)
     hub.desk.on("POST", "/forecast", fixture("forecast.json"))
     hub.connector.on("GET", "/tasks/notes", fixture("task-notes.json"))
 

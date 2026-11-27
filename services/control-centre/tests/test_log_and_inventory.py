@@ -19,7 +19,7 @@ def test_log_lists_records_newest_first_with_checkpoints(
     stub_log(hub)
     html = ui.get(f"/{lang}/decision-log").text
     seqs = [int(s) for s in re.findall(r'<th scope="row" class="num">(\d+)</th>', html)]
-    assert seqs == [6, 5, 4, 3, 2, 1]
+    assert seqs == [5, 4, 3, 2, 1]
     assert 'data-source="file" data-state="in-step"' in html
     assert 'data-source="servicenow" data-state="in-step"' in html
     assert "verify-result" not in html  # verifying is a click
@@ -30,7 +30,7 @@ def test_verify_trusts_the_ticked_sources(ui: TestClient, hub: FakeHub) -> None:
     stub_log(hub)
     html = ui.get("/en/decision-log?verify=true&trust=file&trust=servicenow").text
     assert 'data-ok="true"' in html
-    assert "6 records checked; 12 external checkpoints match." in html
+    assert "5 records checked; 10 external checkpoints match." in html
     (call,) = [r for r in hub.desk.requests if r.url.path == "/decision-log/verify"]
     assert call.url.params.get_list("trust") == ["file", "servicenow"]
 
@@ -38,15 +38,25 @@ def test_verify_trusts_the_ticked_sources(ui: TestClient, hub: FakeHub) -> None:
 def test_verify_failure_lists_the_problems(ui: TestClient, hub: FakeHub) -> None:
     stub_log(hub)
     problem = "log ends at seq 3 but checkpoint says 6 (records removed from the end) [file x]"
+    issue = {
+        "code": "truncated",
+        "params": {"head": 3, "checkpoint": 6, "source_kind": "file", "source_name": "x"},
+    }
     hub.desk.on(
         "GET",
         "/decision-log/verify",
-        {**fixture("verify.json"), "ok": False, "problems": [problem]},
+        {**fixture("verify.json"), "ok": False, "problems": [problem], "issues": [issue]},
     )
     html = ui.get("/fr/decision-log?verify=true&trust=file").text
     assert 'data-ok="false"' in html and 'role="alert"' in html
     assert "Le registre a été modifié" in html
-    assert f'<li lang="en">{problem}</li>' in html
+    assert (
+        "Le registre se termine à l&#39;enregistrement 3, mais le point de contrôle dans "
+        "Fichier de points de contrôle (x) indique 6" in html
+    )
+    assert problem not in html
+    en = ui.get("/en/decision-log?verify=true&trust=file").text
+    assert "The log ends at record 3, but the checkpoint in Checkpoint file (x) says 6" in en
 
 
 @pytest.mark.parametrize(

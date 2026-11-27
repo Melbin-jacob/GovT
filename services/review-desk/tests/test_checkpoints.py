@@ -92,6 +92,10 @@ def test_owner_deleting_newest_records_is_detected(
     assert result["ok"] is False
     assert any(p.startswith(TRUNCATED) for p in result["problems"]), result["problems"]
     assert any(trust in p for p in result["problems"])
+    truncated = [i for i in result["issues"] if i["code"] == "truncated"]
+    assert truncated and all(i["params"]["source_kind"] == trust for i in truncated)
+    assert {i["params"]["head"] for i in truncated} == {3}
+    assert sorted(i["params"]["checkpoint"] for i in truncated) == [4, 5]
 
 
 def test_cli_verify_log_trusts_the_file(

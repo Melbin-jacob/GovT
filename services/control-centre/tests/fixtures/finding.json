@@ -1,7 +1,7 @@
 {
- "id": "b1613b45-afd2-5ea6-8220-f5e6bf412e28",
+ "id": "befdba2c-ccf6-596b-ac7e-dc5b9721c47f",
  "rank": 2,
- "report_id": "35537defe3896c88",
+ "report_id": "428d0a659d5afa70",
  "system_id": "SYS-002",
  "system_name": "Example Permit Eligibility Screener (fictional)",
  "tenant": "office-fictional-permits",
@@ -10,7 +10,21 @@
  "statement": "The register records the owner, location and model of each widget.",
  "evidence_requested": "Register fields populated",
  "reasons": [
-  "clause changed: clause 6.1.2 -> 6.1.2 changed (similarity 0.8387)"
+  {
+   "code": "clause-changed",
+   "text": {
+    "en": "Clause 6.1.2 changed (similarity 0.84)",
+    "fr": "Disposition 6.1.2 modifi\u00e9e (similarit\u00e9 0,84)"
+   },
+   "flags": [],
+   "detail": "Clause 6.1.2 changed (similarity 0.84)",
+   "params": {
+    "new": "6.1.2",
+    "old": "6.1.2",
+    "score": 0.8387
+   },
+   "trigger": "source"
+  }
  ],
  "obligation_change": false,
  "verdict": "unable-to-determine",
@@ -19,6 +33,6 @@
  "placeholder": true,
  "due_date": "2026-12-31",
  "state": "open",
- "task_id": "IMP-35537def-SYS-002",
+ "task_id": "IMP-428d0a65-SYS-002",
  "servicenow_task": "GOVT0000003"
 }

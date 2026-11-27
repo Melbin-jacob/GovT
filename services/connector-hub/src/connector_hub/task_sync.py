@@ -53,6 +53,17 @@ def upsert_request(writer: TaskWriter, request: TaskRequest) -> dict[str, Any]:
     return {"correlation_id": request.correlation_id, "action": action, **record}
 
 
+def _with_due_basis(task: dict[str, Any]) -> str:
+    """The task text plus its due-date basis, in English then French when available."""
+    basis = task.get("due_date_basis_text")
+    if isinstance(basis, dict) and {"en", "fr"} <= basis.keys():
+        return (
+            f"{task['description']}\n\nDue date basis: {basis['en']}\n"
+            f"Base de l'échéance : {basis['fr']}"
+        )
+    return f"{task['description']}\n\nDue date basis: {task['due_date_basis']}"
+
+
 def sync_impact_report(writer: TaskWriter, report: dict[str, Any]) -> dict[str, Any]:
     """One ServiceNow task per impact-report task (matched by its task_id)."""
     report_id = str(report.get("report_id", ""))
@@ -62,7 +73,7 @@ def sync_impact_report(writer: TaskWriter, report: dict[str, Any]) -> dict[str, 
             correlation_id=task["task_id"],
             type="reassessment",
             short_description=task["short_description"][:160],
-            description=f"{task['description']}\n\nDue date basis: {task['due_date_basis']}",
+            description=_with_due_basis(task),
             tenant=task.get("assignment_group"),
             owner_email=task.get("assigned_to"),
             system_id=task.get("system_id"),

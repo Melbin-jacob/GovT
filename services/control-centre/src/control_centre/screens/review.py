@@ -38,16 +38,17 @@ def review_queue(request: Request, lang: LangDep, backends: BackendsDep) -> HTML
     )
 
 
-def control_statement(backends: Backends, control_id: str, lang: str) -> str | None:
-    """The control's statement from the catalog in the page's language, if available."""
+def control_text(backends: Backends, control_id: str, lang: str) -> dict[str, str]:
+    """Statement and assessment objective from the catalog in the page's language."""
     try:
         control = backends.rulebook.get(f"/controls/{control_id}", lang=lang)
     except BackendError:
-        return None
-    for part in control.get("control", {}).get("parts", []):
-        if part.get("name") == "statement":
-            return str(part.get("prose", "")) or None
-    return None
+        return {}
+    return {
+        str(part["name"]): str(part["prose"])
+        for part in control.get("control", {}).get("parts", [])
+        if part.get("name") in ("statement", "assessment-objective") and part.get("prose")
+    }
 
 
 def _detail(
@@ -72,7 +73,7 @@ def _detail(
         screen="review",
         status_code=status_code,
         finding=finding,
-        statement=control_statement(backends, finding["control_id"], lang),
+        catalog_text=control_text(backends, finding["control_id"], lang),
         history=history,
         decidable=finding["state"] in OPEN_STATES,
         session_id=session_id,

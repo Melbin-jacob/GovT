@@ -31,7 +31,10 @@
 {% else %}
 <div class="alert alert-error" role="alert" id="verify-result" data-ok="false">
   <p><strong>{{ t('log.not_verified') }}</strong></p>
-  <ul>{% for p in result.problems %}<li lang="en">{{ p }}</li>{% endfor %}</ul>
+  <ul>
+    {% for issue in result.get('issues', []) %}<li>{{ t('problem.' ~ issue.code, source=t('log.source.' ~ issue.params.get('source_kind', 'file')), **issue.params) }}</li>{% endfor %}
+    {% if not result.get('issues') %}{% for p in result.problems %}<li lang="en">{{ p }}</li>{% endfor %}{% endif %}
+  </ul>
 </div>
 {% endif %}
 {% endif %}

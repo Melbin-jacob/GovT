@@ -20,12 +20,13 @@
   <dt>{{ t('impact.level') }}</dt><dd>{{ finding.impact_level or t('impact.level_unknown') }}</dd>
   <dt>{{ t('impact.control') }}</dt><dd>{{ finding.control_id }}{% if finding.obligation_change %} {{ m.badge('obligation-change', t) }}{% endif %}</dd>
   <dt>{{ t('finding.statement') }}</dt>
-  <dd>{% if statement %}{{ statement }}{% else %}<span lang="en">{{ finding.statement }}</span>{% endif %}</dd>
-  {% if finding.evidence_requested %}<dt>{{ t('finding.evidence') }}</dt><dd lang="en">{{ finding.evidence_requested }}</dd>{% endif %}
-  <dt>{{ t('impact.why') }}</dt><dd lang="en">{{ finding.reasons|join('; ') }}</dd>
+  <dd>{{ catalog_text.get('statement') or t('finding.not_in_catalog') }}</dd>
+  {% if catalog_text.get('assessment-objective') %}<dt>{{ t('finding.evidence') }}</dt><dd>{{ catalog_text['assessment-objective'] }}</dd>{% endif %}
+  <dt>{{ t('impact.why') }}</dt>
+  <dd>{% for r in finding.reasons %}{% if r is string %}<span lang="en">{{ r }}</span>{% else %}{{ r|localized(lang) }}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</dd>
   <dt>{{ t('finding.verdict') }}</dt><dd>{{ t('verdict.' ~ finding.verdict) }}{% if finding.placeholder %} {{ m.placeholder(t) }}{% endif %}</dd>
   <dt>{{ t('finding.confidence') }}</dt><dd>{% if finding.confidence is none %}{{ t('finding.no_confidence') }}{% else %}{{ '%.2f'|format(finding.confidence) }}{% endif %}</dd>
-  <dt>{{ t('finding.rationale') }}</dt><dd lang="en">{{ finding.rationale }}</dd>
+  <dt>{{ t('finding.rationale') }}</dt><dd>{% if finding.placeholder %}{{ t('finding.placeholder_rationale') }}{% else %}{{ finding.rationale }}{% endif %}</dd>
   <dt>{{ t('finding.state') }}</dt><dd data-state="{{ finding.state }}">{{ t('state.' ~ finding.state) }}</dd>
   <dt>{{ t('impact.due') }}</dt><dd>{{ finding.due_date or t('policy.none') }}</dd>
   <dt>{{ t('impact.servicenow') }}</dt><dd>{{ finding.servicenow_task or t('policy.none') }}</dd>

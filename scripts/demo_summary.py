@@ -50,7 +50,7 @@ for task in report["tasks"]:
         f"{task['assigned_to']} ({task['due_date_basis']})"
     )
 for item in report["maintenance"]:
-    print(f"  maintenance: {item['kind']} {item.get('clause', '')}: {item['detail']}")
+    print(f"  maintenance: {item['code']} {item.get('clause', '')}: {item['detail']}")
 
 ranking = [s["system_id"] for s in report["systems"]]
 if ranking[:2] != ["SYS-001", "SYS-002"]:

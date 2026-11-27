@@ -46,8 +46,7 @@
 
 {% if report %}
 {% set s = report.summary %}
-<p>{{ t('impact.report_id') }} <code>{{ report.report_id }}</code>
-  {% if lang != report.inputs.lang %}<span class="muted">({{ t('impact.machine_text') }})</span>{% endif %}</p>
+<p>{{ t('impact.report_id') }} <code>{{ report.report_id }}</code></p>
 <ul class="summary">
   <li>{{ t('impact.n_controls') }}: <strong>{{ s.affected_controls }}</strong></li>
   <li>{{ t('impact.n_systems') }}: <strong>{{ s.affected_systems }}</strong></li>
@@ -70,8 +69,7 @@
       <td>{{ c.source_clauses|join(', ') }}</td>
       <td>
         {% for r in c.reasons %}
-        <p>{% if r.kind in reason_kinds %}{{ t('reason.' ~ r.kind|replace(' ', '-')) }}{% else %}<span lang="en">{{ r.kind }}</span>{% endif %}:
-          <span lang="en">{{ r.detail }}</span>
+        <p>{{ r|localized(lang) }}
           {% for f in r.flags %}{{ m.badge(f, t) }}{% endfor %}</p>
         {% endfor %}
       </td>
@@ -122,7 +120,7 @@
   <tbody>
   {% for task in report.tasks %}
     <tr>
-      <th scope="row"><code>{{ task.task_id }}</code><br><span lang="en">{{ task.short_description }}</span></th>
+      <th scope="row"><code>{{ task.task_id }}</code><br>{% if task.title is defined %}{{ task.title[lang] }}{% else %}{{ t('impact.task_title', n=task.controls|length) }}{% endif %}</th>
       <td>{% if servicenow and task.task_id in servicenow %}<strong>{{ servicenow[task.task_id] }}</strong>{% else %}<span class="muted">{{ t('impact.not_in_servicenow') }}</span>{% endif %}</td>
       <td>{{ task.assignment_group or t('policy.none') }}</td>
       <td>{{ task.priority }}</td>
@@ -161,13 +159,13 @@
 {% if report.maintenance %}
 <details>
   <summary>{{ t('impact.maintenance', n=report.maintenance|length) }}</summary>
-  <ul>{% for item in report.maintenance %}<li lang="en">{{ item.kind }}: {{ item.detail }}</li>{% endfor %}</ul>
+  <ul>{% for item in report.maintenance %}<li>{{ item|localized(lang) }}</li>{% endfor %}</ul>
 </details>
 {% endif %}
 {% if report.excluded_systems %}
 <details>
   <summary>{{ t('impact.excluded', n=report.excluded_systems|length) }}</summary>
-  <ul>{% for item in report.excluded_systems %}<li>{{ item.system_id }}: <span lang="en">{{ item.reason }}</span></li>{% endfor %}</ul>
+  <ul>{% for item in report.excluded_systems %}<li>{{ item.system_id }}: {{ item|localized(lang) }}</li>{% endfor %}</ul>
 </details>
 {% endif %}
 <p><a href="/{{ lang }}/review">{{ t('impact.next') }}</a></p>

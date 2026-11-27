@@ -43,7 +43,7 @@ jobs:
       - name: French UI strings list is current; EN/FR keys match
         run: |
           uv run control-centre check-strings
-          uv run control-centre fr-strings --check docs/fr-ui-strings.md
+          python3 scripts/fr_strings.py --check
       - name: Committed source metadata matches the synthetic source files
         run: uv run rulebook import-source --check data/demo/sources/*.txt data/demo/sources/*.html
 

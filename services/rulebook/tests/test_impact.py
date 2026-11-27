@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,7 @@ from fastapi.testclient import TestClient
 from helpers import new_version, set_statement
 from test_inventory import payload, put_profiles
 
+from rulebook import explain
 from rulebook.impact import load_due_dates
 
 REPO = Path(__file__).resolve().parents[3]
@@ -57,8 +59,15 @@ def test_source_change_report(client: TestClient) -> None:
 
     affected = {c["id"]: c for c in body["affected_controls"]}
     assert sorted(affected) == ["WID-6.1.2", "WID-6.2.1", "WID-6.3.1", "WID-6.3.2", "WID-6.4.2"]
-    assert [r["kind"] for r in affected["WID-6.3.1"]["reasons"]] == ["clause split"]
-    assert [r["kind"] for r in affected["WID-6.3.2"]["reasons"]] == ["clause removed"]
+    assert [r["code"] for r in affected["WID-6.3.1"]["reasons"]] == ["clause-split"]
+    assert [r["code"] for r in affected["WID-6.3.2"]["reasons"]] == ["clause-removed"]
+    split = affected["WID-6.3.1"]["reasons"][0]
+    assert split["params"] == {"old": "6.3.1", "into": ["6.4.1", "6.4.2"]}
+    assert split["text"] == {
+        "en": "Clause 6.3.1 split into 6.4.1 and 6.4.2",
+        "fr": "Disposition 6.3.1 scindée en 6.4.1 et 6.4.2",
+    }
+    assert split["detail"] == split["text"]["en"]
     assert affected["WID-6.2.1"]["obligation_change"] is True
     assert affected["WID-6.2.1"]["reasons"][0]["flags"] == ["renumbered", "obligation-change"]
     assert [c for c in affected if affected[c]["obligation_change"]] == ["WID-6.2.1"]
@@ -74,19 +83,22 @@ def test_source_change_report(client: TestClient) -> None:
     ]
     assert body["summary"]["findings_to_review"] == 20
     assert body["summary"]["findings_by_impact_level"] == {"IV": 5, "III": 7, "II": 5, "I": 3}
-    excluded = {e["system_id"]: e["reason"] for e in body["excluded_systems"]}
+    excluded = {e["system_id"]: (e["code"], e["reason"]) for e in body["excluded_systems"]}
     assert excluded == {
-        "SYS-006": "no profile selects from example-widgets",
-        "SYS-008": "lifecycle retired",
+        "SYS-006": (
+            "no-profile",
+            "No profile of this system selects controls from example-widgets",
+        ),
+        "SYS-008": ("lifecycle-retired", "System retired"),
     }
 
-    maintenance = {(m["kind"], m["clause"]) for m in body["maintenance"]}
+    maintenance = {(m["code"], m["clause"]) for m in body["maintenance"]}
     assert maintenance == {
-        ("update clause reference", "6.2.2"),
-        ("update clause reference", "6.2.3"),
-        ("update clause reference", "6.4.1"),
-        ("unmapped clause", "6.2.1"),
-        ("unmapped clause", "6.2.2"),
+        ("update-reference", "6.2.2"),
+        ("update-reference", "6.2.3"),
+        ("update-reference", "6.4.1"),
+        ("unmapped-added", "6.2.1"),
+        ("unmapped-added", "6.2.2"),
     }
     trigger = body["triggers"]["source"]
     assert trigger["threshold"] == 0.6 and "Hungarian" in trigger["method"]
@@ -103,13 +115,25 @@ def test_tasks(client: TestClient) -> None:
     assert top["assigned_to"] == "benefits.owner@example.invalid"
     assert top["assignment_group"] == "agency-sample-benefits"
     assert top["due_date"] == "2026-12-31"  # as_of + 30 days (PLACEHOLDER, level IV)
-    assert top["due_date_basis"] == "PLACEHOLDER: level IV = 30 days (default)"
-    assert "[OBLIGATION CHANGE]" in top["description"]
+    assert top["due_date_basis_text"] == {
+        "en": "PLACEHOLDER: impact level IV = 30 days (default)",
+        "fr": "PLACEHOLDER : niveau d'incidence IV = 30 jours (valeur par défaut)",
+    }
+    # ServiceNow text carries both languages: English first, then French.
+    assert top["short_description"] == (
+        "Reassess 5 control(s) for Sample Benefits Triage Assistant (fictional) / "
+        "Réévaluer 5 contrôle(s) pour Sample Benefits Triage Assistant (fictional)"
+    )
+    en, fr = top["description"].split("\n\n")
+    assert en.startswith("Rule change: example-widgets 2023-01-01 → 2025-01-01.")
+    assert "[OBLIGATION CHANGE]" in en and "Clause 6.2.1 changed and became 6.3.1" in en
+    assert fr.startswith("Changement de règle : example-widgets 2023-01-01 → 2025-01-01.")
+    assert "[OBLIGATION MODIFIÉE]" in fr and "similarité 0,89" in fr
     cal = next(c for c in top["controls"] if c["id"] == "WID-6.2.1")
     assert cal["evidence_requested"] == "Calibration dates within the last 12 months"
     # Tenant override: office-fictional-permits level III = 30 days instead of 45.
     assert tasks["SYS-002"]["due_date"] == "2026-12-31"
-    assert "tenant office-fictional-permits override" in tasks["SYS-002"]["due_date_basis"]
+    assert "override for office-fictional-permits" in tasks["SYS-002"]["due_date_basis"]
     assert tasks["SYS-005"]["due_date"] == "2027-01-15"  # default level III = 45 days
     assert tasks["SYS-004"]["priority"] == 4
 
@@ -133,6 +157,65 @@ def test_french_tasks_use_french_text(client: TestClient) -> None:
     assert [s["system_id"] for s in body["systems"]][:2] == ["SYS-001", "SYS-002"]
 
 
+def _english_fragments() -> set[str]:
+    """Literal pieces of the English templates (outside the placeholders)."""
+    pieces = set()
+    for template in explain.templates("en").values():
+        for piece in re.split(r"\{[^}]*\}", template):
+            piece = piece.strip(" .:;,()")
+            if len(piece) >= 8:
+                pieces.add(piece)
+    return pieces
+
+
+def _fr_strings(value: Any) -> list[str]:
+    """Every string a French consumer reads: detail/reason fields and the "fr" texts."""
+    out: list[str] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in ("detail", "reason", "fr") and isinstance(item, str):
+                out.append(item)
+            elif key not in ("en", "short_description", "description", "due_date_basis"):
+                out += _fr_strings(item)
+    elif isinstance(value, list):
+        for item in value:
+            out += _fr_strings(item)
+    return out
+
+
+def test_report_id_is_language_neutral(client: TestClient) -> None:
+    """One report, one ID in both languages: it still matches tasks and findings."""
+    seed(client)
+    en, fr = report(client, lang="en"), report(client, lang="fr")
+    assert en["report_id"] == fr["report_id"]
+    assert [t["task_id"] for t in en["tasks"]] == [t["task_id"] for t in fr["tasks"]]
+    assert [t["description"] for t in en["tasks"]] == [t["description"] for t in fr["tasks"]]
+    neutral = [
+        [{k: r[k] for k in ("code", "params", "flags")} for r in c["reasons"]]
+        for c in en["affected_controls"]
+    ]
+    assert neutral == [
+        [{k: r[k] for k in ("code", "params", "flags")} for r in c["reasons"]]
+        for c in fr["affected_controls"]
+    ]
+    assert en["inputs"]["lang"] == "en" and fr["inputs"]["lang"] == "fr"
+
+
+def test_french_report_has_no_english_generated_text(client: TestClient) -> None:
+    seed(client)
+    body = report(client, lang="fr")
+    texts = _fr_strings(body)
+    assert texts, "expected generated French text"
+    fragments = _english_fragments()
+    leaks = sorted({f for f in fragments for t in texts if f in t})
+    assert leaks == [], leaks
+    assert any("Disposition 6.2.1 modifiée et devenue 6.3.1" in t for t in texts)
+
+
+def test_explanation_templates_have_the_same_keys() -> None:
+    assert explain.check_parity() == []
+
+
 def test_catalog_change_trigger(client: TestClient) -> None:
     """Controls edited directly, with no source change. Edits are synthetic test data."""
     seed(client)
@@ -150,7 +233,10 @@ def test_catalog_change_trigger(client: TestClient) -> None:
     )
     affected = {c["id"]: c for c in body["affected_controls"]}
     assert sorted(affected) == ["WID-6.2.2", "WID-6.4.1"]
-    assert affected["WID-6.2.2"]["reasons"][0]["kind"] == "control changed"
+    reason = affected["WID-6.2.2"]["reasons"][0]
+    assert reason["code"] == "control-changed"
+    assert reason["text"]["fr"] == ("Contrôle modifié entre les versions 1.0.0 et 1.1.0 : énoncé")
+    assert reason["text"]["en"] == "Control changed between versions 1.0.0 and 1.1.0: statement"
     assert affected["WID-6.2.2"]["obligation_change"] is True
     assert affected["WID-6.4.1"]["obligation_change"] is False
     assert "source" not in body["triggers"]
@@ -173,10 +259,10 @@ def test_both_triggers_merge_reasons(client: TestClient) -> None:
     client.post("/catalogs", json=new_version(nxt, "1.1.0"))
     body = report(client, catalog_version=None, catalog_change={"from": "1.0.0", "to": "1.1.0"})
     kinds = [
-        r["kind"]
+        r["code"]
         for r in next(c for c in body["affected_controls"] if c["id"] == "WID-6.2.1")["reasons"]
     ]
-    assert kinds == ["clause changed", "control changed"]
+    assert kinds == ["clause-changed-renumbered", "control-changed"]
 
 
 def test_retired_control_is_reported(client: TestClient) -> None:
@@ -187,7 +273,7 @@ def test_retired_control_is_reported(client: TestClient) -> None:
     )
     assert body["affected_controls"] == []
     (item,) = body["maintenance"]
-    assert item["kind"] == "control retired" and item["control"] == "WID-6.3.2"
+    assert item["code"] == "control-retired" and item["control"] == "WID-6.3.2"
     assert item["systems"] == ["SYS-001", "SYS-002", "SYS-003", "SYS-004"]
 
 
@@ -242,7 +328,7 @@ def test_tenant_override_applies_only_to_that_tenant(client: TestClient) -> None
     # Same tenant, other level (SYS-007 is level II in office-fictional-permits): default.
     (sys7,) = [t for t in tasks if t["system_id"] == "SYS-007"]
     assert sys7["due_date"] == "2027-01-30"  # 60 days
-    assert sys7["due_date_basis"] == "PLACEHOLDER: level II = 60 days (default)"
+    assert sys7["due_date_basis_text"]["en"] == "PLACEHOLDER: impact level II = 60 days (default)"
     # Only one task in the whole report uses the override.
     assert [t["system_id"] for t in tasks if "override" in t["due_date_basis"]] == ["SYS-002"]
 
@@ -251,7 +337,8 @@ def test_due_date_policy_lookup() -> None:
     policy = load_due_dates(REPO / "data" / "config" / "due-dates.toml")
     as_of = date(2026, 12, 1)
     for level, days in ((4, 30), (3, 45), (2, 60), (1, 90)):
-        due, basis = policy.due("some-other-tenant", level, as_of)
+        due, bases = policy.due("some-other-tenant", level, as_of)
+        basis = bases["en"]
         assert (due - as_of).days == days
         assert basis.endswith("(default)")
     for level, days in ((4, 30), (3, 30), (2, 60), (1, 90)):
@@ -280,5 +367,6 @@ def test_unknown_impact_level_ranks_first(client: TestClient) -> None:
     task = body["tasks"][0]
     assert task["priority"] == 1
     assert task["assigned_to"] is None
-    assert task["due_date_basis"].startswith("impact level unknown, treated as IV")
+    assert task["due_date_basis"].startswith("Impact level unknown, treated as IV")
+    assert task["due_date_basis_text"]["fr"].startswith("Niveau d'incidence inconnu")
     assert body["summary"]["findings_by_impact_level"]["unknown"] == 5

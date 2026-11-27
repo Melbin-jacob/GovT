@@ -62,7 +62,9 @@ class Finding(Base):
     control_id: Mapped[str] = mapped_column(String(200))
     statement: Mapped[str | None] = mapped_column(Text, nullable=True)
     evidence_requested: Mapped[str | None] = mapped_column(Text, nullable=True)
-    reasons: Mapped[list[str]] = mapped_column(JSONB)
+    # Coded reasons from the impact report ({"code", "params", "text": {"en", "fr"}}); older
+    # reports gave plain English strings.
+    reasons: Mapped[list[Any]] = mapped_column(JSONB)
     obligation_change: Mapped[bool] = mapped_column(Boolean)
     verdict: Mapped[str] = mapped_column(String(30))
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
