@@ -59,3 +59,20 @@ class FakeHub:
 
     def backends(self) -> Backends:
         return Backends(self.rulebook.service(), self.desk.service(), self.connector.service())
+
+
+def stub_policy(hub: FakeHub) -> None:
+    """Sources, clause diffs and source documents of the synthetic demo directive."""
+    hub.rulebook.on("GET", "/sources", fixture("sources.json"))
+
+    def diff(request: httpx.Request) -> Any:
+        lang = request.url.params["lang"]
+        return {lang: fixture(f"diff.{lang}.json")[lang]}
+
+    hub.rulebook.on("GET", "/sources/example-widgets/diff", diff)
+    for version in ("2023-01-01", "2025-01-01"):
+
+        def doc(request: httpx.Request, version: str = version) -> Any:
+            return fixture(f"source.{version}.{request.url.params['lang']}.json")
+
+        hub.rulebook.on("GET", f"/sources/example-widgets/versions/{version}", doc)

@@ -1,0 +1,1 @@
+[{"instrument":"example-widgets","synthetic":true,"versions":[{"version":"2023-01-01","langs":["en","fr"],"clauses":{"en":9,"fr":9},"parity_warnings":[]},{"version":"2025-01-01","langs":["en","fr"],"clauses":{"en":11,"fr":11},"parity_warnings":[]}]}]
