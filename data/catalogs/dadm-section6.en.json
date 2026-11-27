@@ -1,0 +1,1896 @@
+{
+  "catalog": {
+    "uuid": "8a9953f0-8cdb-5473-9868-ab02f1d80904",
+    "metadata": {
+      "title": "Directive on Automated Decision-Making — section 6 checks (golden set)",
+      "last-modified": "2026-11-26T00:00:00+00:00",
+      "version": "1.0.0",
+      "oscal-version": "1.1.3",
+      "props": [
+        {
+          "name": "catalog-name",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "dadm-section6"
+        },
+        {
+          "name": "language",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "en"
+        },
+        {
+          "name": "source-document",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "Directive on Automated Decision-Making"
+        },
+        {
+          "name": "source-amended",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "2025-06-24"
+        },
+        {
+          "name": "statement-status",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "paraphrase-pending-verification"
+        },
+        {
+          "name": "source-file",
+          "ns": "https://egcsgroup.com/ns/oscal",
+          "value": "dadm-section6.csv"
+        }
+      ],
+      "links": [
+        {
+          "href": "https://www.tbs-sct.canada.ca/pol/doc-eng.aspx?id=32592",
+          "rel": "reference",
+          "text": "Directive on Automated Decision-Making"
+        }
+      ],
+      "remarks": "Source: Directive on Automated Decision-Making, as amended 2025-06-24 (Treasury Board of Canada Secretariat). Check statements are paraphrases pending verification against the official text; they are not the text of the Directive. Clause numbers are draft numbering. Generated from dadm-section6.csv by the rulebook golden-set importer."
+    },
+    "groups": [
+      {
+        "id": "dadm-6.1",
+        "class": "section",
+        "title": "Algorithmic Impact Assessment",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.1"
+          }
+        ],
+        "controls": [
+          {
+            "id": "DADM-6.1.1-A",
+            "title": "DADM-6.1.1-A",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.1.1-A_smt",
+                "name": "statement",
+                "prose": "An Algorithmic Impact Assessment (AIA) has been completed for the system before it goes into production."
+              },
+              {
+                "id": "DADM-6.1.1-A_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.1.1-A_obj",
+                "name": "assessment-objective",
+                "prose": "Completed AIA, dated before the production date"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.1.1-B",
+            "title": "DADM-6.1.1-B",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.1.1-B_smt",
+                "name": "statement",
+                "prose": "The final AIA results have been approved before production."
+              },
+              {
+                "id": "DADM-6.1.1-B_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.1.1-B_obj",
+                "name": "assessment-objective",
+                "prose": "Approval record by the responsible senior official, dated before production"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.1.1-C",
+            "title": "DADM-6.1.1-C",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.1.1-C_smt",
+                "name": "statement",
+                "prose": "The final AIA results are published in an accessible format on the Open Government Portal before production."
+              },
+              {
+                "id": "DADM-6.1.1-C_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.1.1-C_obj",
+                "name": "assessment-objective",
+                "prose": "Open Government Portal link and publication date; accessibility check"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.1.2",
+            "title": "DADM-6.1.2",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based-roll-up"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.1.2_smt",
+                "name": "statement",
+                "prose": "The Appendix C requirements for the system's AIA impact level are applied."
+              },
+              {
+                "id": "DADM-6.1.2_gdn",
+                "name": "guidance",
+                "prose": "All systems; requirements vary by impact level I to IV"
+              },
+              {
+                "id": "DADM-6.1.2_obj",
+                "name": "assessment-objective",
+                "prose": "One satisfied check for each Appendix C requirement at that level"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.1.3-A",
+            "title": "DADM-6.1.3-A",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.3"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.1.3-A_smt",
+                "name": "statement",
+                "prose": "The AIA is reviewed, approved and updated on a scheduled basis."
+              },
+              {
+                "id": "DADM-6.1.3-A_gdn",
+                "name": "guidance",
+                "prose": "All systems; interval set by the department"
+              },
+              {
+                "id": "DADM-6.1.3-A_obj",
+                "name": "assessment-objective",
+                "prose": "Review history; last approval within the set interval"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.1.3-B",
+            "title": "DADM-6.1.3-B",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.1.3"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "confirmed"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.1.3-B_smt",
+                "name": "statement",
+                "prose": "The AIA is reviewed, approved and updated when the system's functionality or scope changes."
+              },
+              {
+                "id": "DADM-6.1.3-B_gdn",
+                "name": "guidance",
+                "prose": "When functionality or scope changes"
+              },
+              {
+                "id": "DADM-6.1.3-B_obj",
+                "name": "assessment-objective",
+                "prose": "Change records matched to AIA update dates"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dadm-6.2",
+        "class": "section",
+        "title": "Transparency",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.2"
+          }
+        ],
+        "controls": [
+          {
+            "id": "DADM-6.2.1",
+            "title": "DADM-6.2.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.1_smt",
+                "name": "statement",
+                "prose": "Notice that the decision will be made or assisted by an automated decision system is given through every service delivery channel in use, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-6.2.1_gdn",
+                "name": "guidance",
+                "prose": "Before decisions; form varies by impact level (Appendix C)"
+              },
+              {
+                "id": "DADM-6.2.1_obj",
+                "name": "assessment-objective",
+                "prose": "List of channels in use and the notice for each"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.2-A",
+            "title": "DADM-6.2.2-A",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.2-A_smt",
+                "name": "statement",
+                "prose": "Notices are displayed prominently."
+              },
+              {
+                "id": "DADM-6.2.2-A_gdn",
+                "name": "guidance",
+                "prose": "All notices"
+              },
+              {
+                "id": "DADM-6.2.2-A_obj",
+                "name": "assessment-objective",
+                "prose": "Screenshots or scripts showing where the notice appears"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.2-B",
+            "title": "DADM-6.2.2-B",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.2-B_smt",
+                "name": "statement",
+                "prose": "Notices are written in plain language, following the Canada.ca Content Style Guide."
+              },
+              {
+                "id": "DADM-6.2.2-B_gdn",
+                "name": "guidance",
+                "prose": "All notices"
+              },
+              {
+                "id": "DADM-6.2.2-B_obj",
+                "name": "assessment-objective",
+                "prose": "Notice text and a plain-language review"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.3",
+            "title": "DADM-6.2.3",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.3"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.3_smt",
+                "name": "statement",
+                "prose": "Clients receive a meaningful explanation of how and why the decision was made, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-6.2.3_gdn",
+                "name": "guidance",
+                "prose": "After decisions; varies by impact level (Appendix C)"
+              },
+              {
+                "id": "DADM-6.2.3_obj",
+                "name": "assessment-objective",
+                "prose": "Published explanation; sample decision letters"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.4",
+            "title": "DADM-6.2.4",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.4"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.4_smt",
+                "name": "statement",
+                "prose": "An appropriate licence is chosen for the system's software components, considering open-source options under the Enterprise Architecture Framework."
+              },
+              {
+                "id": "DADM-6.2.4_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.2.4_obj",
+                "name": "assessment-objective",
+                "prose": "Licence records and the reasons for the choice"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.5",
+            "title": "DADM-6.2.5",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.5"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "new in the 2025 amendment"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.5_smt",
+                "name": "statement",
+                "prose": "All released versions of the software components the system uses are obtained and safeguarded."
+              },
+              {
+                "id": "DADM-6.2.5_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.2.5_obj",
+                "name": "assessment-objective",
+                "prose": "Version inventory and where the versions are stored"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.6.1",
+            "title": "DADM-6.2.6.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.6.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.6.1_smt",
+                "name": "statement",
+                "prose": "Where a proprietary licence is used, the Government of Canada keeps the right to access and test the system, including all released versions of proprietary components, for audits, investigations, enforcement or legal proceedings, with safeguards against unauthorized disclosure."
+              },
+              {
+                "id": "DADM-6.2.6.1_gdn",
+                "name": "guidance",
+                "prose": "Only if a proprietary licence is used"
+              },
+              {
+                "id": "DADM-6.2.6.1_obj",
+                "name": "assessment-objective",
+                "prose": "Contract clauses granting access and testing rights"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.6.2",
+            "title": "DADM-6.2.6.2",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.6.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "the French draft numbers this 6.2.6.3"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.6.2_smt",
+                "name": "statement",
+                "prose": "Where a proprietary licence is used, the Government of Canada can authorize third parties to review and audit the components as needed."
+              },
+              {
+                "id": "DADM-6.2.6.2_gdn",
+                "name": "guidance",
+                "prose": "Only if a proprietary licence is used"
+              },
+              {
+                "id": "DADM-6.2.6.2_obj",
+                "name": "assessment-objective",
+                "prose": "Contract clause on third-party review"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.2.7",
+            "title": "DADM-6.2.7",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.2.7"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "the French draft numbers this 6.2.8"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.2.7_smt",
+                "name": "statement",
+                "prose": "Decisions and assessments made or assisted by the system are documented under the Directive on Service and Digital, to support monitoring, data governance and reporting."
+              },
+              {
+                "id": "DADM-6.2.7_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.2.7_obj",
+                "name": "assessment-objective",
+                "prose": "Decision and assessment logs"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dadm-6.3",
+        "class": "section",
+        "title": "Quality assurance",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.3"
+          }
+        ],
+        "controls": [
+          {
+            "id": "DADM-6.3.1-A",
+            "title": "DADM-6.3.1-A",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.1-A_smt",
+                "name": "statement",
+                "prose": "Before production, the data and information the system uses are tested for accuracy and unintended biases."
+              },
+              {
+                "id": "DADM-6.3.1-A_gdn",
+                "name": "guidance",
+                "prose": "Before production"
+              },
+              {
+                "id": "DADM-6.3.1-A_obj",
+                "name": "assessment-objective",
+                "prose": "Data test plan and results"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.1-B",
+            "title": "DADM-6.3.1-B",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.1-B_smt",
+                "name": "statement",
+                "prose": "Before production, the system's underlying model is tested for accuracy and unintended biases."
+              },
+              {
+                "id": "DADM-6.3.1-B_gdn",
+                "name": "guidance",
+                "prose": "Before production"
+              },
+              {
+                "id": "DADM-6.3.1-B_obj",
+                "name": "assessment-objective",
+                "prose": "Model evaluation results (for example from MLflow)"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.1-C",
+            "title": "DADM-6.3.1-C",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.1-C_smt",
+                "name": "statement",
+                "prose": "Testing also covers other factors that could unfairly affect outcomes or infringe human rights and freedoms."
+              },
+              {
+                "id": "DADM-6.3.1-C_gdn",
+                "name": "guidance",
+                "prose": "Before production"
+              },
+              {
+                "id": "DADM-6.3.1-C_obj",
+                "name": "assessment-objective",
+                "prose": "Test scope covering fairness and human-rights factors"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.2-A",
+            "title": "DADM-6.3.2-A",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.2-A_smt",
+                "name": "statement",
+                "prose": "Outcomes are monitored on a scheduled basis to guard against unintentional and unfair outcomes."
+              },
+              {
+                "id": "DADM-6.3.2-A_gdn",
+                "name": "guidance",
+                "prose": "In production"
+              },
+              {
+                "id": "DADM-6.3.2-A_obj",
+                "name": "assessment-objective",
+                "prose": "Monitoring schedule and run history"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.2-B",
+            "title": "DADM-6.3.2-B",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.2-B_smt",
+                "name": "statement",
+                "prose": "Monitoring verifies compliance with human rights obligations, institutional and program legislation, and the Directive."
+              },
+              {
+                "id": "DADM-6.3.2-B_gdn",
+                "name": "guidance",
+                "prose": "In production"
+              },
+              {
+                "id": "DADM-6.3.2-B_obj",
+                "name": "assessment-objective",
+                "prose": "Monitoring reports that address each obligation"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.3",
+            "title": "DADM-6.3.3",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.3"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "new in the 2025 amendment"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.3_smt",
+                "name": "statement",
+                "prose": "Client complaints, unexpected impacts, and staff overrides of the system's decisions or assessments are documented."
+              },
+              {
+                "id": "DADM-6.3.3_gdn",
+                "name": "guidance",
+                "prose": "In production"
+              },
+              {
+                "id": "DADM-6.3.3_obj",
+                "name": "assessment-objective",
+                "prose": "Complaint, impact and override logs"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.3.1",
+            "title": "DADM-6.3.3.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.3.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "new in the 2025 amendment"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.3.1_smt",
+                "name": "statement",
+                "prose": "Monitoring findings and the documented complaints, impacts and overrides are used to identify issues and take corrective action."
+              },
+              {
+                "id": "DADM-6.3.3.1_gdn",
+                "name": "guidance",
+                "prose": "In production"
+              },
+              {
+                "id": "DADM-6.3.3.1_obj",
+                "name": "assessment-objective",
+                "prose": "Issue log linked to corrective actions"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.4-A",
+            "title": "DADM-6.3.4-A",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.4"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.4-A_smt",
+                "name": "statement",
+                "prose": "Training data are validated as relevant, accurate, up to date, and compliant with the Policy on Service and Digital and the Privacy Act."
+              },
+              {
+                "id": "DADM-6.3.4-A_gdn",
+                "name": "guidance",
+                "prose": "Systems with a trained model"
+              },
+              {
+                "id": "DADM-6.3.4-A_obj",
+                "name": "assessment-objective",
+                "prose": "Validation report for training data"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.4-B",
+            "title": "DADM-6.3.4-B",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.4"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.4-B_smt",
+                "name": "statement",
+                "prose": "Input data are validated as relevant, accurate, up to date, and compliant with the same policy and Act."
+              },
+              {
+                "id": "DADM-6.3.4-B_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.3.4-B_obj",
+                "name": "assessment-objective",
+                "prose": "Validation report for input data"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.5",
+            "title": "DADM-6.3.5",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.5"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.5_smt",
+                "name": "statement",
+                "prose": "Data used and produced by the system are traceable, protected, appropriately accessed, and handled lawfully under the directives the clause names."
+              },
+              {
+                "id": "DADM-6.3.5_gdn",
+                "name": "guidance",
+                "prose": "All systems in scope"
+              },
+              {
+                "id": "DADM-6.3.5_obj",
+                "name": "assessment-objective",
+                "prose": "Data lineage records, access controls, retention schedule"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.6-A",
+            "title": "DADM-6.3.6-A",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.6"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "a secondary source numbers peer review 6.3.7"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.6-A_smt",
+                "name": "statement",
+                "prose": "Qualified experts review the system, its AIA and supporting documentation, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-6.3.6-A_gdn",
+                "name": "guidance",
+                "prose": "Impact levels set by Appendix C (a secondary source says level II and up)"
+              },
+              {
+                "id": "DADM-6.3.6-A_obj",
+                "name": "assessment-objective",
+                "prose": "Peer review report"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.6-B",
+            "title": "DADM-6.3.6-B",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.6"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "a secondary source numbers peer review 6.3.7"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.6-B_smt",
+                "name": "statement",
+                "prose": "The full peer review or a plain-language summary is published before production."
+              },
+              {
+                "id": "DADM-6.3.6-B_gdn",
+                "name": "guidance",
+                "prose": "Before production; per Appendix C"
+              },
+              {
+                "id": "DADM-6.3.6-B_obj",
+                "name": "assessment-objective",
+                "prose": "Published review or summary, dated before production"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.7",
+            "title": "DADM-6.3.7",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.7"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.7_smt",
+                "name": "statement",
+                "prose": "A Gender-based Analysis Plus (GBA Plus) is completed while the system is developed or modified, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-6.3.7_gdn",
+                "name": "guidance",
+                "prose": "During development or modification; per Appendix C"
+              },
+              {
+                "id": "DADM-6.3.7_obj",
+                "name": "assessment-objective",
+                "prose": "Completed GBA Plus"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.3.8",
+            "title": "DADM-6.3.8",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.8"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.3.8_smt",
+                "name": "statement",
+                "prose": "Employees who develop, use, manage or make decisions about the system are trained to use, oversee, explain or maintain it, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-6.3.8_gdn",
+                "name": "guidance",
+                "prose": "Per Appendix C"
+              },
+              {
+                "id": "DADM-6.3.8_obj",
+                "name": "assessment-objective",
+                "prose": "Training records for each role"
+              }
+            ]
+          },
+          {
+            "id": "DADM-IT-CONTINUITY",
+            "title": "DADM-IT-CONTINUITY",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.9 (French draft only)"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "the English draft drops this requirement; the French draft keeps it"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-IT-CONTINUITY_smt",
+                "name": "statement",
+                "prose": "IT and business continuity measures are in place for the system, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-IT-CONTINUITY_gdn",
+                "name": "guidance",
+                "prose": "Per Appendix C"
+              },
+              {
+                "id": "DADM-IT-CONTINUITY_obj",
+                "name": "assessment-objective",
+                "prose": "Continuity plan covering the system"
+              }
+            ]
+          },
+          {
+            "id": "DADM-SECURITY",
+            "title": "DADM-SECURITY",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.9 or 6.3.10"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "6.3.9 in the English draft, 6.3.10 in the French draft"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-SECURITY_smt",
+                "name": "statement",
+                "prose": "Risks are assessed during development, and appropriate information management and IT security safeguards are in place, under the Policy on Government Security and the Policy on Service and Digital."
+              },
+              {
+                "id": "DADM-SECURITY_gdn",
+                "name": "guidance",
+                "prose": "During development"
+              },
+              {
+                "id": "DADM-SECURITY_obj",
+                "name": "assessment-objective",
+                "prose": "Security assessment and authorization"
+              }
+            ]
+          },
+          {
+            "id": "DADM-LEGAL",
+            "title": "DADM-LEGAL",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.10 or 6.3.11"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "numbering differs between drafts"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-LEGAL_smt",
+                "name": "statement",
+                "prose": "The department's legal services are consulted from the concept stage."
+              },
+              {
+                "id": "DADM-LEGAL_gdn",
+                "name": "guidance",
+                "prose": "From the concept stage"
+              },
+              {
+                "id": "DADM-LEGAL_obj",
+                "name": "assessment-objective",
+                "prose": "Record of legal consultation, dated at the concept stage"
+              }
+            ]
+          },
+          {
+            "id": "DADM-HUMAN",
+            "title": "DADM-HUMAN",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.11 or 6.3.12"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "numbering differs between drafts"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-HUMAN_smt",
+                "name": "statement",
+                "prose": "The system allows human involvement where appropriate, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-HUMAN_gdn",
+                "name": "guidance",
+                "prose": "Per Appendix C (a secondary source says levels III and IV need a human to make the final decision)"
+              },
+              {
+                "id": "DADM-HUMAN_obj",
+                "name": "assessment-objective",
+                "prose": "Process design showing where people decide"
+              }
+            ]
+          },
+          {
+            "id": "DADM-APPROVAL",
+            "title": "DADM-APPROVAL",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.3.12 or 6.3.13"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "numbering differs between drafts"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-APPROVAL_smt",
+                "name": "statement",
+                "prose": "The appropriate level of approval is obtained before production, as Appendix C prescribes."
+              },
+              {
+                "id": "DADM-APPROVAL_gdn",
+                "name": "guidance",
+                "prose": "Before production; approver varies by impact level"
+              },
+              {
+                "id": "DADM-APPROVAL_obj",
+                "name": "assessment-objective",
+                "prose": "Approval record at the right level, dated before production"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dadm-6.4",
+        "class": "section",
+        "title": "Recourse",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.4"
+          }
+        ],
+        "controls": [
+          {
+            "id": "DADM-6.4.1",
+            "title": "DADM-6.4.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.4.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.4.1_smt",
+                "name": "statement",
+                "prose": "Clients are informed of the recourse options available to challenge the administrative decision."
+              },
+              {
+                "id": "DADM-6.4.1_gdn",
+                "name": "guidance",
+                "prose": "All decisions"
+              },
+              {
+                "id": "DADM-6.4.1_obj",
+                "name": "assessment-objective",
+                "prose": "Recourse information in notices or decision letters"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.4.1.1",
+            "title": "DADM-6.4.1.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.4.1.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.4.1.1_smt",
+                "name": "statement",
+                "prose": "Recourse options are timely, effective and easy to access."
+              },
+              {
+                "id": "DADM-6.4.1.1_gdn",
+                "name": "guidance",
+                "prose": "All decisions"
+              },
+              {
+                "id": "DADM-6.4.1.1_obj",
+                "name": "assessment-objective",
+                "prose": "Recourse process, service standards and usage data"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dadm-6.5",
+        "class": "section",
+        "title": "Reporting",
+        "props": [
+          {
+            "name": "label",
+            "value": "6.5"
+          }
+        ],
+        "controls": [
+          {
+            "id": "DADM-6.5.1",
+            "title": "DADM-6.5.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.5.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "judgment"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "likely"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.5.1_smt",
+                "name": "statement",
+                "prose": "Information on the system's effectiveness and efficiency in meeting program objectives is published on the Open Government Portal."
+              },
+              {
+                "id": "DADM-6.5.1_gdn",
+                "name": "guidance",
+                "prose": "In production"
+              },
+              {
+                "id": "DADM-6.5.1_obj",
+                "name": "assessment-objective",
+                "prose": "Link to the published report"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.5.2",
+            "title": "DADM-6.5.2",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.5.2"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "new in the 2025 amendment"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.5.2_smt",
+                "name": "statement",
+                "prose": "A summary showing that the system's use is fair, effective, transparent and compliant with the Directive is approved."
+              },
+              {
+                "id": "DADM-6.5.2_gdn",
+                "name": "guidance",
+                "prose": "Before production"
+              },
+              {
+                "id": "DADM-6.5.2_obj",
+                "name": "assessment-objective",
+                "prose": "Approved summary"
+              }
+            ]
+          },
+          {
+            "id": "DADM-6.5.2.1",
+            "title": "DADM-6.5.2.1",
+            "props": [
+              {
+                "name": "label",
+                "value": "6.5.2.1"
+              },
+              {
+                "name": "check-type",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "rule-based"
+              },
+              {
+                "name": "numbering-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "verify"
+              },
+              {
+                "name": "numbering-note",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "new in the 2025 amendment"
+              },
+              {
+                "name": "numbering-note-lang",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "en"
+              },
+              {
+                "name": "review-status",
+                "ns": "https://egcsgroup.com/ns/oscal",
+                "value": "draft"
+              }
+            ],
+            "parts": [
+              {
+                "id": "DADM-6.5.2.1_smt",
+                "name": "statement",
+                "prose": "That summary is submitted to the Treasury Board of Canada Secretariat before production."
+              },
+              {
+                "id": "DADM-6.5.2.1_gdn",
+                "name": "guidance",
+                "prose": "Before production"
+              },
+              {
+                "id": "DADM-6.5.2.1_obj",
+                "name": "assessment-objective",
+                "prose": "Submission record, dated before production"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

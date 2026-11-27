@@ -1,0 +1,61 @@
+[project]
+name = "govhub"
+version = "0.1.0"
+description = "Canadian AI Governance Hub (workspace root)"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["shared", "services/rulebook"]
+
+[tool.uv.sources]
+govhub-shared = { workspace = true }
+govhub-rulebook = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "govhub-shared",
+    "govhub-rulebook",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "httpx>=0.28",
+    "types-regex>=2026.11.24.20261126",
+    "types-jsonschema>=4.26.0.20261006",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["schemas"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "S"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["govhub_shared", "rulebook"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S603", "S607"]  # tests drive git via subprocess
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["govhub_shared", "rulebook"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["shared/tests", "services/rulebook/tests"]
+pythonpath = ["services/rulebook/tests"]
+addopts = "-ra --import-mode=importlib"
+filterwarnings = [
+    "error",
+    # Starlette >= 1.10 warns that its TestClient will move from `httpx` to the new
+    # `httpx2` package. Suppressed (only this message) until the switch is reviewed and
+    # approved; see docs/decisions.md. Every other warning fails the test run.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
