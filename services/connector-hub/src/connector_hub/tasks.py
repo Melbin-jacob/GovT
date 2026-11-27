@@ -54,10 +54,17 @@ class TaskWriter:
         )
 
     def upsert(
-        self, correlation_id: str, values: dict[str, Any], *, note: str | None = None
+        self,
+        correlation_id: str,
+        values: dict[str, Any],
+        *,
+        note: str | None = None,
+        create_only: frozenset[str] = frozenset({"state"}),
     ) -> tuple[Action, dict[str, Any]]:
         """Create the task, or update only the fields that differ. ``values`` uses hub field
-        names (see the mapping); references are already resolved to sys_ids."""
+        names (see the mapping); references are already resolved to sys_ids. Fields in
+        ``create_only`` (by default the state) are set on creation only, so a re-sync never
+        reopens a task someone is already working on."""
         values = {
             **values,
             "correlation_id": correlation_id,
@@ -72,7 +79,8 @@ class TaskWriter:
         changed = {
             k: v
             for k, v in values.items()
-            if str(v if v is not None else "") != value(existing, self.mapping.task_fields[k])
+            if k not in create_only
+            and str(v if v is not None else "") != value(existing, self.mapping.task_fields[k])
         }
         if not changed:
             return "unchanged", {

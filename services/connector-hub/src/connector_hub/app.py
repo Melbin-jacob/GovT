@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Body, Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from connector_hub import inventory
@@ -17,6 +17,7 @@ from connector_hub.servicenow import (
     ServiceNowError,
     load_config,
 )
+from connector_hub.task_sync import TaskRequest, sync_impact_report, upsert_request
 from connector_hub.tasks import TaskWriter
 
 app = FastAPI(title="Canadian AI Governance Hub - Connector hub", version="0.1.0")
@@ -71,3 +72,40 @@ def sync_inventory(client: Client, mapping: MappingDep, dry_run: bool = False) -
     summary["data_gap_tasks"] = inventory.sync_data_gap_tasks(writer, result)
     summary["warnings"] = writer.warnings
     return summary
+
+
+@app.post("/tasks/sync-impact-report", tags=["tasks"])
+def sync_report_tasks(
+    client: Client,
+    mapping: MappingDep,
+    report: Annotated[dict[str, Any], Body(description="A rulebook impact report")],
+) -> dict[str, Any]:
+    """Create or update one ServiceNow task per impact-report task. Idempotent: tasks are
+    matched by the report's task_id (stored as correlation_id); a re-sync never reopens a
+    task someone has moved on."""
+    return sync_impact_report(TaskWriter(client, mapping), report)
+
+
+@app.post("/tasks", tags=["tasks"])
+def upsert_task(client: Client, mapping: MappingDep, request: TaskRequest) -> dict[str, Any]:
+    """Create or update a single hub task (used by review-desk for remediation and
+    evidence requests)."""
+    writer = TaskWriter(client, mapping)
+    return {**upsert_request(writer, request), "warnings": writer.warnings}
+
+
+@app.post("/tasks/{correlation_id}/notes", tags=["tasks"])
+def add_note(
+    correlation_id: str,
+    client: Client,
+    mapping: MappingDep,
+    text: Annotated[str, Body(embed=True, min_length=1)],
+    state: Annotated[str | None, Body(embed=True)] = None,
+) -> dict[str, Any]:
+    """Append a work note; optionally set the state by name (e.g. closed_complete)."""
+    if state is not None and state not in mapping.task_states:
+        raise HTTPException(422, f"unknown state {state!r}; one of {sorted(mapping.task_states)}")
+    try:
+        return TaskWriter(client, mapping).note(correlation_id, text, state)
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc

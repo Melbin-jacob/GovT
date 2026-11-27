@@ -23,7 +23,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Pull AI systems from ServiceNow, push them to the rulebook, sync data-gap tasks",
     )
     sync.add_argument("--dry-run", action="store_true", help="Only pull and print")
+    sub.add_parser(
+        "check-servicenow",
+        help="Check a real instance: read the inventory, create/update/close a smoke task",
+    )
     args = parser.parse_args(argv)
+    if args.command == "check-servicenow":
+        from pathlib import Path
+
+        from connector_hub.config import get_settings
+        from connector_hub.live_check import run_check
+        from connector_hub.mapping import load_mapping
+        from connector_hub.servicenow import (
+            ConnectorConfigError,
+            ServiceNowClient,
+            ServiceNowError,
+            load_config,
+        )
+
+        try:
+            client = ServiceNowClient(load_config())
+            return run_check(client, load_mapping(Path(get_settings().mapping_path)), print)
+        except (ConnectorConfigError, ServiceNowError) as exc:
+            print(f"[fail] {exc}")
+            return 1
     if args.command == "sync-inventory":
         import json
 
