@@ -1,0 +1,28 @@
+{
+ "task": "assess-judgment-check",
+ "response": {
+  "content": "{\"verdict\": \"met\", \"confidence\": 0.97, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Il a été publié sur le site Web du ministère le 2 mai 2026 et il est mis à jour chaque trimestre.\", \"reasoning_en\": \"The register was published on the department's website and is updated quarterly.\", \"reasoning_fr\": \"Le registre a été publié sur le site Web du ministère et est mis à jour chaque trimestre.\"}",
+  "model_id": "scripted-fake-v1",
+  "logprobs": [
+   {
+    "token": "{\"verdict\": \"",
+    "logprob": 0.0,
+    "top": []
+   },
+   {
+    "token": "met",
+    "logprob": -0.05129329438755058,
+    "top": []
+   },
+   {
+    "token": "\", \"confidence\": 0.97, \"cited_passage_id\": \"P1\", \"cited_quote\": \"Il a été publié sur le site Web du ministère le 2 mai 2026 et il est mis à jour chaque trimestre.\", \"reasoning_en\": \"The register was published on the department's website and is updated quarterly.\", \"reasoning_fr\": \"Le registre a été publié sur le site Web du ministère et est mis à jour chaque trimestre.\"}",
+    "logprob": 0.0,
+    "top": []
+   }
+  ],
+  "prompt_tokens": 154,
+  "completion_tokens": 97,
+  "latency_seconds": 0.0,
+  "recorded": false
+ }
+}

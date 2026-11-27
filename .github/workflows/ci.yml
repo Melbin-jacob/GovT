@@ -41,6 +41,19 @@ jobs:
           uv run rulebook import-golden data/golden/dadm-section6.csv --check
           uv run rulebook import-golden data/demo/golden/example-widgets.csv \
             --out-dir data/demo/catalogs --check
+      - name: Accuracy harness on synthetic cases (recorded replies, no model) and release gate
+        run: |
+          set -euo pipefail
+          uv run python scripts/make_synthetic_recordings.py --check
+          make accuracy
+          cat accuracy-output/*.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep the accuracy run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-output
+          path: accuracy-output/
+          if-no-files-found: ignore
       - name: French UI strings list is current; EN/FR keys match
         run: |
           uv run control-centre check-strings
@@ -118,6 +131,8 @@ jobs:
         run: scripts/demo-impact.sh http://localhost:8000 demo-output
       - name: Demo - task to human decision (mock ServiceNow, synthetic data)
         run: scripts/demo-review.sh demo-review-output
+      - name: Demo - assessment engine drafts (scripted fake model over HTTP, synthetic data)
+        run: scripts/demo-assessment.sh demo-assessment-output
       - uses: astral-sh/setup-uv@v5
         with:
           version: "0.11.32"
@@ -145,6 +160,7 @@ jobs:
           path: |
             demo-output/
             demo-review-output/
+            demo-assessment-output/
           if-no-files-found: ignore
       - name: Logs on failure
         if: failure()

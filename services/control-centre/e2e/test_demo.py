@@ -188,3 +188,27 @@ def test_keyboard_only_decision(rec: Recorder) -> None:
     page.get_by_role("button", name="Record decision").focus()
     page.keyboard.press("Enter")
     expect(page.get_by_role("status")).to_contain_text("Decision recorded as record")
+
+
+def _open_finding(page: Page, base: str, system: str, control: str, lang: str) -> None:
+    page.goto(f"/{lang}/review")
+    row = page.locator("table[data-table=queue] tbody tr", has_text=system).filter(has_text=control)
+    expect(row).to_have_count(1)
+    row.locator("a").first.click()
+
+
+def test_engine_draft_with_flagged_evidence(rec: Recorder) -> None:
+    """After scripts/demo-assessment.sh: the register finding of SYS-003 carries a model
+    draft that the engine downgraded because the evidence holds an injected instruction."""
+    page = rec.page
+    for lang in ("en", "fr"):
+        _open_finding(page, rec.base_url, "SYS-003", "WID-6.3.2", lang)
+        expect(page.locator('[data-assessment="model"]')).to_be_visible()
+        expect(page.locator("[data-flagged]")).to_be_visible()
+        expect(page.locator("[data-flagged] blockquote").first).to_contain_text(
+            "ignore previous instructions"
+        )
+        rec.capture(f"{lang}-3-finding-engine-draft")
+        if lang == "fr":
+            expect(page.get_by_text("Ébauche du modèle")).to_be_visible()
+            assert_no_english(page)

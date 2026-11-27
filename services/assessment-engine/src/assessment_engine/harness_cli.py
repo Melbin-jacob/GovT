@@ -8,7 +8,7 @@ import re
 import tomllib
 from pathlib import Path
 
-from assessment_engine import harness
+from assessment_engine import gate, harness
 from assessment_engine.controls import FileControls
 from assessment_engine.settings_file import load_config
 from govhub_shared.model_gateway import NullGateway, RecordedGateway, gateway_from_env
@@ -20,7 +20,27 @@ def golden_set_status(path: Path) -> str:
     return str(tomllib.loads(path.read_text("utf-8")).get("golden_set", "DRAFT GOLDEN SET"))
 
 
+def _gate(args: argparse.Namespace) -> int:
+    run = json.loads(Path(args.run).read_text("utf-8"))
+    path = Path(args.baseline)
+    current = json.loads(path.read_text("utf-8")) if path.is_file() else None
+    if args.accuracy_command == "baseline":
+        baseline = gate.baseline_from(run, args.scores)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(gate.new_baseline_file(current, baseline), indent=1) + "\n", "utf-8"
+        )
+        print(f"baseline set from {args.run} ({baseline['golden_set_status']}) in {path}")
+        return 0
+    result = gate.check(run, current, args.scores)
+    print(json.dumps(result, indent=1))
+    print("RELEASE GATE: " + ("PASSED" if result["passed"] else "FAILED"))
+    return 0 if result["passed"] else 1
+
+
 def accuracy(args: argparse.Namespace) -> int:
+    if args.accuracy_command in ("gate", "baseline"):
+        return _gate(args)
     if args.accuracy_command != "run":
         return 2
     gateway = gateway_from_env()
@@ -57,4 +77,6 @@ def accuracy(args: argparse.Namespace) -> int:
     (out / f"{stem}.md").write_text(summary, "utf-8")
     print(summary)
     print(f"Run written to {out / stem}.json")
+    if args.write_latest:
+        Path(args.write_latest).write_text(json.dumps(run, indent=1) + "\n", "utf-8")
     return 0

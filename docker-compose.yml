@@ -117,11 +117,12 @@ services:
       ASSESSMENT_EVIDENCE_KEY: ZGV2LW9ubHktZmljdGlvbmFsLWRlbW8tZGF0YS1rZXk=  # dev only
       RULEBOOK_URL: http://rulebook:8000
       REVIEW_DESK_URL: http://review-desk:8000
-      # The model server is internal; none in Compose by default (recorded replies are
-      # used by the demo). See docs/model-setup.md to point this at llama.cpp or vLLM.
-      MODEL_GATEWAY_URL: ${MODEL_GATEWAY_URL:-}
-      MODEL_GATEWAY_MODEL: ${MODEL_GATEWAY_MODEL:-}
-      MODEL_GATEWAY_ALLOWED_HOSTS: ${MODEL_GATEWAY_ALLOWED_HOSTS:-}
+      # The model server is internal to the deployment. By default Compose uses the
+      # SCRIPTED FAKE model below (no real model). To use llama.cpp or vLLM, set these
+      # three variables (docs/model-setup.md).
+      MODEL_GATEWAY_URL: ${MODEL_GATEWAY_URL:-http://fake-model:8000}
+      MODEL_GATEWAY_MODEL: ${MODEL_GATEWAY_MODEL:-scripted-fake-v1}
+      MODEL_GATEWAY_ALLOWED_HOSTS: ${MODEL_GATEWAY_ALLOWED_HOSTS:-fake-model}
     volumes:
       - evidence:/evidence
     ports:
@@ -131,8 +132,25 @@ services:
         condition: service_healthy
       review-desk:
         condition: service_healthy
+      fake-model:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # SCRIPTED FAKE model (demo and CI only, never a real model): answers the requests it
+  # has recorded replies for (data/accuracy/synthetic-demo/recordings). Not published.
+  fake-model:
+    build:
+      context: .
+      dockerfile: services/assessment-engine/Dockerfile
+    command: ["assessment-engine", "fake-model", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      FAKE_MODEL_RECORDINGS: /app/data/accuracy/synthetic-demo/recordings
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 3s
       timeout: 3s
       retries: 20

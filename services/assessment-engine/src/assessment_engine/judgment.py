@@ -125,8 +125,10 @@ def _neutralize(text: str) -> str:
 def build_request(
     control: ControlText, passages: list[EvidencePassage], lang: str, version: str
 ) -> tuple[ChatRequest, str]:
+    # Texts only (never storage IDs): the same evidence gives the same request anywhere,
+    # and a passage still cannot contain the hash of itself.
     material = json.dumps(
-        [control.control_id, control.statement, [(p.id, p.text) for p in passages]],
+        [control.control_id, control.statement, [p.text for p in passages]],
         ensure_ascii=False,
     )
     input_hash = hashlib.sha256(material.encode("utf-8")).hexdigest()

@@ -51,9 +51,9 @@ def test_injected_instructions_are_never_followed_in_either_language(
     synthetic_run: dict[str, Any],
 ) -> None:
     injected = [c for c in synthetic_run["cases"] if c["injection"]]
-    assert {c["language"] for c in injected} == {"en", "fr"} and len(injected) == 4
+    assert {c["language"] for c in injected} == {"en", "fr"} and len(injected) == 6
     for case in injected:
-        assert case["model_verdict"] == "met"  # the scripted model obeyed the injection...
+        assert case["model_verdict"] == "met"  # the scripted model said "met"...
         assert case["verdict"] != "met"  # ...and the engine did not let it through
         assert case["downgrade_reason"] in ("flagged-support", "flagged-in-context")
     for lang in ("en", "fr"):
@@ -93,7 +93,7 @@ def test_synthetic_and_human_scores_are_never_mixed(
 def test_measures_per_language(synthetic_run: dict[str, Any]) -> None:
     for lang in ("en", "fr"):
         m = synthetic_run["scores"]["synthetic-demo"][lang]
-        assert m["cases"] == 9 and m["rule"]["agreement"] == 1.0
+        assert m["cases"] == 10 and m["rule"]["agreement"] == 1.0
         assert m["calibration"]["token"]["n"] > 0 and m["calibration"]["self_reported"]["n"] > 0
         assert len(m["calibration"]["token"]["bands"]) == 4
     fr = synthetic_run["scores"]["synthetic-demo"]["fr"]["judgment"]
@@ -138,3 +138,45 @@ def test_bad_case_files_are_refused(tmp_path: Path, column: str, value: str, mes
         writer.writerows(rows)
     with pytest.raises(harness.CaseError, match=message):
         harness.load_cases(path)
+
+
+def test_release_gate(synthetic_run: dict[str, Any]) -> None:
+    import copy
+
+    from assessment_engine import gate
+
+    assert gate.check(synthetic_run, None, "synthetic-demo")["passed"] is True  # no baseline
+    with pytest.raises(ValueError, match="no human scores"):
+        gate.baseline_from(synthetic_run, "human")
+    first = gate.new_baseline_file(None, gate.baseline_from(synthetic_run, "synthetic-demo"))
+    ok = gate.check(synthetic_run, first, "synthetic-demo")
+    assert ok["passed"] and ok["checked"] >= 12
+    assert first["current"]["golden_set_status"] == "DRAFT GOLDEN SET"
+
+    worse = copy.deepcopy(synthetic_run)
+    worse["scores"]["synthetic-demo"]["fr"]["judgment"]["final_agreement"] -= 0.1
+    worse["scores"]["synthetic-demo"]["en"]["calibration"]["token"]["ece"] += 0.05
+    failed = gate.check(worse, first, "synthetic-demo")
+    assert not failed["passed"]
+    assert any(f.startswith("fr judgment.final_agreement") for f in failed["failures"])
+    assert any(f.startswith("en calibration.token.ece") for f in failed["failures"])
+
+    no_french = copy.deepcopy(synthetic_run)
+    del no_french["scores"]["synthetic-demo"]["fr"]
+    assert (
+        "fr: no synthetic-demo cases in this run"
+        in gate.check(no_french, first, "synthetic-demo")["failures"]
+    )
+
+    second = gate.new_baseline_file(first, gate.baseline_from(synthetic_run, "synthetic-demo"))
+    assert len(second["history"]) == 1  # the earlier baseline is kept
+    with pytest.raises(ValueError, match="baseline is for synthetic-demo"):
+        gate.check(synthetic_run, second, "human")
+
+
+def test_committed_synthetic_baseline_passes(synthetic_run: dict[str, Any]) -> None:
+    from assessment_engine import gate
+
+    baseline = json.loads((SYNTHETIC / "baseline.json").read_text("utf-8"))
+    result = gate.check(synthetic_run, baseline, "synthetic-demo")
+    assert result["passed"], result["failures"]
