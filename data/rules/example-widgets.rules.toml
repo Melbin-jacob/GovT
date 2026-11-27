@@ -1,0 +1,72 @@
+# Rule-based checks of the SYNTHETIC "Directive on Example Widgets" (demo data).
+#
+# STATUS: unverified draft, written by Claude Code; approved as a draft by the project
+# owner on 2026-11-27. Annotators confirm or correct each rule alongside the golden set.
+# The check wording itself lives only in data/demo/golden/example-widgets.csv: these
+# rules are interpretations of it, never policy text.
+#
+# Logic (evaluated by assessment_engine/rules.py against the system's recorded facts):
+#   {fact = "x", equals = v} | {fact = "x", is_true = true} | {fact = "x", exists = true}
+#   {fact = "x", at_least = n} | {fact = "x", at_most = n}
+#   {fact = "d", within_days = n}   (date d is no more than n days before the as-of date)
+#   {before = ["a", "b"]}           (date a is on or before date b)
+#   {all = [...]} | {any = [...]} | {not = {...}}
+# A missing fact gives "unable to determine". "applies_when" false gives "not applicable".
+# "met" false and "partial" true gives "partially met"; otherwise "not met".
+
+[meta]
+catalog = "example-widgets"
+status = "unverified-draft"
+synthetic = true
+
+[facts]
+widgets_in_service = { type = "int", en = "Number of widgets in service", fr = "Nombre de widgets en service" }
+widgets_registered_late = { type = "int", en = "Widgets put into service before being registered", fr = "Widgets mis en service avant d'être enregistrés" }
+register_kept = { type = "bool", en = "A widget register is kept", fr = "Un registre des widgets est tenu" }
+register_fields_complete_ratio = { type = "number", en = "Share of register entries with owner, location and model filled in (0 to 1)", fr = "Proportion des entrées du registre où le propriétaire, l'emplacement et le modèle sont remplis (0 à 1)" }
+last_calibration_date = { type = "date", en = "Date of the oldest widget's latest calibration", fr = "Date du dernier étalonnage du widget le moins récemment étalonné" }
+faults_recorded = { type = "int", en = "Faults recorded in the period", fr = "Défaillances consignées pendant la période" }
+faulty_widgets_in_service = { type = "int", en = "Faulty widgets still in service before repair", fr = "Widgets défaillants encore en service avant réparation" }
+calibration_log_months = { type = "int", en = "Months of calibration log kept", fr = "Nombre de mois de registre d'étalonnage conservés" }
+last_annual_report_date = { type = "date", en = "Date of the latest annual report on widgets in service", fr = "Date du dernier rapport annuel sur les widgets en service" }
+
+[[rule]]
+control = "WID-6.1.1"
+en = "Met when no widget was put into service before it was registered; partially met when a register exists but some widgets were registered late."
+fr = "Respecté lorsqu'aucun widget n'a été mis en service avant d'être enregistré; partiellement respecté lorsqu'un registre existe mais que certains widgets ont été enregistrés en retard."
+met = { fact = "widgets_registered_late", equals = 0 }
+partial = { fact = "register_kept", is_true = true }
+
+[[rule]]
+control = "WID-6.1.2"
+en = "Met when every register entry records owner, location and model; partially met when at least half do."
+fr = "Respecté lorsque chaque entrée du registre consigne le propriétaire, l'emplacement et le modèle; partiellement respecté lorsqu'au moins la moitié le font."
+met = { fact = "register_fields_complete_ratio", at_least = 1.0 }
+partial = { fact = "register_fields_complete_ratio", at_least = 0.5 }
+
+[[rule]]
+control = "WID-6.2.1"
+en = "Applies when widgets are in service. Met when the least recently calibrated widget was calibrated within the last 365 days."
+fr = "S'applique lorsque des widgets sont en service. Respecté lorsque le widget étalonné le moins récemment l'a été au cours des 365 derniers jours."
+applies_when = { fact = "widgets_in_service", at_least = 1 }
+met = { fact = "last_calibration_date", within_days = 365 }
+
+[[rule]]
+control = "WID-6.2.3"
+en = "Applies when a fault was recorded. Met when no faulty widget stayed in service before repair."
+fr = "S'applique lorsqu'une défaillance a été consignée. Respecté lorsqu'aucun widget défaillant n'est resté en service avant sa réparation."
+applies_when = { fact = "faults_recorded", at_least = 1 }
+met = { fact = "faulty_widgets_in_service", equals = 0 }
+
+[[rule]]
+control = "WID-6.3.1"
+en = "Met when at least 24 months of calibration log are kept; partially met when some log is kept."
+fr = "Respecté lorsqu'au moins 24 mois de registre d'étalonnage sont conservés; partiellement respecté lorsqu'une partie du registre est conservée."
+met = { fact = "calibration_log_months", at_least = 24 }
+partial = { fact = "calibration_log_months", at_least = 1 }
+
+[[rule]]
+control = "WID-6.4.2"
+en = "Met when an annual report on widgets in service was published within the last 365 days."
+fr = "Respecté lorsqu'un rapport annuel sur les widgets en service a été publié au cours des 365 derniers jours."
+met = { fact = "last_annual_report_date", within_days = 365 }

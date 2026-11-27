@@ -49,3 +49,16 @@ class Passage(Base):
     text: Mapped[str] = mapped_column(Text)
     language: Mapped[str] = mapped_column(String(8))
     injection_flags: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+
+
+class SystemFact(Base):
+    """A structured fact about a system, used by rule-based checks (latest value wins)."""
+
+    __tablename__ = "system_facts"
+
+    system_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[Any] = mapped_column(JSONB, nullable=True)
+    source: Mapped[str] = mapped_column(String(255), default="")
+    recorded_by: Mapped[str] = mapped_column(String(128))
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

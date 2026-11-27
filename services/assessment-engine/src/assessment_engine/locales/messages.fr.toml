@@ -1,0 +1,12 @@
+# French text the assessment engine generates (unverified, written by Claude Code).
+[messages]
+"rule.met" = "Contrôle fondé sur une règle (règle provisoire non vérifiée) : {rule} Faits utilisés : {facts}."
+"rule.missing" = "Contrôle fondé sur une règle (règle provisoire non vérifiée) : {rule} Faits manquants : {missing}."
+"rule.not-applicable" = "Contrôle fondé sur une règle (règle provisoire non vérifiée) : {rule} Il ne s'applique pas ici. Faits utilisés : {facts}."
+"rule.rollup" = "Regroupement fondé sur une règle (règle provisoire non vérifiée) : {rule}"
+"rule.no-rule" = "Aucune règle n'est encore rédigée pour ce contrôle fondé sur une règle."
+"fact" = "{label} = {value} (source : {source})"
+"fact.no-source" = "{label} = {value}"
+"value.true" = "oui"
+"value.false" = "non"
+"list.and" = "et"

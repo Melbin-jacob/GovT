@@ -28,6 +28,7 @@ class Settings(BaseSettings):
         default="http://127.0.0.1:8002", validation_alias="REVIEW_DESK_URL"
     )
     assessment_config_path: str = "data/config/assessment.toml"
+    rules_dir: str = "data/rules"
 
 
 @lru_cache

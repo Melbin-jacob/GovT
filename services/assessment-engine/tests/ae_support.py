@@ -7,7 +7,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = Path(__file__).parent / "fixtures"
 # Every table, truncated before each test (a test checks the list is complete).
-TABLES: tuple[str, ...] = ("evidence_documents", "evidence_passages")
+TABLES: tuple[str, ...] = ("evidence_documents", "evidence_passages", "system_facts")
 
 
 def minimal_pdf(lines: list[str]) -> bytes:

@@ -1,0 +1,12 @@
+# English text the assessment engine generates (rationales). Same keys as messages.fr.toml.
+[messages]
+"rule.met" = "Rule-based check (unverified draft rule): {rule} Facts used: {facts}."
+"rule.missing" = "Rule-based check (unverified draft rule): {rule} Missing facts: {missing}."
+"rule.not-applicable" = "Rule-based check (unverified draft rule): {rule} It does not apply here. Facts used: {facts}."
+"rule.rollup" = "Rule-based roll-up (unverified draft rule): {rule}"
+"rule.no-rule" = "No rule is written for this rule-based check yet."
+"fact" = "{label} = {value} (source: {source})"
+"fact.no-source" = "{label} = {value}"
+"value.true" = "yes"
+"value.false" = "no"
+"list.and" = "and"
