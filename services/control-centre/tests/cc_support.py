@@ -85,3 +85,19 @@ def stub_impact(hub: FakeHub) -> None:
     hub.rulebook.on("POST", "/impact-reports", fixture("impact.en.json"))
     hub.desk.on("POST", "/forecast", fixture("forecast.json"))
     hub.connector.on("GET", "/tasks/notes", fixture("task-notes.json"))
+
+
+def stub_review(hub: FakeHub) -> dict[str, Any]:
+    """Queue, one open finding (WID-6.1.2), its catalog control and a decision history."""
+    finding = fixture("finding.json")
+    fid = finding["id"]
+    hub.desk.on("GET", "/queue", fixture("queue.json"))
+    hub.desk.on("GET", f"/findings/{fid}", finding)
+    hub.desk.on("GET", f"/findings/{fid}/decisions", [])
+    hub.desk.on("POST", f"/findings/{fid}/open", {"session_id": 41, "finding_id": fid})
+
+    def control(request: httpx.Request) -> Any:
+        return fixture(f"control.WID-6.1.2.{request.url.params['lang']}.json")
+
+    hub.rulebook.on("GET", "/controls/WID-6.1.2", control)
+    return dict(finding)

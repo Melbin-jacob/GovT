@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block notes %}
+{% if settings.synthetic_data %}{{ m.note('synthetic', t) }}{% endif %}
+{% if settings.fictional_inventory %}{{ m.note('fictional', t) }}{% endif %}
+{% endblock %}
+{% block content %}
+<p class="lead">{{ t('review.intro') }}</p>
+<p>{{ t('review.total', n=queue.total) }}</p>
+{% if queue.findings %}
+<table data-table="queue">
+  <caption>{{ t('review.caption') }}</caption>
+  <thead><tr>
+    <th scope="col">{{ t('impact.rank') }}</th>
+    <th scope="col">{{ t('impact.system') }}</th>
+    <th scope="col">{{ t('impact.control') }}</th>
+    <th scope="col">{{ t('impact.level') }}</th>
+    <th scope="col">{{ t('finding.verdict') }}</th>
+    <th scope="col">{{ t('finding.confidence') }}</th>
+    <th scope="col">{{ t('finding.state') }}</th>
+    <th scope="col">{{ t('impact.due') }}</th>
+    <th scope="col">{{ t('impact.servicenow') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for f in queue.findings %}
+    <tr{% if f.obligation_change %} class="highlight"{% endif %}>
+      <td class="num">{{ f.rank }}</td>
+      <th scope="row"><a href="/{{ lang }}/review/{{ f.id }}">{{ f.system_name }}<span class="visually-hidden">, {{ f.control_id }}</span></a><br><span class="muted">{{ f.system_id }}</span></th>
+      <td>{{ f.control_id }}{% if f.obligation_change %}<br>{{ m.badge('obligation-change', t) }}{% endif %}</td>
+      <td>{{ f.impact_level or t('impact.level_unknown') }}</td>
+      <td>{{ t('verdict.' ~ f.verdict) }}{% if f.placeholder %}<br>{{ m.placeholder(t) }}{% endif %}</td>
+      <td>{% if f.confidence is none %}{{ t('finding.no_confidence') }}{% else %}{{ '%.2f'|format(f.confidence) }}{% endif %}</td>
+      <td>{{ t('state.' ~ f.state) }}</td>
+      <td>{{ f.due_date or t('policy.none') }}</td>
+      <td>{{ f.servicenow_task or t('policy.none') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<details>
+  <summary>{{ t('review.ranking') }}</summary>
+  <p>{{ t('review.ranking_text') }}</p>
+</details>
+{% else %}
+<p>{{ t('review.empty') }}</p>
+{% endif %}
+{% endblock %}

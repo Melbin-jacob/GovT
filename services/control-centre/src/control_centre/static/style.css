@@ -130,3 +130,8 @@ dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1
 dl.facts dt { font-weight: 700; }
 dl.facts dd { margin: 0; }
 details { margin: 0.5rem 0; }
+.choice { margin: 0.4rem 0; }
+.choice label { font-weight: 600; margin-left: 0.25rem; }
+.choice .hint { display: block; margin-left: 1.6rem; color: var(--muted); font-size: 0.95rem; }
+input[type="radio"] { width: 1.1rem; height: 1.1rem; vertical-align: middle; }
+ul.effects { margin: 0; padding-left: 1.1rem; }

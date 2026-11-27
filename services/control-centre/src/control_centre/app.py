@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from control_centre.backends import BackendError
 from control_centre.i18n import LANGS, Translator
-from control_centre.screens import impact, policy
+from control_centre.screens import impact, policy, review
 from control_centre.web import LangDep, env, render
 
 app = FastAPI(
@@ -33,6 +33,7 @@ app.mount(
 
 app.include_router(policy.router)
 app.include_router(impact.router)
+app.include_router(review.router)
 
 # Nothing is ever loaded from another origin: the browser enforces it too.
 CSP = (
