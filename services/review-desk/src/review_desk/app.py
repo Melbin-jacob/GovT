@@ -9,13 +9,15 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Query
+from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
+from fastapi.responses import JSONResponse, PlainTextResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from review_desk import queue
+from review_desk import decision_log, queue
 from review_desk.db import get_session
+from review_desk.decisions import DecisionError, DecisionRequest, decide, history
 from review_desk.deps import AnyUser, AuthorizedReviewer, ReadSession, Tx
 from review_desk.models import Finding, ReviewSession
 
@@ -94,3 +96,53 @@ def open_finding(finding_id: str, session: Tx, reviewer: AuthorizedReviewer) -> 
         "finding_id": finding_id,
         "opened_at": review.opened_at.isoformat(),
     }
+
+
+@app.exception_handler(DecisionError)
+def _decision_error(_request: Request, exc: DecisionError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status, content={"detail": str(exc)})
+
+
+@app.post("/findings/{finding_id}/decisions", tags=["decisions"])
+def post_decision(
+    finding_id: str, request: DecisionRequest, session: Tx, reviewer: AuthorizedReviewer
+) -> dict[str, Any]:
+    """Record a human decision: accept, accept-with-remediation, reject,
+    request-more-evidence or override-verdict. Appends one hash-chained log record."""
+    finding = _finding(session, finding_id)
+    row = decide(session, finding, request, reviewer)
+    return {
+        "finding": queue.finding_view(finding),
+        "log": {"seq": row.seq, "record_hash": row.record_hash, "previous_hash": row.previous_hash},
+    }
+
+
+@app.get("/findings/{finding_id}/decisions", tags=["decisions"])
+def get_decisions(finding_id: str, session: ReadSession, user: AnyUser) -> list[dict[str, Any]]:
+    _finding(session, finding_id)
+    return history(session, finding_id)
+
+
+@app.get("/decision-log/verify", tags=["decision log"])
+def verify_log(
+    session: ReadSession,
+    user: AnyUser,
+    expect_seq: int | None = None,
+    expect_head: str | None = None,
+) -> dict[str, Any]:
+    """Recompute every hash and link. With a checkpoint (seq + head hash) also detects
+    records removed from the end."""
+    return decision_log.verify_db(session, expect_seq=expect_seq, expect_head=expect_head).as_dict()
+
+
+@app.get("/decision-log/export", tags=["decision log"], response_class=PlainTextResponse)
+def export_log(session: ReadSession, user: AnyUser) -> str:
+    """JSON Lines with the exact hashed text of every record (verify offline with
+    ``review-desk verify-log --file``)."""
+    return "\n".join(decision_log.export_lines(session)) + "\n"
+
+
+@app.get("/decision-log/checkpoint", tags=["decision log"])
+def get_checkpoint(session: ReadSession, user: AnyUser) -> dict[str, Any]:
+    """Current head (seq, hash). Keep it outside the hub to detect truncation later."""
+    return decision_log.checkpoint(session)

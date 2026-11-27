@@ -43,7 +43,10 @@ def review_engine(review_database_url: str) -> Iterator[Engine]:
 @pytest.fixture
 def review_db(review_engine: Engine) -> Iterator[Session]:
     with review_engine.begin() as conn:
+        # The log refuses TRUNCATE; as its owner, the test user may switch that off briefly.
+        conn.execute(text("ALTER TABLE decision_log DISABLE TRIGGER USER"))
         conn.execute(text(f"TRUNCATE {', '.join(REVIEW_TABLES)} RESTART IDENTITY CASCADE"))
+        conn.execute(text("ALTER TABLE decision_log ENABLE TRIGGER USER"))
     with sessionmaker(bind=review_engine, expire_on_commit=False)() as session:
         yield session
 

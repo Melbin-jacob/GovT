@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     Date,
@@ -82,3 +83,19 @@ class ReviewSession(Base):
     reviewer: Mapped[str] = mapped_column(String(200))
     opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     closed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class DecisionRecord(Base):
+    """One entry of the append-only, hash-chained decision log (see decision_log.py).
+    ``record_text`` is the exact canonical JSON that was hashed."""
+
+    __tablename__ = "decision_log"
+
+    seq: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)
+    uuid: Mapped[str] = mapped_column(String(36), unique=True)
+    finding_id: Mapped[str] = mapped_column(String(36), index=True)
+    action: Mapped[str] = mapped_column(String(40))
+    record_text: Mapped[str] = mapped_column(Text)
+    previous_hash: Mapped[str] = mapped_column(String(71))
+    record_hash: Mapped[str] = mapped_column(String(71), unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
