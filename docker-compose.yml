@@ -27,6 +27,10 @@ services:
       dockerfile: services/rulebook/Dockerfile
     environment:
       RULEBOOK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/rulebook
+      # Approval-log checkpoints on their own volume, not the database's.
+      RULEBOOK_APPROVAL_CHECKPOINT_FILE: /checkpoints/approval-log.jsonl
+    volumes:
+      - rulebook-checkpoints:/checkpoints
     ports:
       - "8000:8000"
     depends_on:
@@ -184,4 +188,5 @@ services:
 volumes:
   pgdata:
   checkpoints:
+  rulebook-checkpoints:
   evidence:

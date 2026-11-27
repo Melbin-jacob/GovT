@@ -54,5 +54,9 @@ demo-ui:  ## Click through the web UI (EN/FR) in Chromium with axe scans; after 
 	CONTROL_CENTRE_URL=$${CONTROL_CENTRE_URL:-http://127.0.0.1:8004} E2E_OUTPUT=e2e-output \
 		uv run pytest services/control-centre/e2e -p no:cacheprovider
 
+demo-drafts:  ## Policy change -> AI drafts -> approve in the UI -> catalog 1.1.0 -> impact; run LAST (publishes)
+	CONTROL_CENTRE_URL=$${CONTROL_CENTRE_URL:-http://127.0.0.1:8004} E2E_OUTPUT=e2e-output E2E_DRAFTS=1 \
+		uv run pytest services/control-centre/e2e/test_drafts_demo.py -p no:cacheprovider
+
 servicenow-check:  ## Check a REAL ServiceNow instance (.env.servicenow); never run in CI
 	uv run connector-hub check-servicenow
