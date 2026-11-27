@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from helpers import new_version, set_statement
+from helpers import control, new_version, set_label, set_statement
 from test_inventory import payload, put_profiles
 
 from rulebook import explain
@@ -250,6 +250,37 @@ def test_catalog_change_trigger(client: TestClient) -> None:
         ("SYS-007", 1),
         ("SYS-004", 1),
     ]
+
+
+def test_catalog_change_bookkeeping_and_typography_are_not_reassessed(
+    client: TestClient,
+) -> None:
+    """Renumbering (label, links), provenance props and typography alone never trigger
+    re-review; a change of the coded obligation does, flagged as an obligation change."""
+    seed(client)
+    nxt = copy.deepcopy(_json(DEMO / "catalogs" / "example-widgets.en.json"))
+    set_label(nxt, "WID-6.2.2", "6.3.2")
+    for link in control(nxt, "WID-6.2.2").get("links", []):
+        link["href"] = link["href"].replace("6.2.2", "6.3.2")
+    ns = "https://egcsgroup.com/ns/oscal"
+    control(nxt, "WID-6.2.3")["props"].append({"name": "approved-by", "ns": ns, "value": "x"})
+    stmt = next(p for p in control(nxt, "WID-6.4.1")["parts"] if p["name"] == "statement")
+    set_statement(nxt, "WID-6.4.1", stmt["prose"].replace("'", "\u2019") + "  ")
+    for prop in control(nxt, "WID-6.2.1")["props"]:
+        if prop["name"] == "obligation":
+            before = prop["value"]
+            prop["value"] = "must" if before != "must" else "should"
+    assert client.post("/catalogs", json=new_version(nxt, "1.1.0")).status_code == 201
+    body = report(
+        client, source=None, catalog_version=None, catalog_change={"from": "1.0.0", "to": "1.1.0"}
+    )
+    affected = {c["id"]: c for c in body["affected_controls"]}
+    assert sorted(affected) == ["WID-6.2.1"]
+    assert affected["WID-6.2.1"]["obligation_change"] is True
+    assert affected["WID-6.2.1"]["reasons"][0]["text"]["fr"].endswith(": obligation")
+    trigger = body["triggers"]["catalog"]
+    assert trigger["not_reassessed"] == ["WID-6.2.2", "WID-6.2.3", "WID-6.4.1"]
+    assert trigger["summary"]["obligation-change"] == 1
 
 
 def test_both_triggers_merge_reasons(client: TestClient) -> None:

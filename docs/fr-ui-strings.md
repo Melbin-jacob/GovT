@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-404 strings: 3 provided by the project owner, 401 unverified.
+407 strings: 3 provided by the project owner, 404 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -322,9 +322,12 @@ French half of ServiceNow task text. `{name}` marks a value filled in at run tim
 | `excluded.lifecycle-retired` | Système retiré | System retired | Unverified, written by Claude Code |
 | `excluded.no-affected-control` | Aucun contrôle touché ne fait partie de la portée de ce système | No affected control is in this system's scope | Unverified, written by Claude Code |
 | `excluded.no-profile` | Aucun profil de ce système ne sélectionne de contrôles de {catalog} | No profile of this system selects controls from {catalog} | Unverified, written by Claude Code |
+| `field.class` | classe | class | Unverified, written by Claude Code |
 | `field.part:assessment-objective` | objectif d'évaluation | assessment objective | Unverified, written by Claude Code |
 | `field.part:guidance` | orientation | guidance | Unverified, written by Claude Code |
 | `field.part:statement` | énoncé | statement | Unverified, written by Claude Code |
+| `field.prop:hub:check-type` | type de contrôle | check type | Unverified, written by Claude Code |
+| `field.prop:hub:obligation` | obligation | obligation | Unverified, written by Claude Code |
 | `field.prop:label` | étiquette | label | Unverified, written by Claude Code |
 | `field.title` | titre | title | Unverified, written by Claude Code |
 | `list.and` | et | and | Unverified, written by Claude Code |

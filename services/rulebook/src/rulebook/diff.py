@@ -14,6 +14,7 @@ OBLIGATION_CHANGE = "obligation-change"
 LABEL_CHANGE = "label-change"
 STATUS_PROP = "status"
 WITHDRAWN = "withdrawn"
+OBLIGATION_PROP = "prop:hub:obligation"
 
 
 class FieldChange(BaseModel):
@@ -138,6 +139,11 @@ def diff_catalogs(
                     change.flags.append(OBLIGATION_CHANGE)
                     change.obligations_before = sorted(terms_before.elements())
                     change.obligations_after = sorted(terms_after.elements())
+            if key == OBLIGATION_PROP and old.get(key) and new.get(key):
+                # the coded obligation (golden-set column) changed, e.g. should -> must
+                change.flags.append(OBLIGATION_CHANGE)
+                change.obligations_before = [str(old.get(key))]
+                change.obligations_after = [str(new.get(key))]
             if key == "prop:label":
                 change.flags.append(LABEL_CHANGE)
             changes.append(change)
