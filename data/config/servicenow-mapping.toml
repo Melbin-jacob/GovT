@@ -1,0 +1,69 @@
+# Field mapping between the hub and ServiceNow (see docs/servicenow-setup.md).
+# Change names here, not in code, to match an instance's configuration.
+
+[inventory]
+table = "cmdb_ci_business_app"
+# Encoded query selecting the AI systems to import.
+query = "correlation_idSTARTSWITHSYS-^ORDERBYcorrelation_id"
+
+# hub field = ServiceNow field. Reference fields are read by display value (names);
+# "owned_by.email" dot-walks to the owner's e-mail.
+[inventory.fields]
+system_id = "correlation_id"
+name = "name"
+tenant = "managed_by_group"
+department = "department"
+owner = "owned_by"
+owner_email = "owned_by.email"
+impact_level = "u_aia_impact_level"
+lifecycle = "install_status"
+profiles = "u_govhub_profiles"
+notes = "short_description"
+
+# ServiceNow install_status display value -> hub lifecycle. Anything else: "unknown".
+[inventory.lifecycle]
+"Installed" = "production"
+"In Maintenance" = "pilot"
+"On Order" = "development"
+"Pending Install" = "development"
+"In Stock" = "development"
+"Retired" = "retired"
+
+[tasks]
+# Custom table extending task (never incident). Inherits assignment_group, assigned_to,
+# state, priority, due_date, correlation_id, correlation_display, cmdb_ci, work_notes.
+table = "u_govhub_task"
+correlation_display = "GovHub"
+
+# hub field = ServiceNow field
+[tasks.fields]
+correlation_id = "correlation_id"
+correlation_display = "correlation_display"
+short_description = "short_description"
+description = "description"
+assignment_group = "assignment_group"
+assigned_to = "assigned_to"
+priority = "priority"
+due_date = "due_date"
+cmdb_ci = "cmdb_ci"
+state = "state"
+work_notes = "work_notes"
+type = "u_govhub_type"
+reference = "u_govhub_reference"
+
+# Task state values (base task table).
+[tasks.states]
+open = "1"
+work_in_progress = "2"
+closed_complete = "3"
+closed_incomplete = "4"
+closed_skipped = "7"
+
+# Lookups used to turn hub values into reference sys_ids.
+[lookups]
+group_table = "sys_user_group"
+group_field = "name"
+user_table = "sys_user"
+user_field = "email"
+ci_table = "cmdb_ci_business_app"
+ci_field = "correlation_id"

@@ -257,3 +257,28 @@ def test_due_date_policy_lookup() -> None:
     for level, days in ((4, 30), (3, 30), (2, 60), (1, 90)):
         due, _ = policy.due("office-fictional-permits", level, as_of)
         assert (due - as_of).days == days
+
+
+def test_unknown_impact_level_ranks_first(client: TestClient) -> None:
+    """A system pulled from ServiceNow without an impact level (data gap) ranks first and is
+    treated as level IV for its due date, so it is not silently deprioritized."""
+    seed(client)
+    systems = payload()["systems"]
+    gap = {
+        **systems[1],
+        "system_id": "SYS-009",
+        "impact_level": None,
+        "owner_email": None,
+        "data_gaps": ["impact_level", "owner_email"],
+    }
+    resp = client.put("/inventory", json={"source": "servicenow:mock", "systems": [*systems, gap]})
+    assert resp.status_code == 201, resp.json()
+    body = report(client)
+    first = body["systems"][0]
+    assert (first["system_id"], first["impact_level"]) == ("SYS-009", "unknown")
+    assert first["data_gaps"] == ["impact_level", "owner_email"]
+    task = body["tasks"][0]
+    assert task["priority"] == 1
+    assert task["assigned_to"] is None
+    assert task["due_date_basis"].startswith("impact level unknown, treated as IV")
+    assert body["summary"]["findings_by_impact_level"]["unknown"] == 5
