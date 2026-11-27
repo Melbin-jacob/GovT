@@ -412,7 +412,8 @@ def markdown(run: dict[str, Any]) -> str:
             cells = []
             for lang in ("en", "fr"):
                 m = by_lang.get(lang)
-                cells.append("n/a" if m is None else str(get(m)))
+                value = None if m is None else get(m)
+                cells.append("n/a" if value is None else str(value))
             return f"| {label} | {cells[0]} | {cells[1]} |"
 
         lines += [
