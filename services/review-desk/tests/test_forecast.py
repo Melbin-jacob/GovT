@@ -44,7 +44,8 @@ def test_measured_rate_after_twenty_timed_decisions(
         with review_engine.begin() as conn:  # simulate time spent reading the evidence
             conn.execute(
                 text(
-                    "UPDATE review_sessions SET opened_at = opened_at - make_interval(mins => :m) WHERE id = :i"
+                    "UPDATE review_sessions SET opened_at = opened_at "
+                    "- make_interval(mins => :m) WHERE id = :i"
                 ),
                 {"m": minutes, "i": session_id},
             )
