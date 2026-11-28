@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 from drafts_support import (
+    ENGINE,
     OFFICER,
     OFFICER_2,
     REVIEWER,
@@ -89,7 +90,7 @@ def test_roles_needs_human_and_language_agreement(client: TestClient) -> None:
     client.put(
         f"/drafts/items/{other['id']}/model/en",
         json=needs,
-        headers={"X-GovHub-User": "e", "X-GovHub-Role": "assessment-engine"},
+        headers=ENGINE,
     )
     refused = client.post(f"/drafts/items/{other['id']}/approve", headers=OFFICER)
     assert refused.json()["detail"]["code"] == "needs-human"

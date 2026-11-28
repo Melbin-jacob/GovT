@@ -58,7 +58,7 @@ def test_catalog_must_be_linked_to_the_from_version(client: TestClient) -> None:
         "/drafts/batches", json={**BATCH, "from": "2025-01-01", "to": "2023-01-01"}, headers=OFFICER
     )
     assert resp.status_code == 422 and "drafting needs a catalog linked to" in resp.json()["detail"]
-    assert client.post("/drafts/batches", json=BATCH).status_code == 401
+    assert client.post("/drafts/batches", json=BATCH, auth=None).status_code == 401
 
 
 def test_model_drafts_only_from_the_engine_and_logged(client: TestClient, engine: Engine) -> None:

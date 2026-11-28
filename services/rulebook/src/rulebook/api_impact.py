@@ -9,6 +9,7 @@ from fastapi import APIRouter, Body, Depends
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from rulebook.access import ReadImpact, visible_tenants
 from rulebook.config import get_settings
 from rulebook.db import get_session
 from rulebook.impact import ImpactRequest, build_report, load_due_dates
@@ -20,6 +21,7 @@ router = APIRouter(tags=["impact"])
 @router.post("/impact-reports")
 def impact_report(
     session: Annotated[Session, Depends(get_session)],
+    who: ReadImpact,
     payload: Annotated[
         dict[str, Any],
         Body(
@@ -32,7 +34,8 @@ def impact_report(
 ) -> dict[str, Any]:
     """Affected controls, systems ranked by impact level, the reassessment tasks that would
     be created (ServiceNow-shaped JSON, not sent), and rulebook maintenance items.
-    Deterministic for the same inputs. Not stored yet (TODO(review-desk))."""
+    Deterministic for the same inputs. Not stored yet (TODO(review-desk)). Systems of
+    other tenants than the caller's are left out entirely."""
     try:
         request = ImpactRequest.model_validate(payload)
     except ValidationError as exc:
@@ -41,4 +44,4 @@ def impact_report(
             [f"{'.'.join(map(str, e['loc'])) or 'request'}: {e['msg']}" for e in exc.errors()],
         ) from exc
     due_dates = load_due_dates(Path(get_settings().due_dates_path))
-    return build_report(session, request, due_dates)
+    return build_report(session, request, due_dates, visible=visible_tenants(who))

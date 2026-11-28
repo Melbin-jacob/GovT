@@ -10,19 +10,26 @@ from __future__ import annotations
 import copy
 import json
 import os
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
+from drafts_support import DEMO_TENANTS
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, make_url, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
+from govhub_shared.auth import GOVERNANCE_OFFICER
+from govhub_shared.auth.testing import KEYS, service, token, user
+from govhub_shared.auth.web import install
 from rulebook.app import app
 from rulebook.db import get_session
 from rulebook.migrate import downgrade, upgrade
+
+install(app, "rulebook", KEYS.trust)
 
 REPO = Path(__file__).resolve().parents[3]
 CATALOGS = REPO / "data" / "catalogs"
@@ -39,6 +46,7 @@ TABLES = (
     "draft_items",
     "draft_batches",
     "approval_log",
+    "profile_assignments",
 )
 DEFAULT_URL = "postgresql+psycopg://govhub:govhub@localhost:5432/rulebook_test"
 
@@ -103,8 +111,31 @@ def client(engine: Engine, db: Session) -> Iterator[TestClient]:
 
     app.dependency_overrides[get_session] = _session
     with TestClient(app) as test_client:
+        test_client.auth = TestCaller()
         yield test_client
     app.dependency_overrides.clear()
+
+
+# Tests act as one user holding every role in the demo tenants (and governance officer),
+# except where a test sends its own Authorization header; the inventory snapshot is loaded
+# as connector-hub's sync job (the only caller allowed to replace it).
+EVERYONE = user(
+    "test-user", platform=(GOVERNANCE_OFFICER,), reviewer=DEMO_TENANTS,
+    tenant_admin=DEMO_TENANTS, auditor=DEMO_TENANTS, system_owner=DEMO_TENANTS,
+)  # fmt: skip
+SYNC_JOB = service("connector-hub", all_tenants=True)
+
+
+class TestCaller(httpx.Auth):
+    def auth_flow(self, request: httpx.Request) -> Generator[httpx.Request, httpx.Response, None]:
+        if "authorization" not in request.headers:
+            who = (
+                SYNC_JOB
+                if (request.method, request.url.path) == ("PUT", "/inventory")
+                else EVERYONE
+            )
+            request.headers["Authorization"] = f"Bearer {token(who, 'rulebook')}"
+        yield request
 
 
 def _load(lang: str) -> dict[str, Any]:

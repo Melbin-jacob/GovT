@@ -12,8 +12,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from govhub_shared.auth.client import trust_store
+from govhub_shared.auth.web import install
 from govhub_shared.oscal import OscalValidationError, ProfileResolutionError, resolve_profile
 from rulebook import store
+from rulebook.access import GovernContent, ReadShared
 from rulebook.api_drafts import router as drafts_router
 from rulebook.api_impact import router as impact_router
 from rulebook.api_inventory import router as inventory_router
@@ -36,6 +39,12 @@ app.include_router(source_diff_router)
 app.include_router(inventory_router)
 app.include_router(impact_router)
 app.include_router(drafts_router)
+
+# Internal tokens: public keys of every issuer (GOVHUB_TRUST_FILE). Without them every
+# protected endpoint answers 503 (fail closed).
+_trust = trust_store()
+if _trust is not None:
+    install(app, "rulebook", _trust)
 
 
 @app.exception_handler(store.StoreError)
@@ -92,6 +101,7 @@ def ready(session: Annotated[Session, Depends(get_session)]) -> dict[str, str]:
 def import_catalog(
     session: Tx,
     user: User,
+    _who_govern: GovernContent,
     document: Annotated[dict[str, Any], Body(description="OSCAL 1.1.3 catalog document")],
     name: Annotated[str | None, Query(description="Defaults to metadata catalog-name")] = None,
     lang: Annotated[
@@ -108,7 +118,9 @@ def import_catalog(
 
 
 @app.get("/catalogs", tags=["catalogs"])
-def list_catalogs(session: Annotated[Session, Depends(get_session)]) -> list[dict[str, Any]]:
+def list_catalogs(
+    session: Annotated[Session, Depends(get_session)], _who_read: ReadShared
+) -> list[dict[str, Any]]:
     return store.list_catalogs(session)
 
 
@@ -117,6 +129,7 @@ def get_catalog_version(
     name: str,
     version: str,
     session: Annotated[Session, Depends(get_session)],
+    _who_read: ReadShared,
     lang: LangParam = "en",
 ) -> dict[str, Any]:
     """The stored OSCAL catalog document."""
@@ -129,7 +142,9 @@ def get_catalog_version(
     status_code=201,
     response_model=RetireOut,
 )
-def retire_control(name: str, version: str, control_id: str, session: Tx, user: User) -> Any:
+def retire_control(
+    name: str, version: str, control_id: str, session: Tx, user: User, _who_govern: GovernContent
+) -> Any:
     """Retire a control: creates the next minor version (every language present at
     ``version``) in which the control remains, with prop ``status = withdrawn``."""
     return store.retire_control(session, name, version, control_id, created_by=user)
@@ -153,6 +168,7 @@ ToQ = Annotated[str, Query(alias="to", description="Target version")]
 def diff_post(
     name: str,
     session: Annotated[Session, Depends(get_session)],
+    _who_read: ReadShared,
     from_version: FromQ,
     to_version: ToQ,
     lang: LangParam = "en",
@@ -167,6 +183,7 @@ def diff_post(
 def diff_get(
     name: str,
     session: Annotated[Session, Depends(get_session)],
+    _who_read: ReadShared,
     from_version: FromQ,
     to_version: ToQ,
     lang: LangParam = "en",
@@ -187,6 +204,7 @@ class ResolvedProfileOut(BaseModel):
 @app.post("/profiles/resolve", tags=["profiles"], response_model=ResolvedProfileOut)
 def resolve_profile_endpoint(
     session: Annotated[Session, Depends(get_session)],
+    _who_read: ReadShared,
     profile: Annotated[dict[str, Any], Body(description="OSCAL 1.1.3 profile document")],
 ) -> Any:
     """Resolve a profile into a flat catalog. Import hrefs must name stored catalog
@@ -211,6 +229,7 @@ def resolve_profile_endpoint(
 def get_control(
     control_id: str,
     session: Annotated[Session, Depends(get_session)],
+    _who_read: ReadShared,
     version: Annotated[str | None, Query(description="Defaults to the latest")] = None,
     catalog: Annotated[str | None, Query(description="Needed if the ID is ambiguous")] = None,
     lang: LangParam = "en",

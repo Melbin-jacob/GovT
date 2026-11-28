@@ -17,11 +17,17 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WHO=(-H "X-GovHub-User: governance-officer-01" -H "X-GovHub-Role: governance-officer")
 mkdir -p "$OUT"
 
+# shellcheck source=lib/hub-token.sh
+. "$ROOT/scripts/lib/hub-token.sh"
+rulebook_tokens
+auth() {  # the internal token for rulebook calls (other services: placeholder headers)
+  case "$2" in "$RULEBOOK"*) echo "$(rulebook_auth "$1" "${2#"$RULEBOOK"}")" ;; *) echo "X-GovHub-Note: none" ;; esac
+}
 call() {  # call METHOD URL [BODY_FILE] -> stdout (fails on HTTP errors)
   if [ $# -ge 3 ]; then
-    curl --fail-with-body -sS -X "$1" "$2" "${WHO[@]}" -H 'content-type: application/json' --data-binary "@$3"
+    curl --fail-with-body -sS -X "$1" "$2" "${WHO[@]}" -H "$(auth "$1" "$2")" -H 'content-type: application/json' --data-binary "@$3"
   else
-    curl --fail-with-body -sS -X "$1" "$2" "${WHO[@]}"
+    curl --fail-with-body -sS -X "$1" "$2" "${WHO[@]}" -H "$(auth "$1" "$2")"
   fi
 }
 json() { python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }

@@ -19,6 +19,7 @@ import httpx
 from connector_hub.mapping import Mapping
 from connector_hub.servicenow import ServiceNowClient, display, value
 from connector_hub.tasks import TaskWriter
+from govhub_shared.auth.client import ServiceAuth, signing_key
 
 _ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4}
 _TOKEN = re.compile(r"^[A-Za-z_][A-Za-z0-9._-]*$")
@@ -169,8 +170,12 @@ def sync_data_gap_tasks(writer: TaskWriter, result: PullResult) -> list[dict[str
 def push_to_rulebook(
     rulebook_url: str, result: PullResult, source: str, http: httpx.Client | None = None
 ) -> dict[str, Any]:
-    """Store the pulled inventory as a new rulebook snapshot (internal service call)."""
-    client = http or httpx.Client(base_url=rulebook_url, timeout=30.0)
+    """Store the pulled inventory as a new rulebook snapshot (internal service call, signed
+    as connector-hub's sync job: all tenants, since a snapshot replaces every tenant's)."""
+    client = http or httpx.Client(
+        base_url=rulebook_url, timeout=30.0,
+        auth=ServiceAuth(signing_key("connector-hub"), "rulebook", all_tenants=True),
+    )  # fmt: skip
     response = client.put("/inventory", json={"source": source, "systems": result.systems})
     if response.status_code >= 400:
         raise RuntimeError(f"rulebook rejected the inventory: {response.text}")

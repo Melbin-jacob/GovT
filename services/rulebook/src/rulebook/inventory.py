@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from govhub_shared import OSCAL_NS
 from govhub_shared.oscal import OscalValidationError, normalize, validate
-from rulebook.models import AISystem, InventorySnapshot, StoredProfile
+from rulebook.models import AISystem, InventorySnapshot, ProfileAssignment, StoredProfile
 from rulebook.store import InvalidCatalogError, NotFoundError
 
 ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4}
@@ -232,4 +232,43 @@ def current_inventory(session: Session) -> tuple[InventorySnapshot, list[SystemR
         )
         for s in snapshot.systems
     ]
+    assigned = {a.system_id: a for a in session.scalars(select(ProfileAssignment))}
+    systems = [
+        s.model_copy(update={"profiles": list(assigned[s.system_id].profiles)})
+        if s.system_id in assigned and assigned[s.system_id].tenant == s.tenant
+        else s
+        for s in systems
+    ]
     return snapshot, systems
+
+
+def assignments_hash(session: Session) -> str | None:
+    """Content hash of every profile assignment (None when there are none), so impact
+    report inputs change when a tenant changes its systems' profiles."""
+    rows = sorted(
+        (a.system_id, a.tenant, sorted(a.profiles))
+        for a in session.scalars(select(ProfileAssignment))
+    )
+    if not rows:
+        return None
+    text = json.dumps(rows, separators=(",", ":"))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def assign_profiles(
+    session: Session, system: SystemRecord, profiles: list[str], *, user: str
+) -> dict[str, Any]:
+    known = {p["name"] for p in list_profiles(session)}
+    unknown = [p for p in profiles if p not in known]
+    if unknown:
+        raise InventoryError([f"unknown profiles: {', '.join(unknown)}"])
+    row = session.get(ProfileAssignment, system.system_id)
+    if row is None:
+        row = ProfileAssignment(system_id=system.system_id, tenant=system.tenant,
+                                profiles=profiles, set_by=user)  # fmt: skip
+        session.add(row)
+    else:
+        row.tenant, row.profiles, row.set_by = system.tenant, profiles, user
+    session.flush()
+    return {"system_id": system.system_id, "tenant": system.tenant, "profiles": profiles,
+            "set_by": user}  # fmt: skip

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from rulebook.access import govern_content, read_shared
 from rulebook.db import get_session
 from rulebook.deps import LangParam, Tx, User
 from rulebook.sources import store as source_store
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/sources", tags=["sources"])
 ReadSession = Annotated[Session, Depends(get_session)]
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(govern_content)])
 def import_source(
     session: Tx,
     user: User,
@@ -41,12 +42,12 @@ def import_source(
     )
 
 
-@router.get("")
+@router.get("", dependencies=[Depends(read_shared)])
 def list_sources(session: ReadSession) -> list[dict[str, Any]]:
     return source_store.list_sources(session)
 
 
-@router.get("/{instrument}/versions/{version}")
+@router.get("/{instrument}/versions/{version}", dependencies=[Depends(read_shared)])
 def get_source(
     instrument: str, version: str, session: ReadSession, lang: LangParam = "en"
 ) -> dict[str, Any]:
@@ -54,7 +55,9 @@ def get_source(
     return doc.model_dump(mode="json", exclude_none=True)
 
 
-@router.get("/{instrument}/versions/{version}/clauses/{number}")
+@router.get(
+    "/{instrument}/versions/{version}/clauses/{number}", dependencies=[Depends(read_shared)]
+)
 def get_clause(
     instrument: str, version: str, number: str, session: ReadSession, lang: LangParam = "en"
 ) -> dict[str, Any]:

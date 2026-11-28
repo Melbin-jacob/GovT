@@ -1,4 +1,4 @@
-"""Internal client for the rulebook's drafting endpoints (engine identity)."""
+"""Internal client for the rulebook's drafting endpoints (the engine's service token)."""
 
 from __future__ import annotations
 
@@ -8,9 +8,9 @@ import httpx
 
 from assessment_engine import drafting
 from assessment_engine.settings_file import AssessmentConfig
+from govhub_shared.auth.client import ServiceAuth, signing_key
 from govhub_shared.model_gateway import ChatGateway
 
-IDENTITY = {"X-GovHub-User": "assessment-engine", "X-GovHub-Role": "assessment-engine"}
 LANGS = ("en", "fr")
 
 
@@ -22,7 +22,10 @@ class RulebookDrafts(Protocol):
 
 class HttpRulebookDrafts:
     def __init__(self, base_url: str, http: httpx.Client | None = None) -> None:
-        self.http = http or httpx.Client(base_url=base_url, timeout=60.0, headers=IDENTITY)
+        self.http = http or httpx.Client(
+            base_url=base_url, timeout=60.0,
+            auth=ServiceAuth(signing_key("assessment-engine"), "rulebook"),
+        )  # fmt: skip
 
     def batch(self, batch_id: str) -> dict[str, Any]:
         resp = self.http.get(f"/drafts/batches/{batch_id}")

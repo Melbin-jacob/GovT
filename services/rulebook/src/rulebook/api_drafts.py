@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from govhub_shared.obligations import OBLIGATION_CODES
 from rulebook import approval, approval_log, drafts, reading
+from rulebook.access import audit_drafts, edit_drafts, engine_drafts, govern_drafts, read_drafts
 from rulebook.config import get_settings
 from rulebook.db import get_session
 from rulebook.identity import ENGINE_ROLE, ActorDep
@@ -66,7 +67,7 @@ def get_item(session: Session, item_id: str) -> DraftItem:
     return item
 
 
-@router.post("/batches", status_code=201)
+@router.post("/batches", status_code=201, dependencies=[Depends(govern_drafts)])
 def create_batch(body: BatchRequest, session: SessionDep, actor: ActorDep) -> dict[str, Any]:
     """Plan the drafting work for a source change (plain code; no model yet)."""
     try:
@@ -85,7 +86,7 @@ def create_batch(body: BatchRequest, session: SessionDep, actor: ActorDep) -> di
     return drafts.batch_view(session, batch)
 
 
-@router.get("/batches")
+@router.get("/batches", dependencies=[Depends(read_drafts)])
 def list_batches(session: SessionDep, catalog: str | None = None) -> list[dict[str, Any]]:
     query = select(DraftBatch).order_by(DraftBatch.created_at.desc())
     if catalog:
@@ -104,7 +105,7 @@ def list_batches(session: SessionDep, catalog: str | None = None) -> list[dict[s
     ]
 
 
-@router.get("/batches/{batch_id}")
+@router.get("/batches/{batch_id}", dependencies=[Depends(read_drafts)])
 def read_batch(batch_id: str, session: SessionDep, session_id: str | None = None) -> dict[str, Any]:
     """With ``session_id``: each item's ``read`` shows which languages count as opened."""
     view = drafts.batch_view(session, get_batch(session, batch_id))
@@ -115,7 +116,7 @@ def read_batch(batch_id: str, session: SessionDep, session_id: str | None = None
     return view
 
 
-@router.put("/items/{item_id}/model/{lang}")
+@router.put("/items/{item_id}/model/{lang}", dependencies=[Depends(engine_drafts)])
 def put_model_draft(
     item_id: str,
     lang: Literal["en", "fr"],
@@ -155,7 +156,7 @@ def put_model_draft(
     return drafts.item_view(item)
 
 
-@router.get("/log/verify")
+@router.get("/log/verify", dependencies=[Depends(audit_drafts)])
 def verify_log(session: SessionDep) -> dict[str, Any]:
     return approval_log.verify(session).as_dict()
 
@@ -193,7 +194,7 @@ def _approval(call: Any) -> Any:
         raise HTTPException(exc.status, {"code": exc.code, "message": str(exc)}) from exc
 
 
-@router.post("/sessions", status_code=201)
+@router.post("/sessions", status_code=201, dependencies=[Depends(edit_drafts)])
 def start_session(session: SessionDep, actor: ActorDep) -> dict[str, Any]:
     """An approval session: the drafts this person opens are recorded in it."""
     row = _approval(lambda: reading.start(session, actor))
@@ -201,7 +202,7 @@ def start_session(session: SessionDep, actor: ActorDep) -> dict[str, Any]:
     return {"id": row.id, "user": row.user_id, "started_at": row.started_at.isoformat()}
 
 
-@router.post("/batches/{batch_id}/views")
+@router.post("/batches/{batch_id}/views", dependencies=[Depends(edit_drafts)])
 def record_views(
     batch_id: str, body: ViewRequest, session: SessionDep, actor: ActorDep
 ) -> dict[str, Any]:
@@ -218,7 +219,7 @@ def record_views(
     return {"recorded": count, "lang": body.lang, "session_id": body.session_id}
 
 
-@router.put("/items/{item_id}")
+@router.put("/items/{item_id}", dependencies=[Depends(edit_drafts)])
 def edit_item(
     item_id: str, body: EditRequest, session: SessionDep, actor: ActorDep
 ) -> dict[str, Any]:
@@ -234,7 +235,7 @@ def edit_item(
     return drafts.item_view(item)
 
 
-@router.post("/items/{item_id}/approve")
+@router.post("/items/{item_id}/approve", dependencies=[Depends(govern_drafts)])
 def approve_item(
     item_id: str, session: SessionDep, actor: ActorDep, body: DecisionRequest | None = None
 ) -> dict[str, Any]:
@@ -247,7 +248,7 @@ def approve_item(
     return drafts.item_view(item)
 
 
-@router.post("/items/{item_id}/reject")
+@router.post("/items/{item_id}/reject", dependencies=[Depends(govern_drafts)])
 def reject_item(
     item_id: str, body: DecisionRequest, session: SessionDep, actor: ActorDep
 ) -> dict[str, Any]:
@@ -258,7 +259,7 @@ def reject_item(
     return drafts.item_view(item)
 
 
-@router.get("/batches/{batch_id}/publish-defaults")
+@router.get("/batches/{batch_id}/publish-defaults", dependencies=[Depends(read_drafts)])
 def publish_defaults(batch_id: str, session: SessionDep) -> dict[str, Any]:
     """The SOURCE_DATE default and the date it must be later than."""
     batch = get_batch(session, batch_id)
@@ -268,7 +269,7 @@ def publish_defaults(batch_id: str, session: SessionDep) -> dict[str, Any]:
     }
 
 
-@router.post("/batches/{batch_id}/publish")
+@router.post("/batches/{batch_id}/publish", dependencies=[Depends(govern_drafts)])
 def publish_batch(
     batch_id: str, body: PublishRequest, session: SessionDep, actor: ActorDep
 ) -> dict[str, Any]:
@@ -285,7 +286,7 @@ def publish_batch(
     return dict(result)
 
 
-@router.get("/batches/{batch_id}/change-set")
+@router.get("/batches/{batch_id}/change-set", dependencies=[Depends(audit_drafts)])
 def change_set(batch_id: str, session: SessionDep) -> dict[str, Any]:
     """The published change set, for ``rulebook apply-drafts`` (golden-set CSV)."""
     batch = get_batch(session, batch_id)
@@ -295,6 +296,6 @@ def change_set(batch_id: str, session: SessionDep) -> dict[str, Any]:
     return data
 
 
-@router.get("/log/export", response_class=PlainTextResponse)
+@router.get("/log/export", response_class=PlainTextResponse, dependencies=[Depends(audit_drafts)])
 def export_log(session: SessionDep) -> str:
     return "\n".join(approval_log.export_lines(session)) + "\n"

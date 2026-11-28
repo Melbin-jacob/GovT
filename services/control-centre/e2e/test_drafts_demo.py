@@ -27,7 +27,7 @@ from typing import Any
 
 import httpx
 import pytest
-from e2e_support import OUT, Recorder
+from e2e_support import OUT, Recorder, hub_token
 from playwright.sync_api import Locator, Page, expect
 
 from rulebook.cli import main as rulebook_cli
@@ -149,7 +149,7 @@ def test_policy_change_to_new_catalog_version(rec: Recorder) -> None:
     date_input.fill("2026-11-28")
     page.get_by_role("button", name="Publish version 1.1.0").click()
     expect(page.locator("#error")).to_contain_text("the SOURCE_DATE guard would refuse it")
-    assert httpx.get(f"{RULEBOOK}/drafts/batches/{batch_id}").json()["status"] == "open"
+    assert _get(f"/drafts/batches/{batch_id}")["status"] == "open"
     rec.capture("drafts-ready-to-publish-en")
     page.locator("#source-date").fill("2026-11-29")
     page.get_by_role("button", name="Publish version 1.1.0").click()
@@ -167,8 +167,16 @@ def test_policy_change_to_new_catalog_version(rec: Recorder) -> None:
     _api_checks(batch_id, golden_before)
 
 
+def _officer() -> dict[str, str]:
+    return {"Authorization": f"Bearer {hub_token('rulebook', '--user', 'demo-officer-01')}"}
+
+
+def _reviewer() -> dict[str, str]:
+    return {"Authorization": f"Bearer {hub_token('rulebook', '--user', 'demo-reviewer-01')}"}
+
+
 def _get(path: str, **params: Any) -> Any:
-    resp = httpx.get(f"{RULEBOOK}{path}", params=params, timeout=30)
+    resp = httpx.get(f"{RULEBOOK}{path}", params=params, timeout=30, headers=_officer())
     resp.raise_for_status()
     return resp.json() if "json" in resp.headers.get("content-type", "") else resp.text
 
@@ -186,7 +194,7 @@ def _api_checks(batch_id: str, golden_before: dict[str, Any]) -> None:
     diff = _get("/catalogs/example-widgets/diff", **{"from": "1.0.0", "to": "1.1.0"})
     assert diff["added"] == ["WID-C001", "WID-C002"] and diff["retired"] == ["WID-6.3.2"]
     report = httpx.post(
-        f"{RULEBOOK}/impact-reports",
+        f"{RULEBOOK}/impact-reports", headers=_reviewer(),
         json={"catalog": "example-widgets", "catalog_change": {"from": "1.0.0", "to": "1.1.0"},
               "as_of": "2026-12-01", "lang": "en"},
         timeout=30,

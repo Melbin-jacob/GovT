@@ -104,7 +104,7 @@ jobs:
         run: |
           curl --fail -sS http://127.0.0.1:8004/health
           curl --fail -sS http://127.0.0.1:8004/ | grep -q 'href="/fr/"'
-          curl --fail -sS http://127.0.0.1:8004/fr/ | grep -q 'lang="fr"'
+          curl --fail -sS http://127.0.0.1:8004/fr/sign-in | grep -q 'lang="fr"'
       - name: Vendored OSCAL schemas resolve inside the image
         run: >-
           docker compose exec -T rulebook python -c
@@ -112,17 +112,21 @@ jobs:
       - name: API smoke test (store golden catalogs, retire, diff)
         run: |
           set -euo pipefail
+          # Development keys only: a governance officer's internal token for the rulebook.
+          token=$(docker compose exec -T control-centre python -m govhub_shared.auth.mint \
+            --keys /keys --aud rulebook --user demo-officer-01)
+          auth="Authorization: Bearer $token"
           version=$(python3 -c 'import json; print(json.load(open("data/catalogs/dadm-section6.en.json"))["catalog"]["metadata"]["version"])')
           next=$(python3 -c "v='$version'.split('.'); print(f'{v[0]}.{int(v[1]) + 1}.0')")
           for lang in en fr; do
-            curl --fail -sS -X POST localhost:8000/catalogs -H 'content-type: application/json' \
+            curl --fail -sS -X POST localhost:8000/catalogs -H "$auth" -H 'content-type: application/json' \
               --data-binary @data/catalogs/dadm-section6.$lang.json
             echo
           done
-          curl --fail -sS -X POST \
+          curl --fail -sS -X POST -H "$auth" \
             "localhost:8000/catalogs/dadm-section6/versions/$version/retire-control/DADM-6.3.5"
           echo
-          curl --fail -sS "localhost:8000/catalogs/dadm-section6/diff?from=$version&to=$next" \
+          curl --fail -sS -H "$auth" "localhost:8000/catalogs/dadm-section6/diff?from=$version&to=$next" \
             | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["summary"]); assert d["retired"] == ["DADM-6.3.5"]'
       - name: Example profile resolves inside the image
         run: >-

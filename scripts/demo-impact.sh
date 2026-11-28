@@ -13,7 +13,10 @@ OUT="${2:-$(mktemp -d)}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$OUT"
 
-post() { curl --fail-with-body -sS -X "$1" "$BASE$2" -H "content-type: ${4:-application/json}" --data-binary "@$3"; }
+# shellcheck source=lib/hub-token.sh
+. "$ROOT/scripts/lib/hub-token.sh"
+rulebook_tokens
+post() { curl --fail-with-body -sS -X "$1" "$BASE$2" -H "$(rulebook_auth "$1" "$2")" -H "content-type: ${4:-application/json}" --data-binary "@$3"; }
 
 echo "== 1. Store the synthetic source documents (EN/FR, 2023-01-01 and 2025-01-01)"
 for f in "$ROOT"/data/demo/sources/example-widgets.*.json; do
@@ -34,7 +37,7 @@ done
 post PUT "/inventory?source=systems.csv" "$ROOT/data/inventory/systems.csv" text/csv >/dev/null
 
 echo "== 4. Clause diff 2023-01-01 -> 2025-01-01 (EN and FR, with cross-check)"
-curl --fail-with-body -sS \
+curl --fail-with-body -sS -H "$(rulebook_auth GET /sources)" \
   "$BASE/sources/example-widgets/diff?from=2023-01-01&to=2025-01-01&lang=both&include_text=false" \
   > "$OUT/source-diff.json"
 

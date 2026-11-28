@@ -243,3 +243,16 @@ class ApprovalRecord(Base):
     record_text: Mapped[str] = mapped_column(Text)
     previous_hash: Mapped[str] = mapped_column(String(71))
     record_hash: Mapped[str] = mapped_column(String(71))
+
+
+class ProfileAssignment(Base):
+    """A tenant's own choice of profiles for one of its systems (tenant-admin capability
+    ``profile-assignment``); it replaces the inventory's profiles for that system."""
+
+    __tablename__ = "profile_assignments"
+
+    system_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    tenant: Mapped[str] = mapped_column(String(100), index=True)
+    profiles: Mapped[list[str]] = mapped_column(ARRAY(String(200)))
+    set_by: Mapped[str] = mapped_column(String(200))
+    set_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

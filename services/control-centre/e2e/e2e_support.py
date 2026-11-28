@@ -47,3 +47,16 @@ class Recorder:
         }
         self.overhead += time.perf_counter() - start
         assert not violations, f"{name}: axe violations {AXE_RESULTS[name]['rules_violated']}"
+
+
+def hub_token(audience: str, *who: str) -> str:
+    """Development keys only: a token for direct API checks (scripts/lib/hub-token.sh:
+    GOVHUB_KEYS_DIR locally, else the Compose control-centre container)."""
+    import subprocess
+
+    root = Path(__file__).resolve().parents[3]
+    command = f". scripts/lib/hub-token.sh; hub_token {audience} {' '.join(who)}"
+    out = subprocess.run(  # noqa: S603 - fixed command, development keys only
+        ["/bin/bash", "-c", command], cwd=root, check=True, capture_output=True,
+                         text=True)  # fmt: skip
+    return out.stdout.strip().splitlines()[-1]

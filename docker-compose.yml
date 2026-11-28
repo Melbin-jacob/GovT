@@ -26,14 +26,21 @@ services:
       context: .
       dockerfile: services/rulebook/Dockerfile
     environment:
+      # Internal tokens: everyone's public keys, and this service's own signing key.
+      GOVHUB_TRUST_FILE: /keys/trust.json
+      GOVHUB_SIGNING_KEY_FILE: /keys/rulebook.pem
+      GOVHUB_SIGNING_KID_FILE: /keys/rulebook.kid
       RULEBOOK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/rulebook
       # Approval-log checkpoints on their own volume, not the database's.
       RULEBOOK_APPROVAL_CHECKPOINT_FILE: /checkpoints/approval-log.jsonl
     volumes:
+      - keys:/keys:ro
       - rulebook-checkpoints:/checkpoints
     ports:
       - "8000:8000"
     depends_on:
+      keys:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     healthcheck:
@@ -62,15 +69,23 @@ services:
       context: .
       dockerfile: services/connector-hub/Dockerfile
     environment:
+      # Internal tokens: everyone's public keys, and this service's own signing key.
+      GOVHUB_TRUST_FILE: /keys/trust.json
+      GOVHUB_SIGNING_KEY_FILE: /keys/connector-hub.pem
+      GOVHUB_SIGNING_KID_FILE: /keys/connector-hub.kid
       SERVICENOW_INSTANCE_URL: http://mock-servicenow:8000
       SERVICENOW_USERNAME: govhub.integration
       SERVICENOW_PASSWORD: mock-only-password  # mock instance only
       CONNECTOR_ALLOWED_HOSTS: mock-servicenow
       CONNECTOR_ALLOW_INSECURE_HTTP: "1"  # the mock speaks plain HTTP; never for a real instance
       RULEBOOK_URL: http://rulebook:8000
+    volumes:
+      - keys:/keys:ro
     ports:
       - "127.0.0.1:8001:8000"
     depends_on:
+      keys:
+        condition: service_completed_successfully
       mock-servicenow:
         condition: service_healthy
       rulebook:
@@ -87,16 +102,23 @@ services:
       dockerfile: services/review-desk/Dockerfile
     command: ["review-desk", "serve", "--migrate", "--host", "0.0.0.0", "--port", "8000"]
     environment:
+      # Internal tokens: everyone's public keys, and this service's own signing key.
+      GOVHUB_TRUST_FILE: /keys/trust.json
+      GOVHUB_SIGNING_KEY_FILE: /keys/review-desk.pem
+      GOVHUB_SIGNING_KID_FILE: /keys/review-desk.kid
       REVIEW_DESK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/review_desk
       CONNECTOR_HUB_URL: http://connector-hub:8000
       # Decision-log checkpoints on their own volume, not the database's.
       REVIEW_DESK_CHECKPOINT_FILE: /checkpoints/decision-log.jsonl
       REVIEW_DESK_CHECKPOINT_EVERY: "1"
     volumes:
+      - keys:/keys:ro
       - checkpoints:/checkpoints
     ports:
       - "127.0.0.1:8002:8000"
     depends_on:
+      keys:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       connector-hub:
@@ -116,6 +138,10 @@ services:
       dockerfile: services/assessment-engine/Dockerfile
     command: ["assessment-engine", "serve", "--migrate", "--host", "0.0.0.0", "--port", "8000"]
     environment:
+      # Internal tokens: everyone's public keys, and this service's own signing key.
+      GOVHUB_TRUST_FILE: /keys/trust.json
+      GOVHUB_SIGNING_KEY_FILE: /keys/assessment-engine.pem
+      GOVHUB_SIGNING_KID_FILE: /keys/assessment-engine.kid
       ASSESSMENT_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/assessment_engine
       ASSESSMENT_EVIDENCE_DIR: /evidence
       ASSESSMENT_EVIDENCE_KEY: ZGV2LW9ubHktZmljdGlvbmFsLWRlbW8tZGF0YS1rZXk=  # dev only
@@ -128,12 +154,15 @@ services:
       MODEL_GATEWAY_MODEL: ${MODEL_GATEWAY_MODEL:-scripted-fake-v1}
       MODEL_GATEWAY_ALLOWED_HOSTS: ${MODEL_GATEWAY_ALLOWED_HOSTS:-fake-model}
     volumes:
+      - keys:/keys:ro
       - evidence:/evidence
     extra_hosts:
       - "host.docker.internal:host-gateway"  # a model server on the host (docs/model-setup.md)
     ports:
       - "127.0.0.1:8005:8000"
     depends_on:
+      keys:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       review-desk:

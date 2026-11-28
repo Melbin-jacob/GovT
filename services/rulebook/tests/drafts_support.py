@@ -6,10 +6,14 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-OFFICER = {"X-GovHub-User": "officer-01", "X-GovHub-Role": "governance-officer"}
-OFFICER_2 = {"X-GovHub-User": "officer-02", "X-GovHub-Role": "governance-officer"}
-REVIEWER = {"X-GovHub-User": "reviewer-01", "X-GovHub-Role": "reviewer"}
-ENGINE = {"X-GovHub-User": "assessment-engine", "X-GovHub-Role": "assessment-engine"}
+from govhub_shared.auth import GOVERNANCE_OFFICER
+from govhub_shared.auth.testing import headers, service, user
+
+DEMO_TENANTS = ["agency-sample-benefits", "dept-example-services", "office-fictional-permits"]
+OFFICER = headers(user("officer-01", platform=(GOVERNANCE_OFFICER,)), "rulebook")
+OFFICER_2 = headers(user("officer-02", platform=(GOVERNANCE_OFFICER,)), "rulebook")
+REVIEWER = headers(user("reviewer-01", reviewer=DEMO_TENANTS), "rulebook")
+ENGINE = headers(service("assessment-engine"), "rulebook")
 BATCH = {
     "catalog": "example-widgets",
     "version": "1.0.0",

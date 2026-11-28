@@ -7,11 +7,12 @@ from typing import Annotated, Any, Literal
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from rulebook.access import read_shared
 from rulebook.db import get_session
 from rulebook.sources import store as source_store
 from rulebook.sources.diff import METHOD, SPLIT_THRESHOLD, THRESHOLD, cross_check, diff_sources
 
-router = APIRouter(prefix="/sources", tags=["sources"])
+router = APIRouter(prefix="/sources", tags=["sources"], dependencies=[Depends(read_shared)])
 
 FromQ = Annotated[str, Query(alias="from", description="Base version (YYYY-MM-DD)")]
 ToQ = Annotated[str, Query(alias="to", description="Target version (YYYY-MM-DD)")]

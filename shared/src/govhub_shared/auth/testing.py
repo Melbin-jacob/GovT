@@ -7,7 +7,10 @@ client.get("/queue", headers=headers(user("u1", reviewer=["office-a"]), "review-
 
 from __future__ import annotations
 
+from collections.abc import Generator, Iterator, Mapping
 from dataclasses import dataclass, field
+
+import httpx
 
 from govhub_shared.auth.devkeys import SERVICE_ISSUERS, USER_ISSUERS
 from govhub_shared.auth.principal import Principal
@@ -58,5 +61,39 @@ def token(who: Principal, audience: str) -> str:
     return mint(KEYS.keys[issuer], who, audience)
 
 
-def headers(who: Principal, audience: str) -> dict[str, str]:
-    return {"Authorization": f"Bearer {token(who, audience)}"}
+class FreshHeaders(Mapping[str, str]):
+    """An Authorization header minted anew whenever it is read (tokens live 5 minutes)."""
+
+    def __init__(self, who: Principal, audience: str) -> None:
+        self.who = who
+        self.audience = audience
+
+    def _headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {token(self.who, self.audience)}"}
+
+    def __getitem__(self, key: str) -> str:
+        return self._headers()[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._headers())
+
+    def __len__(self) -> int:
+        return 1
+
+
+def headers(who: Principal, audience: str) -> FreshHeaders:
+    return FreshHeaders(who, audience)
+
+
+class DefaultCaller(httpx.Auth):
+    """For test clients: sign every request as ``who`` unless it already carries an
+    Authorization header (a test choosing another caller)."""
+
+    def __init__(self, who: Principal, audience: str) -> None:
+        self.who = who
+        self.audience = audience
+
+    def auth_flow(self, request: httpx.Request) -> Generator[httpx.Request, httpx.Response, None]:
+        if "authorization" not in request.headers:
+            request.headers["Authorization"] = f"Bearer {token(self.who, self.audience)}"
+        yield request

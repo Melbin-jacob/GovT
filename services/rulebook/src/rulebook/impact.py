@@ -459,8 +459,12 @@ def _sha(value: Any) -> str:
 
 
 def build_report(
-    session: Session, request: ImpactRequest, due_dates: DueDatePolicy
+    session: Session,
+    request: ImpactRequest,
+    due_dates: DueDatePolicy,
+    visible: frozenset[str] | None = None,
 ) -> dict[str, Any]:
+    """``visible``: the caller's tenants (None: all); other tenants' systems are left out."""
     assert request.catalog_version is not None  # noqa: S101 - validated
     catalog_doc = store.get_version(
         session, request.catalog, request.catalog_version, request.lang
@@ -513,6 +517,8 @@ def build_report(
     retired_in_scope: dict[str, list[str]] = defaultdict(list)
     for system in systems:
         if request.tenant and system.tenant != request.tenant:
+            continue
+        if visible is not None and system.tenant not in visible:
             continue
         if system.lifecycle == "retired":
             exclude(system.system_id, "lifecycle-retired")
@@ -573,6 +579,7 @@ def build_report(
         "tenant": request.tenant,
         "as_of": request.as_of.isoformat(),
         "inventory_snapshot_hash": snapshot.content_hash,
+        **({"profile_assignments_hash": h} if (h := inv.assignments_hash(session)) else {}),
         "due_date_policy": f"{due_dates.path} (PLACEHOLDER values, not policy)",
     }
     # The ID never depends on the language or on template wording: inputs, triggers,

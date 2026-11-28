@@ -9,6 +9,7 @@ from typing import Any, Protocol
 
 import httpx
 
+from govhub_shared.auth.client import ServiceAuth, signing_key
 from govhub_shared.oscal import iter_controls
 
 
@@ -38,7 +39,11 @@ class ControlSource(Protocol):
 
 class RulebookControls:
     def __init__(self, base_url: str, http: httpx.Client | None = None) -> None:
-        self.http = http or httpx.Client(base_url=base_url, timeout=30.0)
+        # Signed as the assessment engine (its own key), for the rulebook only.
+        self.http = http or httpx.Client(
+            base_url=base_url, timeout=30.0,
+            auth=ServiceAuth(signing_key("assessment-engine"), "rulebook"),
+        )  # fmt: skip
 
     def controls(self, catalog: str, version: str, lang: str) -> dict[str, ControlInfo]:
         resp = self.http.get(f"/catalogs/{catalog}/versions/{version}", params={"lang": lang})
