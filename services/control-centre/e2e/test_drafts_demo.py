@@ -7,7 +7,9 @@ replies served over HTTP, no real model).
 
 Steps: plan and draft in the UI; a reviewer corrects three drafts (a wrong "no change",
 a wrong obligation, a French draft the engine left to a person); a governance officer who
-edited a draft is refused when approving it (two-person rule, reason shown); approvals;
+edited a draft is refused when approving it (two-person rule, reason shown); an officer
+who has not opened the French page since the corrections is refused (server-side reading
+check); approvals after opening both languages;
 an invalid SOURCE_DATE is refused before publishing; publish 1.1.0; the impact report of
 1.0.0 -> 1.1.0 in English and French. Then API checks: the approval log verifies, the
 change set applied to a copy of the golden set re-imports to exactly the stored 1.1.0,
@@ -118,16 +120,28 @@ def test_policy_change_to_new_catalog_version(rec: Recorder) -> None:
     expect(page.locator("#error")).to_contain_text("Two-person rule: you last edited this draft")
     rec.capture("drafts-two-person-rule-en")
 
-    # 4. Approvals: officer 01 everything except WID-C002, officer 02 that one.
+    # 4. The server checks reading: officer 01 has opened only the English page since the
+    # reviewer's corrections, so approval is refused until the French page is opened too.
+    approve(page, "WID-6.1.2")
+    expect(page.locator("#error")).to_contain_text("Open this draft in both languages")
+    expect(item(page, "WID-6.1.2").locator(".read-status")).to_have_attribute("data-read-fr", "no")
+    rec.capture("drafts-not-read-en")
+    page.goto(f"/fr/drafts/{batch_id}")
+    page.goto(f"/en/drafts/{batch_id}")
+    expect(item(page, "WID-6.1.2").locator(".read-status")).to_have_attribute("data-read-fr", "yes")
+
+    # 5. Approvals: officer 01 everything except WID-C002, officer 02 that one.
     for control in ("WID-6.1.2", "WID-6.2.1", "WID-6.2.2", "WID-6.2.3", "WID-6.4.1",
                     "WID-6.4.2", "WID-6.3.1", "WID-6.3.2", "WID-C001"):  # fmt: skip
         approve(page, control)
         expect(item(page, control)).to_have_attribute("data-status", "approved")
     act_as(page, "demo-officer-02")
+    page.goto(f"/fr/drafts/{batch_id}")  # officer 02 reads both languages first
+    page.goto(f"/en/drafts/{batch_id}")
     approve(page, "WID-C002")
     expect(item(page, "WID-C002")).to_contain_text("Approved by demo-officer-02")
 
-    # 5. SOURCE_DATE: the default passes the guard; an earlier date is refused here.
+    # 6. SOURCE_DATE: the default passes the guard; an earlier date is refused here.
     date_input = page.locator("#source-date")
     expect(date_input).to_have_value("2026-11-29")
     expect(date_input).to_have_attribute("min", "2026-11-29")
@@ -142,7 +156,7 @@ def test_policy_change_to_new_catalog_version(rec: Recorder) -> None:
     expect(page.locator("[data-published]")).to_have_attribute("data-published", "1.1.0")
     rec.capture("drafts-published-en")
 
-    # 6. The impact report generated from the new version, in English and in French.
+    # 7. The impact report generated from the new version, in English and in French.
     page.get_by_role("link", name="See the impact report for version 1.1.0").first.click()
     expect(page.locator("[data-trigger=catalog]")).to_be_visible()
     rec.capture("impact-catalog-change-en")

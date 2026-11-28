@@ -128,6 +128,10 @@
       </form>
     </details>
     {% endif %}
+    {% if item.kind in ('edit', 'new') and item.get('read') %}
+    <p class="read-status" data-read-en="{{ 'yes' if item.read.en else 'no' }}" data-read-fr="{{ 'yes' if item.read.fr else 'no' }}">{{ t('drafts.read_status') }}
+      {% for l in ('en', 'fr') %}{{ t('drafts.read.' ~ ('yes' if item.read[l] else 'no'), language=t('language.' ~ l)) }}{% if not loop.last %}; {% endif %}{% endfor %}</p>
+    {% endif %}
     <form method="post" action="/{{ lang }}/drafts/{{ batch.id }}/items/{{ item.id }}/approve" class="inline-form">
       <div class="choice">
         <input type="checkbox" id="both-{{ item.id }}" name="both_languages" value="yes" required>

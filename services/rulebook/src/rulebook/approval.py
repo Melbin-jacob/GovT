@@ -4,7 +4,9 @@
   change a proposed ID, which must never have been used). Needs-human drafts must be
   edited before approval.
 - Approve / reject: governance officer only. **Two-person rule:** whoever last edited a
-  draft cannot approve it. English and French must agree on check type and obligation.
+  draft cannot approve it. The approver must have opened both languages' drafts in their
+  approval session since the draft last changed (``reading``). English and French must
+  agree on check type and obligation.
 - Publish: once every item is approved or rejected, the approved changes become a new
   immutable minor version, built from golden-set rows by the importer's own code. Its
   SOURCE_DATE defaults to the later of the new source version's effective date and the
@@ -24,7 +26,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from rulebook import approval_log, catalog_rows, drafts, store
+from rulebook import approval_log, catalog_rows, drafts, reading, store
 from rulebook.golden import LANGS
 from rulebook.identity import APPROVER_ROLE, EDITOR_ROLES, Actor
 from rulebook.models import DraftBatch, DraftItem
@@ -115,6 +117,7 @@ def edit(
         }
     item.drafts = new
     item.last_edited_by = actor.id
+    reading.touch(item)
     if all(new.get(la, {}).get("status") in READY_STATES for la in LANGS):
         item.status = "ready"
     _log(session, batch, item, "edited", actor, languages=languages, proposed_id=item.proposed_id)
@@ -144,11 +147,18 @@ def _check_ready(item: DraftItem) -> None:
 
 
 def decide(
-    session: Session, batch: DraftBatch, item: DraftItem, actor: Actor, action: str, reason: str
+    session: Session,
+    batch: DraftBatch,
+    item: DraftItem,
+    actor: Actor,
+    action: str,
+    reason: str,
+    session_id: str | None = None,
 ) -> DraftItem:
     if actor.role != APPROVER_ROLE:
         raise ApprovalError(403, "only a governance officer approves or rejects drafts", "role")
     _open(batch, item)
+    read: dict[str, Any] | None = None
     if action == "approve":
         if item.last_edited_by and item.last_edited_by == actor.id:
             raise ApprovalError(
@@ -157,6 +167,10 @@ def decide(
                 "two-person-rule",
             )
         _check_ready(item)
+        try:
+            read = reading.require_both(session, actor, item, session_id)
+        except reading.ReadingError as exc:
+            raise ApprovalError(exc.status, str(exc), exc.code) from exc
         item.status = "approved"
     elif action == "reject":
         if not reason.strip():
@@ -173,6 +187,7 @@ def decide(
         actor,
         reason=reason,
         drafts=item.drafts if action == "approve" else None,
+        **({"read": read} if action == "approve" and read else {}),
     )
     item.drafts = {**item.drafts, "_decision": {"seq": record.seq, "hash": record.record_hash}}
     return item

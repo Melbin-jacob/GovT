@@ -204,6 +204,31 @@ class DraftItem(Base):
     status: Mapped[str] = mapped_column(String(20))  # pending | ready | approved | rejected
     last_edited_by: Mapped[str | None] = mapped_column(String(200), nullable=True)
     decided_by: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # When either language's draft last changed: views older than this do not count.
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class DraftSession(Base):
+    """An approval session: one person's reading of drafts (issued by the rulebook)."""
+
+    __tablename__ = "draft_sessions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(200))
+    role: Mapped[str] = mapped_column(String(50))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class DraftView(Base):
+    """One opening of one language's view of a draft, in a session (append-only)."""
+
+    __tablename__ = "draft_views"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    session_id: Mapped[str] = mapped_column(ForeignKey("draft_sessions.id"), index=True)
+    item_id: Mapped[str] = mapped_column(ForeignKey("draft_items.id"), index=True)
+    lang: Mapped[str] = mapped_column(String(2))
+    viewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
 class ApprovalRecord(Base):
