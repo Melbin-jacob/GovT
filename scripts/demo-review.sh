@@ -19,10 +19,8 @@ mkdir -p "$OUT"
 
 # shellcheck source=lib/hub-token.sh
 . "$ROOT/scripts/lib/hub-token.sh"
-rulebook_tokens
-auth() {  # the internal token for rulebook calls (other services: placeholder headers)
-  case "$2" in "$RULEBOOK"*) echo "$(rulebook_auth "$1" "${2#"$RULEBOOK"}")" ;; *) echo "X-GovHub-Note: none" ;; esac
-}
+hub_tokens
+auth() { hub_auth "$1" "$2"; }
 call() {  # call METHOD URL [BODY_FILE] -> stdout (fails on HTTP errors)
   if [ $# -ge 3 ]; then
     curl --fail-with-body -sS -X "$1" "$2" "${WHO[@]}" -H "$(auth "$1" "$2")" -H 'content-type: application/json' --data-binary "@$3"
@@ -113,10 +111,10 @@ open(f"{out}/decision-log.tampered.jsonl", "w", encoding="utf-8").write("\n".joi
 # Drop the last two records: the chain itself still verifies; only the checkpoint notices.
 open(f"{out}/decision-log.truncated.jsonl", "w", encoding="utf-8").write("\n".join(lines[:3]) + "\n")
 PY
-curl --fail -sS -X POST "$DESK/decision-log/verify-export" "${WHO[@]}" --data-binary "@$OUT/decision-log.jsonl" > "$OUT/verify-export.json"
-curl --fail -sS -X POST "$DESK/decision-log/verify-export" "${WHO[@]}" --data-binary "@$OUT/decision-log.tampered.jsonl" > "$OUT/verify-tampered.json"
+curl --fail -sS -X POST "$DESK/decision-log/verify-export" -H "$(auth POST "$DESK/decision-log/")" --data-binary "@$OUT/decision-log.jsonl" > "$OUT/verify-export.json"
+curl --fail -sS -X POST "$DESK/decision-log/verify-export" -H "$(auth POST "$DESK/decision-log/")" --data-binary "@$OUT/decision-log.tampered.jsonl" > "$OUT/verify-tampered.json"
 seq_head=$(json "d['head_seq']" < "$OUT/checkpoint.json"); hash_head=$(json "d['head_hash']" < "$OUT/checkpoint.json")
-curl --fail -sS -X POST "$DESK/decision-log/verify-export?expect_seq=$seq_head&expect_head=$hash_head" "${WHO[@]}" \
+curl --fail -sS -X POST "$DESK/decision-log/verify-export?expect_seq=$seq_head&expect_head=$hash_head" -H "$(auth POST "$DESK/decision-log/")" \
   --data-binary "@$OUT/decision-log.truncated.jsonl" > "$OUT/verify-truncated.json"
 
 echo "== 8. OSCAL POA&M, forecast, ServiceNow state"

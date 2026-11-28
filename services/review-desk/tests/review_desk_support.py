@@ -7,12 +7,22 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from govhub_shared.auth import GOVERNANCE_OFFICER
+from govhub_shared.auth.testing import headers, service, user
+
 FIXTURES = Path(__file__).parent / "fixtures"
 # Every review-desk table; a test fails if a new table is missing (no leaks between tests).
 REVIEW_TABLES = ("findings", "review_sessions", "decision_log", "poam_versions")
-OFFICER = {"X-GovHub-User": "governance-officer-01", "X-GovHub-Role": "governance-officer"}
-REVIEWER = {"X-GovHub-User": "reviewer-02", "X-GovHub-Role": "reviewer"}
-VIEWER = {"X-GovHub-User": "viewer-03", "X-GovHub-Role": "viewer"}
+DEMO_TENANTS = ["agency-sample-benefits", "dept-example-services", "office-fictional-permits"]
+# Decisions are recorded by reviewers of the finding's tenant. "OFFICER" (historic name in
+# these tests) is a governance officer who also reviews in every demo tenant.
+OFFICER = headers(
+    user("governance-officer-01", platform=(GOVERNANCE_OFFICER,), reviewer=DEMO_TENANTS),
+    "review-desk",
+)
+REVIEWER = headers(user("reviewer-02", reviewer=DEMO_TENANTS), "review-desk")
+VIEWER = headers(user("viewer-03", auditor=DEMO_TENANTS), "review-desk")  # reads, never decides
+ENGINE = headers(service("assessment-engine", all_tenants=True), "review-desk")
 
 
 def load_report(desk: TestClient, report: dict[str, Any]) -> list[dict[str, Any]]:

@@ -129,10 +129,15 @@ def forecast(
     }
 
 
-def from_report(session: Session, config: RateConfig, report: dict[str, Any]) -> dict[str, Any]:
+def from_report(
+    session: Session, config: RateConfig, report: dict[str, Any],
+    tenants: frozenset[str] | None = None,
+) -> dict[str, Any]:  # fmt: skip
     by_tenant: Counter[str] = Counter()
     by_level: Counter[str] = Counter()
     for system in report.get("systems", []):
+        if tenants is not None and system["tenant"] not in tenants:
+            continue
         by_tenant[system["tenant"]] += int(system["findings_to_review"])
         by_level[system["impact_level"]] += int(system["findings_to_review"])
     return forecast(
@@ -140,10 +145,14 @@ def from_report(session: Session, config: RateConfig, report: dict[str, Any]) ->
     )
 
 
-def from_queue(session: Session, config: RateConfig) -> dict[str, Any]:
+def from_queue(
+    session: Session, config: RateConfig, tenants: frozenset[str] | None = None
+) -> dict[str, Any]:
     by_tenant: Counter[str] = Counter()
     by_level: Counter[str] = Counter()
     for finding in session.scalars(select(Finding).where(Finding.state.in_(OPEN_STATES))):
+        if tenants is not None and finding.tenant not in tenants:
+            continue
         by_tenant[finding.tenant] += 1
         by_level[finding.impact_level] += 1
     return forecast(session, config, by_tenant, by_level, basis="open review queue")

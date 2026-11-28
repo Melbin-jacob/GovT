@@ -7,8 +7,8 @@ from typing import Any, Protocol
 import httpx
 
 from assessment_engine.models import Assessment
+from govhub_shared.auth.client import ServiceAuth, signing_key
 
-IDENTITY = {"X-GovHub-User": "assessment-engine", "X-GovHub-Role": "assessment-engine"}
 OPEN_STATES = ("open", "awaiting-evidence")
 
 
@@ -20,7 +20,12 @@ class ReviewDesk(Protocol):
 
 class HttpReviewDesk:
     def __init__(self, base_url: str, http: httpx.Client | None = None) -> None:
-        self.http = http or httpx.Client(base_url=base_url, timeout=30.0, headers=IDENTITY)
+        # The engine's service token for review-desk; all tenants (it assesses whichever
+        # system a reviewer asked for, and posts drafts the reviewer then decides on).
+        self.http = http or httpx.Client(
+            base_url=base_url, timeout=30.0,
+            auth=ServiceAuth(signing_key("assessment-engine"), "review-desk", all_tenants=True),
+        )  # fmt: skip
 
     def open_findings(self, system_id: str) -> list[dict[str, Any]]:
         resp = self.http.get("/queue", params={"limit": 1000})

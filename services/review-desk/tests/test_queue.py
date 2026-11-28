@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi.testclient import TestClient
-from review_desk_support import OFFICER, REVIEW_TABLES, VIEWER, decide, load_report
+from review_desk_support import ENGINE, OFFICER, REVIEW_TABLES, VIEWER, decide, load_report
 
 from review_desk.models import Base
 
@@ -43,8 +43,8 @@ def test_queue_is_ranked(desk: TestClient, impact_report: dict[str, Any]) -> Non
     assert {f["system_id"] for f in tenant.json()["findings"]} == {"SYS-002", "SYS-007"}
 
 
-def test_placeholder_identity(desk: TestClient, impact_report: dict[str, Any]) -> None:
-    assert desk.get("/queue").status_code == 401
+def test_identity_from_internal_tokens(desk: TestClient, impact_report: dict[str, Any]) -> None:
+    assert desk.get("/queue", auth=None).status_code == 401
     assert (
         desk.post(
             "/intake/impact-report", json={"report": impact_report}, headers=VIEWER
@@ -63,9 +63,6 @@ def test_open_starts_a_timed_session(desk: TestClient, impact_report: dict[str, 
     assert opened["session_id"] == 1
     assert desk.get(f"/findings/{finding['id']}", headers=OFFICER).json()["control_id"]
     assert desk.get("/findings/nope", headers=OFFICER).status_code == 404
-
-
-ENGINE = {"X-GovHub-User": "assessment-engine", "X-GovHub-Role": "assessment-engine"}
 
 
 def _draft(**overrides: Any) -> dict[str, Any]:

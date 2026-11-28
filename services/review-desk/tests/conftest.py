@@ -10,15 +10,31 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from review_desk_support import FIXTURES, REVIEW_TABLES
+from review_desk_support import DEMO_TENANTS, FIXTURES, REVIEW_TABLES
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
+from govhub_shared.auth import GOVERNANCE_OFFICER
+from govhub_shared.auth.testing import KEYS, DefaultCaller
+from govhub_shared.auth.testing import user as _user
+from govhub_shared.auth.web import install
 from review_desk.app import app
 from review_desk.config import get_settings
 from review_desk.db import get_session
 from review_desk.migrate import downgrade, ensure_database, upgrade
+
+install(app, "review-desk", KEYS.trust)
+# Requests without their own Authorization act as a reviewer/auditor/officer of the demo
+# tenants (tests that check refusals send their own caller).
+DEFAULT_CALLER = _user(
+    "test-user",
+    platform=(GOVERNANCE_OFFICER,),
+    reviewer=DEMO_TENANTS,
+    auditor=DEMO_TENANTS,
+    tenant_admin=DEMO_TENANTS,
+    system_owner=DEMO_TENANTS,
+)
 
 DEFAULT_URL = "postgresql+psycopg://govhub:govhub@localhost:5432/review_desk_test"
 
@@ -74,6 +90,7 @@ def desk(review_engine: Engine, review_db: Session) -> Iterator[TestClient]:
 
     app.dependency_overrides[get_session] = _session
     with TestClient(app) as client:
+        client.auth = DefaultCaller(DEFAULT_CALLER, "review-desk")
         yield client
     app.dependency_overrides.clear()
 

@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from review_desk_support import OFFICER, REVIEWER, decide, load_report
+from review_desk_support import OFFICER, REVIEWER, VIEWER, decide, load_report
 from sqlalchemy import Engine, text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
@@ -60,7 +60,7 @@ def test_each_action_updates_the_finding(desk: TestClient, findings: list[dict[s
     )
     assert record["reviewer"] == {
         "id": "governance-officer-01",
-        "role": "governance-officer",
+        "role": "reviewer",  # the role the decision was made in (reviewer of the tenant)
         "authorized": True,
     }
     assert record["placeholder-finding"] is True
@@ -137,14 +137,14 @@ def _decide_all(desk: TestClient, findings: list[dict[str, Any]]) -> None:
 
 def test_chain_links_and_verifies(desk: TestClient, findings: list[dict[str, Any]]) -> None:
     _decide_all(desk, findings)
-    result = desk.get("/decision-log/verify", headers=OFFICER).json()
+    result = desk.get("/decision-log/verify", headers=VIEWER).json()
     assert result["ok"] is True and result["records"] == 5 and result["problems"] == []
-    lines = desk.get("/decision-log/export", headers=OFFICER).text.splitlines()
+    lines = desk.get("/decision-log/export", headers=VIEWER).text.splitlines()
     entries = [json.loads(line) for line in lines]
     assert entries[0]["previous_hash"] == decision_log.GENESIS
     for prev, cur in itertools.pairwise(entries):
         assert cur["previous_hash"] == prev["record_hash"]
-    checkpoint = desk.get("/decision-log/checkpoint", headers=OFFICER).json()
+    checkpoint = desk.get("/decision-log/checkpoint", headers=VIEWER).json()
     assert checkpoint == {"head_seq": 5, "head_hash": entries[-1]["record_hash"], "records": 5}
 
 
@@ -197,7 +197,7 @@ def test_database_tampering_is_detected(
 ) -> None:
     _decide_all(desk, findings)
     _tamper(review_engine, statement)
-    result = desk.get("/decision-log/verify", headers=OFFICER).json()
+    result = desk.get("/decision-log/verify", headers=VIEWER).json()
     assert result["ok"] is False
     assert any(problem in p for p in result["problems"]), result["problems"]
 
@@ -210,8 +210,8 @@ def test_exported_file_tampering_and_truncation(
 ) -> None:
     _decide_all(desk, findings)
     export = tmp_path / "log.jsonl"
-    export.write_text(desk.get("/decision-log/export", headers=OFFICER).text, encoding="utf-8")
-    head = desk.get("/decision-log/checkpoint", headers=OFFICER).json()
+    export.write_text(desk.get("/decision-log/export", headers=VIEWER).text, encoding="utf-8")
+    head = desk.get("/decision-log/checkpoint", headers=VIEWER).json()
     assert main(["verify-log", "--file", str(export)]) == 0
 
     tampered = tmp_path / "tampered.jsonl"
@@ -246,23 +246,23 @@ def test_concurrent_decisions_keep_one_chain(
     for t in threads:
         t.join(timeout=30)
     assert errors == []
-    result = desk.get("/decision-log/verify", headers=OFFICER).json()
+    result = desk.get("/decision-log/verify", headers=VIEWER).json()
     assert result["ok"] is True and result["records"] == 12
 
 
 def test_verify_uploaded_export(desk: TestClient, findings: list[dict[str, Any]]) -> None:
     _decide_all(desk, findings)
-    export = desk.get("/decision-log/export", headers=OFFICER).text
-    head = desk.get("/decision-log/checkpoint", headers=OFFICER).json()
-    ok = desk.post("/decision-log/verify-export", content=export, headers=OFFICER).json()
+    export = desk.get("/decision-log/export", headers=VIEWER).text
+    head = desk.get("/decision-log/checkpoint", headers=VIEWER).json()
+    ok = desk.post("/decision-log/verify-export", content=export, headers=VIEWER).json()
     assert ok["ok"] is True and ok["records"] == 5
     tampered = export.replace("Evidence is sufficient.", "Evidence is excellent.")
-    bad = desk.post("/decision-log/verify-export", content=tampered, headers=OFFICER).json()
+    bad = desk.post("/decision-log/verify-export", content=tampered, headers=VIEWER).json()
     assert bad["ok"] is False
     assert bad["problems"] == ["seq 1: record content does not match its hash (modified)"]
     cut = "\n".join(export.splitlines()[:2])
     params = {"expect_seq": head["head_seq"], "expect_head": head["head_hash"]}
-    short = desk.post("/decision-log/verify-export", content=cut, headers=OFFICER, params=params)
+    short = desk.post("/decision-log/verify-export", content=cut, headers=VIEWER, params=params)
     assert short.json()["ok"] is False
-    junk = desk.post("/decision-log/verify-export", content="not json", headers=OFFICER)
+    junk = desk.post("/decision-log/verify-export", content="not json", headers=VIEWER)
     assert junk.status_code == 422

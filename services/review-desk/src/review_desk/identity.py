@@ -1,19 +1,21 @@
-"""Placeholder reviewer identity.
+"""The caller, from the internal token (``govhub_shared.auth``), as review-desk records it.
 
-TODO(control-centre): replace with OIDC (Entra ID compatible) sign-in and central roles.
-Until then identity is read from the headers ``X-GovHub-User`` and ``X-GovHub-Role``,
-which anyone who can reach the service can set. That is why review-desk must only be
-reachable on localhost or the internal network (docs/decisions.md).
+Decision records keep ``{id, role, authorized}``; the role is the one the caller acted in
+(reviewer of the finding's tenant), so the hash-chained records keep their shape.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Annotated
+from typing import Annotated, Final
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends
 
-AUTHORIZED_ROLES = frozenset({"reviewer", "governance-officer"})
+from govhub_shared.auth import AUDITOR, REVIEWER, SYSTEM_OWNER, TENANT_ADMIN, Principal
+from govhub_shared.auth.web import principal, require_in_tenant
+
+AUTHORIZED_ROLES: Final = frozenset({"reviewer"})
+TENANT_READERS: Final = (SYSTEM_OWNER, REVIEWER, TENANT_ADMIN, AUDITOR)
 
 
 @dataclass(frozen=True)
@@ -29,16 +31,17 @@ class Reviewer:
         return {"id": self.id, "role": self.role, "authorized": self.authorized}
 
 
-def current_reviewer(
-    user: Annotated[str | None, Header(alias="X-GovHub-User")] = None,
-    role: Annotated[str | None, Header(alias="X-GovHub-Role")] = None,
-) -> Reviewer:
-    if not user or not role:
-        raise HTTPException(401, "missing X-GovHub-User / X-GovHub-Role (placeholder identity)")
-    return Reviewer(user, role)
+def reviewer_in(who: Principal, tenant: str) -> Reviewer:
+    """403 unless ``who`` reviews in ``tenant``; then the reviewer for the record."""
+    require_in_tenant(who, tenant, REVIEWER)
+    return Reviewer(who.id, REVIEWER)
 
 
-def authorized_reviewer(reviewer: Annotated[Reviewer, Depends(current_reviewer)]) -> Reviewer:
-    if not reviewer.authorized:
-        raise HTTPException(403, f"role {reviewer.role!r} may not review findings")
-    return reviewer
+def visible_tenants(who: Principal) -> frozenset[str] | None:
+    """None: every tenant (a service with all-tenants scope); else the caller's."""
+    if who.kind == "service":
+        return None if who.all_tenants else frozenset()
+    return who.tenants_with(*TENANT_READERS)
+
+
+PrincipalDep = Annotated[Principal, Depends(principal)]

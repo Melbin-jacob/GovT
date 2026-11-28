@@ -91,11 +91,18 @@ def rank_key(f: Finding) -> tuple[Any, ...]:
 
 
 def ranked_queue(
-    session: Session, *, tenant: str | None = None, states: tuple[str, ...] = OPEN_STATES
+    session: Session,
+    *,
+    tenant: str | None = None,
+    states: tuple[str, ...] = OPEN_STATES,
+    tenants: frozenset[str] | None = None,
 ) -> list[Finding]:
+    """``tenants``: only these (the caller's); None: every tenant."""
     query = select(Finding).where(Finding.state.in_(states))
     if tenant:
         query = query.where(Finding.tenant == tenant)
+    if tenants is not None:
+        query = query.where(Finding.tenant.in_(sorted(tenants)))
     return sorted(session.scalars(query), key=rank_key)
 
 

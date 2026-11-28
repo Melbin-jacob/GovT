@@ -11,6 +11,8 @@ from typing import Any, Protocol
 
 import httpx
 
+from govhub_shared.auth.client import ServiceAuth, signing_key
+
 
 class TaskSink(Protocol):
     def upsert(self, task: dict[str, Any]) -> dict[str, Any]: ...
@@ -37,7 +39,11 @@ class NullTaskSink:
 
 class HttpTaskSink:
     def __init__(self, base_url: str, http: httpx.Client | None = None) -> None:
-        self.http = http or httpx.Client(base_url=base_url, timeout=30.0)
+        # review-desk's service token for connector-hub (tasks and checkpoints of any tenant).
+        self.http = http or httpx.Client(
+            base_url=base_url, timeout=30.0,
+            auth=ServiceAuth(signing_key("review-desk"), "connector-hub", all_tenants=True),
+        )  # fmt: skip
 
     def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         try:
