@@ -1,0 +1,874 @@
+# The role-by-endpoint matrix (Milestone 7). scripts/access_matrix.py checks it against
+# the code and generates docs/access-matrix.md. Add an entry for every new route.
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/sources"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/sources"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/sources/{instrument}/versions/{version}"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/sources/{instrument}/versions/{version}/clauses/{number}"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/sources/{instrument}/diff"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/sources/{instrument}/diff"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "PUT"
+path = "/profiles/{name}"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/profiles"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/profiles/{name}"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "PUT"
+path = "/inventory"
+gate = "require"
+services = ["connector-hub"]
+scope = "platform"
+note = "replaces every tenant's systems; needs all-tenants scope"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/inventory"
+gate = "require"
+roles = ["auditor", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "tenant"
+note = "systems of the caller's tenants only"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/systems/{system_id}"
+gate = "require"
+roles = ["auditor", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "tenant"
+
+[[route]]
+service = "rulebook"
+method = "PUT"
+path = "/systems/{system_id}/profiles"
+gate = "require"
+roles = ["tenant-admin"]
+scope = "tenant"
+note = "capability profile-assignment, in the system's tenant"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/impact-reports"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "tenant"
+note = "shared controls; systems of the caller's tenants only"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/drafts/batches"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/drafts/batches"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer"]
+services = ["assessment-engine"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/drafts/batches/{batch_id}"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer"]
+services = ["assessment-engine"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "PUT"
+path = "/drafts/items/{item_id}/model/{lang}"
+gate = "require"
+services = ["assessment-engine"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/drafts/log/verify"
+gate = "require"
+roles = ["auditor", "governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/drafts/sessions"
+gate = "require"
+roles = ["governance-officer", "reviewer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/drafts/batches/{batch_id}/views"
+gate = "require"
+roles = ["governance-officer", "reviewer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "PUT"
+path = "/drafts/items/{item_id}"
+gate = "require"
+roles = ["governance-officer", "reviewer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/drafts/items/{item_id}/approve"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/drafts/items/{item_id}/reject"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/drafts/batches/{batch_id}/publish-defaults"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer"]
+services = ["assessment-engine"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/drafts/batches/{batch_id}/publish"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/drafts/batches/{batch_id}/change-set"
+gate = "require"
+roles = ["auditor", "governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/drafts/log/export"
+gate = "require"
+roles = ["auditor", "governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/health"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/ready"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/catalogs"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/catalogs"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/catalogs/{name}/versions/{version}"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/catalogs/{name}/versions/{version}/retire-control/{control_id}"
+gate = "require"
+roles = ["governance-officer"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/catalogs/{name}/diff"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/catalogs/{name}/diff"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "POST"
+path = "/profiles/resolve"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "rulebook"
+method = "GET"
+path = "/controls/{control_id}"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "connector-hub", "control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/health"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/ready"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "review-desk"
+method = "POST"
+path = "/intake/impact-report"
+gate = "require"
+roles = ["governance-officer"]
+services = ["connector-hub", "control-centre-service"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/queue"
+gate = "require"
+roles = ["auditor", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "control-centre-service"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/findings/{finding_id}"
+gate = "require"
+roles = ["auditor", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "control-centre-service"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "PUT"
+path = "/findings/{finding_id}/assessment"
+gate = "require"
+services = ["assessment-engine"]
+scope = "tenant"
+note = "engine drafts; the finding stays open"
+
+[[route]]
+service = "review-desk"
+method = "POST"
+path = "/findings/{finding_id}/open"
+gate = "require"
+roles = ["reviewer"]
+scope = "tenant"
+note = "a reviewer of the finding's tenant"
+
+[[route]]
+service = "review-desk"
+method = "POST"
+path = "/findings/{finding_id}/decisions"
+gate = "require"
+roles = ["reviewer"]
+scope = "tenant"
+note = "a reviewer of the finding's tenant; refused on conflict of interest"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/poam"
+gate = "require"
+roles = ["auditor", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "control-centre-service"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/poam/{system_id}"
+gate = "require"
+roles = ["auditor", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "control-centre-service"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/findings/{finding_id}/decisions"
+gate = "require"
+roles = ["auditor", "reviewer", "system-owner", "tenant-admin"]
+services = ["assessment-engine", "control-centre-service"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/decision-log/verify"
+gate = "require"
+roles = ["auditor", "reviewer", "tenant-admin"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/decision-log/checkpoint-status"
+gate = "require"
+roles = ["auditor", "reviewer", "tenant-admin"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/decision-log/export"
+gate = "require"
+roles = ["auditor", "reviewer", "tenant-admin"]
+scope = "tenant"
+note = "records of the caller's tenants"
+
+[[route]]
+service = "review-desk"
+method = "POST"
+path = "/decision-log/verify-export"
+gate = "require"
+roles = ["auditor", "reviewer", "tenant-admin"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/decision-log/checkpoint"
+gate = "require"
+roles = ["auditor", "reviewer", "tenant-admin"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "POST"
+path = "/forecast"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "tenant-admin"]
+scope = "tenant"
+
+[[route]]
+service = "review-desk"
+method = "GET"
+path = "/forecast"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "tenant-admin"]
+scope = "tenant"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/health"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/ready"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/evidence-policy"
+gate = "require"
+roles = ["auditor", "governance-officer", "platform-admin", "reviewer", "system-owner", "tenant-admin"]
+services = ["control-centre-service", "review-desk"]
+scope = "tenant"
+
+[[route]]
+service = "assessment-engine"
+method = "POST"
+path = "/systems/{system_id}/evidence"
+gate = "code"
+roles = ["system-owner", "reviewer"]
+scope = "tenant"
+note = "uploader recorded (conflict of interest); access-logged later"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/systems/{system_id}/evidence"
+gate = "code"
+roles = ["system-owner", "reviewer", "tenant-admin", "auditor"]
+scope = "tenant"
+note = "metadata only, no text"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/evidence/{document_id}/passages"
+gate = "code"
+roles = ["system-owner", "reviewer", "auditor"]
+scope = "tenant"
+note = "evidence text"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/systems/{system_id}/evidence/search"
+gate = "code"
+roles = ["system-owner", "reviewer", "auditor"]
+scope = "tenant"
+note = "evidence text"
+
+[[route]]
+service = "assessment-engine"
+method = "PUT"
+path = "/systems/{system_id}/facts"
+gate = "code"
+roles = ["system-owner", "reviewer"]
+scope = "tenant"
+note = "writer recorded (conflict of interest)"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/systems/{system_id}/facts"
+gate = "code"
+roles = ["system-owner", "reviewer", "auditor"]
+scope = "tenant"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/systems/{system_id}/provenance"
+gate = "require"
+services = ["review-desk"]
+scope = "tenant"
+note = "who uploaded evidence or wrote facts (conflict of interest)"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/systems/{system_id}/rule-checks"
+gate = "code"
+roles = ["system-owner", "reviewer", "auditor"]
+scope = "tenant"
+
+[[route]]
+service = "assessment-engine"
+method = "POST"
+path = "/assessments"
+gate = "code"
+roles = ["reviewer"]
+scope = "tenant"
+note = "drafts only; a person decides"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/assessments/{assessment_id}"
+gate = "code"
+roles = ["system-owner", "reviewer", "auditor"]
+scope = "tenant"
+
+[[route]]
+service = "assessment-engine"
+method = "GET"
+path = "/runs/{run_id}/assessment-results"
+gate = "code"
+roles = ["system-owner", "reviewer", "auditor"]
+scope = "tenant"
+note = "OSCAL assessment-results"
+
+[[route]]
+service = "assessment-engine"
+method = "POST"
+path = "/systems/{system_id}/assess-open-findings"
+gate = "code"
+roles = ["reviewer"]
+scope = "tenant"
+note = "drafts go to review-desk"
+
+[[route]]
+service = "assessment-engine"
+method = "POST"
+path = "/drafting/batches/{batch_id}/draft"
+gate = "require"
+roles = ["governance-officer"]
+scope = "tenant"
+
+[[route]]
+service = "connector-hub"
+method = "GET"
+path = "/health"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "connector-hub"
+method = "POST"
+path = "/inventory/sync"
+gate = "require"
+roles = ["tenant-admin"]
+services = ["control-centre-service"]
+scope = "platform"
+note = "the sync job runs as connector-hub, all tenants"
+
+[[route]]
+service = "connector-hub"
+method = "POST"
+path = "/tasks/sync-impact-report"
+gate = "require"
+roles = ["governance-officer"]
+services = ["control-centre-service", "review-desk"]
+scope = "shared"
+
+[[route]]
+service = "connector-hub"
+method = "POST"
+path = "/tasks"
+gate = "require"
+services = ["review-desk"]
+scope = "shared"
+
+[[route]]
+service = "connector-hub"
+method = "GET"
+path = "/tasks/notes"
+gate = "require"
+roles = ["auditor", "governance-officer", "reviewer", "tenant-admin"]
+services = ["review-desk"]
+scope = "shared"
+
+[[route]]
+service = "connector-hub"
+method = "POST"
+path = "/tasks/{correlation_id}/notes"
+gate = "require"
+services = ["review-desk"]
+scope = "shared"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/policy-change"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/impact"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/review"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/review/{finding_id}"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/review/{finding_id}/evidence"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/review/{finding_id}/assess"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/review/{finding_id}/open"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/review/{finding_id}/decide"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/decision-log"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/inventory"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/drafts"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/drafts"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/drafts/{batch_id}"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/drafts/{batch_id}/items/{item_id}/edit"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/drafts/{batch_id}/items/{item_id}/{action}"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/drafts/{batch_id}/publish"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/sign-in"
+gate = "public"
+scope = "public"
+note = "sign-in page"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/sign-in/demo"
+gate = "public"
+scope = "public"
+note = "demo mode only (404 otherwise)"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/auth/login"
+gate = "public"
+scope = "public"
+note = "OIDC (oidc mode only)"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/auth/callback"
+gate = "public"
+scope = "public"
+note = "OIDC (oidc mode only)"
+
+[[route]]
+service = "control-centre"
+method = "POST"
+path = "/{lang}/sign-out"
+gate = "public"
+scope = "public"
+note = "ends the session"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/internal/tenants"
+gate = "require"
+services = ["assessment-engine", "connector-hub", "review-desk", "rulebook"]
+scope = "platform"
+note = "hub services only"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/health"
+gate = "public"
+scope = "public"
+note = "probe"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/"
+gate = "public"
+scope = "public"
+note = "language choice"
+
+[[route]]
+service = "control-centre"
+method = "GET"
+path = "/{lang}/"
+gate = "session"
+scope = "tenant"
+note = "signed-in user; the services check the user's token again"

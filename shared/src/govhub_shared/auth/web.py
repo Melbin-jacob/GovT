@@ -69,6 +69,9 @@ def require(*roles: str, services: tuple[str, ...] = ()) -> Callable[..., Princi
             return who
         raise forbidden(f"needs one of: {', '.join(roles) or 'a service identity'}")
 
+    # Read by scripts/access_matrix.py (the documented matrix must match the code).
+    check.govhub_roles = tuple(roles)  # type: ignore[attr-defined]
+    check.govhub_services = tuple(services)  # type: ignore[attr-defined]
     return check
 
 
