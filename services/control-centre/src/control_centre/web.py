@@ -2,15 +2,22 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
+from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
+from sqlalchemy.orm import Session
 
-from control_centre.backends import Backends
+from control_centre.backends import Backends, identity_for
 from control_centre.config import Settings, get_settings
+from control_centre.db import get_session
 from control_centre.i18n import LANGS, OTHER, Translator
+from control_centre.identity import sessions
+from control_centre.identity.demo_users import demo_users
+from govhub_shared.auth import Principal, SigningKey
 
 env = Environment(
     loader=PackageLoader("control_centre", "templates"),
@@ -52,15 +59,43 @@ SCREENS: list[tuple[str, str, str]] = [
     ("drafts", "drafts", "nav.drafts"),
 ]
 
-_backends: Backends | None = None
+
+class SignInRequiredError(Exception):
+    """No (valid) session: the page redirects to the sign-in page."""
+
+    def __init__(self, lang: str, next_path: str) -> None:
+        super().__init__("sign-in required")
+        self.lang = lang
+        self.next_path = next_path
 
 
-def get_backends() -> Backends:
-    """Overridden in tests with canned responses."""
-    global _backends
-    if _backends is None:
-        _backends = Backends.from_settings(get_settings())
-    return _backends
+@lru_cache
+def signing_key() -> SigningKey:
+    settings = get_settings()
+    kid = Path(settings.signing_kid_file).read_text("utf-8").strip()
+    return SigningKey.from_file("control-centre", kid, settings.signing_key_file)
+
+
+def signed_in(request: Request, db: Annotated[Session, Depends(get_session)]) -> Principal:
+    """The signed-in person (or the demo mode's fictional user); else sign in first."""
+    cached = getattr(request.state, "principal", None)
+    if isinstance(cached, Principal):
+        return cached
+    who = sessions.load(db, request.cookies.get(sessions.COOKIE), get_settings().auth_mode)
+    if who is None:
+        lang = request.path_params.get("lang", "en")
+        path = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+        raise SignInRequiredError(lang if lang in LANGS else "en", path)
+    request.state.principal = who
+    return who
+
+
+PrincipalDep = Annotated[Principal, Depends(signed_in)]
+
+
+def get_backends(who: PrincipalDep) -> Backends:
+    """Hub services, called on the signed-in user's behalf (overridden in tests)."""
+    return Backends.for_user(get_settings(), identity_for(who, signing_key()))
 
 
 BackendsDep = Annotated[Backends, Depends(get_backends)]
@@ -109,6 +144,10 @@ def render(
         screen=screen,
         screens=SCREENS,
         settings=settings,
+        principal=getattr(request.state, "principal", None),
+        request_path=request.url.path + (f"?{request.url.query}" if request.url.query else ""),
+        auth_mode=settings.auth_mode,
+        demo_people=demo_users(settings.demo_users_file) if settings.auth_mode == "demo" else {},
         **context,
     )
     return HTMLResponse(html, status_code=status_code)

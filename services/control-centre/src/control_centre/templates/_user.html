@@ -1,0 +1,20 @@
+<div class="container user-row" data-user="{{ principal.id }}">
+  <p class="signed-in">{{ t('user.signed_in', name=principal.name or principal.id) }}
+    <span class="muted">({% for r in principal.platform_roles|sort %}{{ t('role.' ~ r) }}{% if not loop.last %}, {% endif %}{% endfor %}{% if principal.platform_roles and principal.tenant_roles %}; {% endif %}{% for tenant, roles in principal.tenant_roles|dictsort %}{{ tenant }}: {% for r in roles|sort %}{{ t('role.' ~ r) }}{% if not loop.last %}, {% endif %}{% endfor %}{% if not loop.last %}; {% endif %}{% endfor %})</span></p>
+  {% if auth_mode == 'demo' %}
+  <form method="post" action="/{{ lang }}/sign-in/demo" class="inline-form acting-as">
+    <input type="hidden" name="next" value="{{ request_path }}">
+    <div class="field">
+      <label for="actor">{{ t('drafts.acting_as') }}</label>
+      <span id="actor-hint" class="hint">{{ t('drafts.acting_as_hint') }}</span>
+      <select id="actor" name="user" aria-describedby="actor-hint">
+        {% for uid, person in demo_people.items() %}<option value="{{ uid }}"{% if uid == principal.id %} selected{% endif %}>{{ uid }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field"><button type="submit" class="secondary">{{ t('drafts.acting_as_button') }}</button></div>
+  </form>
+  {% endif %}
+  <form method="post" action="/{{ lang }}/sign-out" class="sign-out">
+    <button type="submit" class="secondary">{{ t('user.sign_out') }}</button>
+  </form>
+</div>

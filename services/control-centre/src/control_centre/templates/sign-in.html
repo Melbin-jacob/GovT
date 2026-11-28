@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+{% if error %}
+<div class="alert alert-error" role="alert" id="error"><p>{{ t('signin.error.' ~ error) }}</p></div>
+{% endif %}
+{% if auth_mode == 'demo' %}
+<p class="lead">{{ t('signin.demo_intro') }}</p>
+<form method="post" action="/{{ lang }}/sign-in/demo" class="inline-form">
+  <input type="hidden" name="next" value="{{ next_path }}">
+  <div class="field">
+    <label for="user">{{ t('signin.demo_user') }}</label>
+    <span id="user-hint" class="hint">{{ t('signin.demo_user_hint') }}</span>
+    <select id="user" name="user" aria-describedby="user-hint">
+      {% for uid, person in demo_people.items() %}<option value="{{ uid }}">{{ uid }} ({{ person.name }})</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field"><button type="submit">{{ t('signin.demo_button') }}</button></div>
+</form>
+{% else %}
+<p class="lead">{{ t('signin.intro') }}</p>
+<form method="get" action="/auth/login">
+  <input type="hidden" name="next" value="{{ next_path }}">
+  <input type="hidden" name="lang" value="{{ lang }}">
+  <button type="submit">{{ t('signin.button') }}</button>
+</form>
+{% endif %}
+{% endblock %}

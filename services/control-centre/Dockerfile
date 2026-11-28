@@ -14,9 +14,12 @@ RUN uv sync --frozen --no-dev --no-editable --package govhub-control-centre
 FROM python:3.12-slim
 WORKDIR /app
 COPY --from=build /app/.venv /app/.venv
-# Fictional demo tenants only (seeded with --seed-tenants); no other data.
+# Fictional demo tenants and users, and the sign-in role mapping; no other data.
 COPY data/demo/tenants.toml ./data/demo/tenants.toml
-RUN chgrp -R 0 /app && chmod -R g=u /app
+COPY data/demo/users.toml ./data/demo/users.toml
+COPY data/config/oidc-roles.toml ./data/config/oidc-roles.toml
+# /keys: mount point for the development keys volume (Compose); real keys come from secrets.
+RUN mkdir -p /keys && chgrp -R 0 /app /keys && chmod -R g=u /app /keys
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 USER 1001
 EXPOSE 8000

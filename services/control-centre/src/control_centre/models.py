@@ -7,9 +7,10 @@ services (project owner's answer 5).
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Final
+from typing import Any, Final
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, String, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 # PLACEHOLDER residency labels (project owner's answer 8), language-neutral codes.
@@ -40,3 +41,28 @@ class Tenant(Base):
     residency: Mapped[str] = mapped_column(String(40))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     created_by: Mapped[str] = mapped_column(String(200))
+
+
+class WebSession(Base):
+    """A signed-in browser. The cookie holds a random token; only its hash is stored."""
+
+    __tablename__ = "web_sessions"
+
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    mode: Mapped[str] = mapped_column(String(10))  # oidc | demo
+    principal: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class OidcLogin(Base):
+    """A sign-in in progress (state, nonce, PKCE verifier), used once, within 10 minutes."""
+
+    __tablename__ = "oidc_logins"
+
+    state: Mapped[str] = mapped_column(String(64), primary_key=True)
+    nonce: Mapped[str] = mapped_column(String(64))
+    verifier: Mapped[str] = mapped_column(String(128))
+    next_path: Mapped[str] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

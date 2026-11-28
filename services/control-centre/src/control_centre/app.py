@@ -1,7 +1,8 @@
 """Control centre web UI: server-rendered pages in English (/en/...) and French (/fr/...).
 
-Demo only: no authentication (every page says so). Bind to localhost or the internal
-network only. TODO(control-centre): OIDC sign-in, central roles, tenant isolation.
+Sign-in with OIDC (``AUTH_MODE=oidc``), or the labelled demo mode with fictional users
+(``AUTH_MODE=demo``: refuses to start unless bound internally and every tenant is
+synthetic). Hub services receive internal tokens minted for the signed-in user.
 """
 
 from __future__ import annotations
@@ -10,7 +11,7 @@ from collections.abc import Awaitable, Callable
 from importlib.resources import files
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
@@ -18,8 +19,8 @@ from control_centre import tenants
 from control_centre.backends import BackendError
 from control_centre.config import get_settings
 from control_centre.i18n import LANGS, Translator
-from control_centre.screens import drafts, impact, inventory, log, policy, review
-from control_centre.web import LangDep, env, render
+from control_centre.screens import drafts, impact, inventory, log, policy, review, signin
+from control_centre.web import LangDep, PrincipalDep, SignInRequiredError, env, render, signed_in
 from govhub_shared.auth import TrustStore
 from govhub_shared.auth.web import install
 
@@ -36,12 +37,10 @@ app.mount(
     name="static",
 )
 
-app.include_router(policy.router)
-app.include_router(impact.router)
-app.include_router(review.router)
-app.include_router(log.router)
-app.include_router(inventory.router)
-app.include_router(drafts.router)
+# Every screen needs a signed-in user (OIDC) or a demo-mode fictional user.
+for screen_router in (policy, impact, review, log, inventory, drafts):
+    app.include_router(screen_router.router, dependencies=[Depends(signed_in)])
+app.include_router(signin.router)
 app.include_router(tenants.router)
 
 
@@ -90,6 +89,11 @@ def backend_error(request: Request, exc: BackendError) -> HTMLResponse:
     )
 
 
+@app.exception_handler(SignInRequiredError)
+def sign_in_required(request: Request, exc: SignInRequiredError) -> Response:
+    return signin.sign_in_redirect(exc.lang, exc.next_path)
+
+
 @app.get("/health", include_in_schema=False)
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -99,11 +103,15 @@ def health() -> dict[str, str]:
 def choose_language() -> HTMLResponse:
     """Bilingual landing page: English | Français."""
     html = env.get_template("choose-language.html").render(
-        en=Translator("en"), fr=Translator("fr"), t_en=Translator("en"), t_fr=Translator("fr")
+        en=Translator("en"),
+        fr=Translator("fr"),
+        t_en=Translator("en"),
+        t_fr=Translator("fr"),
+        auth_mode=get_settings().auth_mode,
     )
     return HTMLResponse(html)
 
 
 @app.get("/{lang}/", response_class=HTMLResponse)
-def home(request: Request, lang: LangDep) -> HTMLResponse:
+def home(request: Request, lang: LangDep, who: PrincipalDep) -> HTMLResponse:
     return render(request, lang, "home.html", title_key="home.title", screen="home")

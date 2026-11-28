@@ -1,6 +1,6 @@
 """Generate development keys and the trust file (Compose and CI; never commit keys).
 
-    python -m govhub_shared.auth.devkeys var/keys
+    python -m govhub_shared.auth.devkeys var/keys [--if-missing]
 
 Writes ``<issuer>.<kid>.pem`` (private, mode 0600) for control-centre and each service,
 and ``trust.json`` (public keys only) that every service reads. A deployment makes its
@@ -39,7 +39,11 @@ def generate(folder: Path, kid_suffix: str = "dev") -> TrustStore:
 
 
 def main(argv: list[str]) -> int:
-    folder = Path(argv[0] if argv else "var/keys")
+    args = [a for a in argv if not a.startswith("--")]
+    folder = Path(args[0] if args else "var/keys")
+    if "--if-missing" in argv and (folder / "trust.json").is_file():
+        print(f"keys already in {folder}")
+        return 0
     generate(folder)
     print(f"wrote development keys and trust.json to {folder} (do not commit)")
     return 0

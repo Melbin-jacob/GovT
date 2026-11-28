@@ -25,9 +25,31 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/control_centre"
     # Public keys of every token issuer (govhub-trust/1); see govhub_shared.auth.devkeys.
     trust_file: str = Field(default="var/keys/trust.json", validation_alias="GOVHUB_TRUST_FILE")
-    # Placeholder identity sent to review-desk. TODO(control-centre): OIDC sign-in.
-    demo_user: str = "demo-reviewer-01"
-    demo_role: str = "reviewer"
+    # Sign-in: "oidc" (production) or "demo" (labelled, fictional users; refuses to start
+    # unless bound internally and every tenant is synthetic).
+    auth_mode: str = Field(default="oidc", validation_alias="AUTH_MODE")
+    internal_only: bool = Field(default=False, validation_alias="GOVHUB_INTERNAL_ONLY")
+    demo_users_file: str = "data/demo/users.toml"
+    role_map_file: str = "data/config/oidc-roles.toml"
+    # The key control-centre signs users' internal tokens with (and its ID, for rotation).
+    signing_key_file: str = Field(
+        default="var/keys/control-centre.pem", validation_alias="GOVHUB_SIGNING_KEY_FILE"
+    )
+    signing_kid_file: str = Field(
+        default="var/keys/control-centre.kid", validation_alias="GOVHUB_SIGNING_KID_FILE"
+    )
+    # OIDC (AUTH_MODE=oidc). The client secret comes from the environment or a secret file.
+    oidc_issuer: str = Field(default="", validation_alias="OIDC_ISSUER")
+    oidc_discovery_url: str = Field(default="", validation_alias="OIDC_DISCOVERY_URL")
+    oidc_client_id: str = Field(default="", validation_alias="OIDC_CLIENT_ID")
+    oidc_client_secret: str = Field(default="", validation_alias="OIDC_CLIENT_SECRET", repr=False)
+    oidc_redirect_url: str = Field(default="", validation_alias="OIDC_REDIRECT_URL")
+    oidc_allowed_hosts: str = Field(default="", validation_alias="OIDC_ALLOWED_HOSTS")
+    oidc_allow_insecure_http: bool = Field(
+        default=False, validation_alias="OIDC_ALLOW_INSECURE_HTTP"
+    )
+    # Cookies are Secure unless explicitly local (plain-HTTP demo or local Keycloak).
+    secure_cookies: bool = Field(default=True, validation_alias="GOVHUB_SECURE_COOKIES")
     # Labels. A deployment showing only the synthetic demo directive and the fictional
     # inventory keeps both on; erring this way never presents test data as real.
     synthetic_data: bool = True

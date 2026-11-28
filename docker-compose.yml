@@ -161,7 +161,34 @@ services:
       timeout: 3s
       retries: 20
 
-  # Web UI for the demo. Demo only: no authentication, so localhost only (like review-desk).
+  # One-shot: development signing keys and the trust file, in their own volume, made as
+  # the same non-root user the services run as. Never used outside local dev and CI.
+  keys:
+    build:
+      context: .
+      dockerfile: services/control-centre/Dockerfile
+    command: ["python", "-m", "govhub_shared.auth.devkeys", "/keys", "--if-missing"]
+    volumes:
+      - keys:/keys
+
+  # Sign-in provider for local and CI (profile "oidc"): fictional realm and users.
+  #   docker compose --profile oidc up -d keycloak   then   AUTH_MODE=oidc make up
+  keycloak:
+    profiles: ["oidc"]
+    image: quay.io/keycloak/keycloak:26.0.7
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: dev-only-admin  # local dev only
+      KC_HOSTNAME: http://127.0.0.1:8080
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  # Web UI. Signs users in (OIDC) or runs the labelled demo mode; localhost only here.
   control-centre:
     build:
       context: .
@@ -169,15 +196,35 @@ services:
     command: ["control-centre", "serve", "--migrate", "--seed-tenants", "data/demo/tenants.toml",
               "--host", "0.0.0.0", "--port", "8000"]
     environment:
-      # Its own database: tenants, and later their data settings and grants.
+      # Its own database: tenants, sessions, and later their data settings and grants.
       CONTROL_CENTRE_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/control_centre
+      # Labelled demo mode (fictional users). It refuses to start unless every tenant is
+      # synthetic and the deployment is internal-only (ports published on 127.0.0.1).
+      # Sign-in with Keycloak instead: docs/identity.md (profile "oidc").
+      AUTH_MODE: ${AUTH_MODE:-demo}
+      GOVHUB_INTERNAL_ONLY: "1"
+      GOVHUB_SECURE_COOKIES: "0"  # plain HTTP on localhost only
+      GOVHUB_SIGNING_KEY_FILE: /keys/control-centre.pem
+      GOVHUB_SIGNING_KID_FILE: /keys/control-centre.kid
+      GOVHUB_TRUST_FILE: /keys/trust.json
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://127.0.0.1:8080/realms/govhub}
+      OIDC_DISCOVERY_URL: ${OIDC_DISCOVERY_URL:-http://keycloak:8080/realms/govhub}
+      OIDC_CLIENT_ID: control-centre
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-dev-only-fictional-client-secret}
+      OIDC_REDIRECT_URL: http://127.0.0.1:8004/auth/callback
+      OIDC_ALLOWED_HOSTS: keycloak,127.0.0.1
+      OIDC_ALLOW_INSECURE_HTTP: "1"  # local Keycloak only
       RULEBOOK_URL: http://rulebook:8000
       REVIEW_DESK_URL: http://review-desk:8000
       CONNECTOR_HUB_URL: http://connector-hub:8000
       ASSESSMENT_ENGINE_URL: http://assessment-engine:8000
+    volumes:
+      - keys:/keys:ro
     ports:
       - "127.0.0.1:8004:8000"
     depends_on:
+      keys:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       review-desk:
@@ -195,3 +242,4 @@ volumes:
   checkpoints:
   rulebook-checkpoints:
   evidence:
+  keys:

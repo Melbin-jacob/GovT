@@ -154,3 +154,9 @@ dl.facts.small { font-size: 0.95rem; }
 .badge-status-rejected, .badge-obligation-mismatch, .badge-instruction-like-text { background: var(--warn-bg); color: var(--warn-text); }
 .acting-as { border: 1px dashed var(--rule); padding: 0.5rem 0.75rem; margin: 1rem 0; }
 .read-status { flex-basis: 100%; margin: 0; }
+.user-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: space-between; padding-bottom: 0.5rem; }
+.user-row .signed-in { margin: 0; }
+.user-row .acting-as { margin: 0; padding: 0.25rem 0.5rem; }
+/* On the dark header: header text colours (muted grey fails contrast there). */
+.site-header .user-row .muted, .site-header .user-row .hint, .site-header .user-row label { color: var(--header-text); }
+.site-header .user-row button.secondary { background: var(--header-text); color: var(--header-bg); border-color: var(--header-text); }

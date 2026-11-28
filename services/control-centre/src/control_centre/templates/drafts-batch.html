@@ -15,7 +15,7 @@
 </dl>
 <p class="muted">{{ t('drafts.human_decides') }} {{ t('drafts.not_reviewed') }}</p>
 {% set back_url = '/' ~ lang ~ '/drafts/' ~ batch.id %}
-{% if open %}{% include "_acting-as.html" %}{% endif %}
+
 
 {% if notice %}
 <div class="alert alert-ok" role="status" id="notice"><p>{{ t('drafts.notice.' ~ notice) }}</p>

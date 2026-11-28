@@ -65,13 +65,18 @@ def test_upload_forwards_the_file_to_the_engine(ui: TestClient, hub: FakeHub) ->
     assert b"Les clients re" in sent.content
 
 
-def test_engine_client_sends_the_demo_identity() -> None:
-    from control_centre.backends import Backends
+def test_engine_client_sends_a_token_for_the_signed_in_user() -> None:
+    from control_centre.backends import Backends, identity_for
     from control_centre.config import Settings
+    from govhub_shared.auth import verify
+    from govhub_shared.auth.testing import KEYS, user
 
-    engine = Backends.from_settings(Settings()).engine
-    assert engine.http.headers["X-GovHub-User"] == "demo-reviewer-01"
+    who = user("u-riley", reviewer=["office-fictional-permits"])
+    engine = Backends.for_user(Settings(), identity_for(who, KEYS.keys["control-centre"])).engine
     assert str(engine.http.base_url).startswith("http://127.0.0.1:8005")
+    assert engine.identity is not None
+    header = engine.identity("assessment-engine")["Authorization"].removeprefix("Bearer ")
+    assert verify(header, KEYS.trust, "assessment-engine") == who
 
 
 def test_assess_button_asks_for_this_control_only(ui: TestClient, hub: FakeHub) -> None:

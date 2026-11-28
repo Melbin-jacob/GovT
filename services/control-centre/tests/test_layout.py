@@ -52,8 +52,8 @@ def test_root_is_a_bilingual_language_choice(ui: TestClient) -> None:
     html = ui.get("/").text
     assert 'href="/en/"' in html and 'href="/fr/"' in html
     assert ">English<" in html and ">Français<" in html
-    assert "Demo only: no authentication." in html
-    assert "Démo seulement : aucune authentification." in html
+    assert "Demo mode: fictional users, no sign-in." in html  # tests run in demo mode
+    assert "Mode démo : utilisateurs fictifs, sans connexion." in html
     assert FOOTER_EN in html and FOOTER_FR.replace("'", "&#39;") in html
 
 

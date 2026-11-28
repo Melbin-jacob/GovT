@@ -1,0 +1,18 @@
+# How sign-in claims become hub roles (control-centre, AUTH_MODE=oidc).
+# Role and group names are FICTIONAL and unverified (project owner's answer 8): replace
+# them with your organization's own. See docs/identity.md.
+
+# The claim holding the user's ID and display name.
+user_id_claim = "preferred_username"   # Entra ID: "oid" (or "preferred_username")
+name_claim = "name"
+
+# Group paths in the "groups" claim (Keycloak: group membership mapper, full path).
+groups_claim = "groups"
+tenant_group_pattern = "/govhub/{tenant}/{role}"
+platform_group_pattern = "/govhub/platform/{role}"
+
+# Entra ID sends group object IDs, not paths: map each one explicitly, e.g.
+# [groups]
+# "00000000-0000-0000-0000-000000000001" = { tenant = "office-fictional-permits", role = "reviewer" }
+# "00000000-0000-0000-0000-000000000002" = { platform = "governance-officer" }
+[groups]

@@ -47,7 +47,7 @@ def test_english_demo_click_through(rec: Recorder) -> None:
     rec.capture("en-0-choose-language")
     page.get_by_role("link", name="English").click()
     expect(page.locator("html")).to_have_attribute("lang", "en")
-    expect(page.get_by_text("Demo only: no authentication.")).to_be_visible()
+    expect(page.get_by_text("Demo mode: fictional users, no sign-in.")).to_be_visible()
 
     # 1. Policy change
     page.get_by_role("link", name="1. Policy change").click()
@@ -106,7 +106,7 @@ def test_french_screens(rec: Recorder) -> None:
     page.goto("/")
     page.get_by_role("link", name="Français").click()
     expect(page.locator("html")).to_have_attribute("lang", "fr")
-    expect(page.get_by_text("Démo seulement : aucune authentification.")).to_be_visible()
+    expect(page.get_by_text("Mode démo : utilisateurs fictifs, sans connexion.")).to_be_visible()
     rec.capture("fr-0-overview")
     assert_no_english(page)
 

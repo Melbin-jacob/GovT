@@ -9,7 +9,9 @@ from typing import Any
 
 import httpx
 
-from control_centre.backends import Backends, Service
+from control_centre.backends import Backends, Service, identity_for
+from govhub_shared.auth import Principal
+from govhub_shared.auth.testing import KEYS
 
 FIXTURES = Path(__file__).parent / "fixtures"
 Handler = Callable[[httpx.Request], Any]
@@ -44,10 +46,12 @@ class FakeService:
             return httpx.Response(200, text=body)
         return httpx.Response(200, json=body)
 
-    def service(self) -> Service:
+    def service(self, who: Principal | None = None) -> Service:
+        identity = identity_for(who, KEYS.keys["control-centre"]) if who else None
         return Service(
             self.name,
             httpx.Client(base_url="http://fake", transport=httpx.MockTransport(self._handle)),
+            identity,
         )
 
 
@@ -58,12 +62,12 @@ class FakeHub:
         self.connector = FakeService("connector-hub")
         self.engine = FakeService("assessment-engine")
 
-    def backends(self) -> Backends:
+    def backends(self, who: Principal | None = None) -> Backends:
         return Backends(
-            self.rulebook.service(),
-            self.desk.service(),
-            self.connector.service(),
-            self.engine.service(),
+            self.rulebook.service(who),
+            self.desk.service(who),
+            self.connector.service(who),
+            self.engine.service(who),
         )
 
 
@@ -221,3 +225,9 @@ def stub_catalog_change(hub: FakeHub) -> None:
         return fixture(f"impact-catalog.{body['lang']}.json")
 
     hub.rulebook.on("POST", "/impact-reports", report)
+
+
+def sign_in(client: Any, user: str, lang: str = "en") -> None:
+    """Demo-mode sign-in as one of the fictional users (data/demo/users.toml)."""
+    resp = client.post(f"/{lang}/sign-in/demo", data={"user": user}, follow_redirects=False)
+    assert resp.status_code == 303, resp.text

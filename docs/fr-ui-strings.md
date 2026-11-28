@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-553 strings: 3 provided by the project owner, 550 unverified.
+568 strings: 3 provided by the project owner, 565 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -37,8 +37,8 @@ strings before any use outside the demo.
 | `assessment.prompt` | invite | prompt | Unverified, written by Claude Code |
 | `assessment.run` | Évaluer cette constatation | Assess this finding | Unverified, written by Claude Code |
 | `assessment.run_hint` | Le moteur d'évaluation propose un verdict à partir des preuves; la constatation reste ouverte pour votre décision. | The assessment engine drafts a verdict from the evidence; the finding stays open for your decision. | Unverified, written by Claude Code |
-| `banner.demo` | Démo seulement : aucune authentification. | Demo only: no authentication. | Unverified, written by Claude Code |
-| `banner.detail` | Toute personne qui accède à cette page agit comme l'examinateur de démonstration. Ne l'exposez pas. | Anyone who can reach this page acts as the demo reviewer. Do not expose it. | Unverified, written by Claude Code |
+| `banner.demo` | Mode démo : utilisateurs fictifs, sans connexion. | Demo mode: fictional users, no sign-in. | Unverified, written by Claude Code |
+| `banner.detail` | Réservé aux démonstrations pour les évaluateurs, sur des données synthétiques. Il refuse de démarrer sur une adresse publique ou avec un locataire réel. Ne l'exposez pas. | For evaluator walkthroughs on synthetic data only. It refuses to start on a public address or with any real tenant. Do not expose it. | Unverified, written by Claude Code |
 | `check-type.judgment` | Jugement | Judgment | Unverified, written by Claude Code |
 | `check-type.rule-based` | Fondé sur des règles | Rule-based | Unverified, written by Claude Code |
 | `choose.heading` | Choisissez votre langue | Choose your language | Unverified, written by Claude Code |
@@ -67,7 +67,7 @@ strings before any use outside the demo.
 | `decide.timer` | Séance d'examen {session} commencée; le temps de décision est mesuré. | Review session {session} started; the time to decide is being measured. | Unverified, written by Claude Code |
 | `drafts.acting_as` | Agir en tant que (démo) | Acting as (demo) | Unverified, written by Claude Code |
 | `drafts.acting_as_button` | Changer de personne | Change person | Unverified, written by Claude Code |
-| `drafts.acting_as_hint` | Démo seulement, sans connexion : choisissez qui vous êtes pour voir les rôles et la règle des deux personnes en action. | Demo only, no sign-in: choose who you are to see the roles and the two-person rule at work. | Unverified, written by Claude Code |
+| `drafts.acting_as_hint` | Mode démo seulement : passez à un autre utilisateur fictif pour voir les rôles en action. | Demo mode only: switch to another fictional user to see the roles at work. | Unverified, written by Claude Code |
 | `drafts.approve` | Approuver | Approve | Unverified, written by Claude Code |
 | `drafts.back` | Retour aux lots d'ébauches | Back to the drafting batches | Unverified, written by Claude Code |
 | `drafts.batch.open` | Ouvert : décisions requises | Open: decisions needed | Unverified, written by Claude Code |
@@ -428,8 +428,21 @@ strings before any use outside the demo.
 | `review.ranking_text` | Niveau d'incidence (inconnu d'abord, puis de IV à I), puis gravité du verdict, puis incertitude (aucune confiance ou confiance la plus faible d'abord), puis échéance. | Impact level (unknown first, then IV to I), then verdict severity, then uncertainty (no confidence or lowest confidence first), then due date. | Unverified, written by Claude Code |
 | `review.title` | 3. File d'examen | 3. Review queue | Unverified, written by Claude Code |
 | `review.total` | {n} constatations attendent une décision. | {n} findings waiting for a decision. | Unverified, written by Claude Code |
+| `role.auditor` | vérificateur | auditor | Unverified, written by Claude Code |
 | `role.governance-officer` | agent de gouvernance | governance officer | Unverified, written by Claude Code |
+| `role.platform-admin` | administrateur de la plateforme | platform administrator | Unverified, written by Claude Code |
 | `role.reviewer` | réviseur | reviewer | Unverified, written by Claude Code |
+| `role.system-owner` | responsable du système | system owner | Unverified, written by Claude Code |
+| `role.tenant-admin` | administrateur du locataire | tenant administrator | Unverified, written by Claude Code |
+| `signin.button` | Se connecter | Sign in | Unverified, written by Claude Code |
+| `signin.demo_button` | Continuer avec cet utilisateur | Continue as this user | Unverified, written by Claude Code |
+| `signin.demo_intro` | Mode démo : choisissez un utilisateur fictif. Chacun a des rôles différents dans les locataires fictifs. | Demo mode: choose a fictional user. Each one has different roles in the fictional tenants. | Unverified, written by Claude Code |
+| `signin.demo_user` | Utilisateur fictif | Fictional user | Unverified, written by Claude Code |
+| `signin.demo_user_hint` | Aucun mot de passe : le mode démo ne fonctionne que sur des données synthétiques et une adresse interne. | No password: demo mode runs only on synthetic data and an internal address. | Unverified, written by Claude Code |
+| `signin.error.oidc` | La connexion n'a pas abouti. Réessayez; si le problème persiste, communiquez avec votre administrateur. | Sign-in did not complete. Try again; if it keeps failing, contact your administrator. | Unverified, written by Claude Code |
+| `signin.error.unknown` | Cet utilisateur fictif n'existe pas. | That fictional user does not exist. | Unverified, written by Claude Code |
+| `signin.intro` | Connectez-vous avec le compte de votre organisation pour utiliser le carrefour. | Sign in with your organization's account to use the hub. | Unverified, written by Claude Code |
+| `signin.title` | Connexion | Sign in | Unverified, written by Claude Code |
 | `site.title` | Carrefour de gouvernance de l'IA (prototype) | AI Governance Hub (prototype) | Unverified, written by Claude Code |
 | `state.accepted` | Acceptée | Accepted | Unverified, written by Claude Code |
 | `state.accepted-with-remediation` | Acceptée avec mesures correctives | Accepted with remediation | Unverified, written by Claude Code |
@@ -445,6 +458,8 @@ strings before any use outside the demo.
 | `summary.splits` | Scindées | Split | Unverified, written by Claude Code |
 | `summary.text-changed` | Libellé modifié | Wording changed | Unverified, written by Claude Code |
 | `summary.unchanged` | Inchangées | Unchanged | Unverified, written by Claude Code |
+| `user.sign_out` | Se déconnecter | Sign out | Unverified, written by Claude Code |
+| `user.signed_in` | Connecté en tant que {name} | Signed in as {name} | Unverified, written by Claude Code |
 | `verdict.met` | Respecté | Met | Unverified, written by Claude Code |
 | `verdict.not-applicable` | Sans objet | Not applicable | Unverified, written by Claude Code |
 | `verdict.not-met` | Non respecté | Not met | Unverified, written by Claude Code |

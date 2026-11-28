@@ -1,0 +1,39 @@
+# FICTIONAL demo users (demo mode's "Acting as" list, and the Keycloak realm's users).
+# Names written by Claude Code; role and group names are fictional and unverified
+# (project owner's answer 8). Roles per tenant; governance-officer and platform-admin
+# are platform-wide.
+
+[[users]]
+id = "demo-reviewer-01"
+name = "Riley Reviewer (fictional)"
+reviewer = ["agency-sample-benefits", "dept-example-services", "office-fictional-permits"]
+
+[[users]]
+id = "demo-officer-01"
+name = "Olivia Officer (fictional)"
+platform = ["governance-officer"]
+
+[[users]]
+id = "demo-officer-02"
+name = "Omar Officer (fictional)"
+platform = ["governance-officer"]
+
+[[users]]
+id = "demo-owner-01"
+name = "Sam Owner (fictional)"
+system-owner = ["office-fictional-permits"]
+
+[[users]]
+id = "demo-tenant-admin-01"
+name = "Tara Tenant-Admin (fictional)"
+tenant-admin = ["office-fictional-permits"]
+
+[[users]]
+id = "demo-auditor-01"
+name = "Ari Auditor (fictional)"
+auditor = ["agency-sample-benefits", "dept-example-services", "office-fictional-permits"]
+
+[[users]]
+id = "demo-platform-admin-01"
+name = "Pat Platform-Admin (fictional)"
+platform = ["platform-admin"]

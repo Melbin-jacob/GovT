@@ -12,9 +12,8 @@ The rulebook enforces the rules (governance officers approve; the person who las
 a draft cannot approve it; the SOURCE_DATE must pass the guard); this screen shows the
 reason when it refuses, and checks the source date itself before publishing.
 
-Demo only: who is acting is chosen on the page ("Acting as", kept in a cookie) so the
-roles and the two-person rule can be shown. TODO(control-centre): real sign-in replaces
-this selector.
+Who is acting is the signed-in person (in demo mode, the fictional user chosen in the
+page header); the hub services see only the internal tokens minted for that person.
 """
 
 from __future__ import annotations
@@ -27,18 +26,10 @@ from fastapi import APIRouter, Cookie, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from control_centre.backends import BackendError
-from control_centre.web import BackendsDep, LangDep, SettingsDep, render
+from control_centre.web import BackendsDep, LangDep, PrincipalDep, SettingsDep, render
 
 router = APIRouter()
 
-ACTORS: Final = {
-    "demo-reviewer-01": "reviewer",
-    "demo-officer-01": "governance-officer",
-    "demo-officer-02": "governance-officer",
-}
-DEFAULT_ACTOR: Final = "demo-officer-01"
-COOKIE: Final = "govhub_demo_actor"
-# The rulebook's approval session for the acting person: "<actor> <session id>".
 SESSION_COOKIE: Final = "govhub_draft_session"
 # Codes the rulebook returns when it refuses (approval.ApprovalError), plus the screen's own.
 ERROR_CODES: Final = (
@@ -49,14 +40,6 @@ ERROR_CODES: Final = (
 )  # fmt: skip
 OBLIGATIONS: Final = ("must", "must-not", "should", "should-not", "may", "may-not", "restriction")
 NOTICES: Final = ("created", "drafted", "edited", "approved", "rejected", "published")
-
-
-def actor_of(cookie: str | None) -> str:
-    return cookie if cookie in ACTORS else DEFAULT_ACTOR
-
-
-def headers_for(actor: str) -> dict[str, str]:
-    return {"X-GovHub-User": actor, "X-GovHub-Role": ACTORS[actor]}
 
 
 def error_code(exc: BackendError) -> str:
@@ -102,45 +85,33 @@ def drafts_list(
     request: Request,
     lang: LangDep,
     backends: BackendsDep,
+    who: PrincipalDep,
     settings: SettingsDep,
-    actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
 ) -> HTMLResponse:
     return render(
         request, lang, "drafts-list.html", title_key="drafts.title", screen="drafts",
         batches=backends.rulebook.get("/drafts/batches"),
         sources=backends.rulebook.get("/sources"), catalogs=backends.rulebook.get("/catalogs"),
-        actor=actor_of(actor), actors=ACTORS,
+
         default_instrument=settings.default_instrument, default_catalog=settings.default_catalog,
     )  # fmt: skip
-
-
-@router.post("/{lang}/drafts/actor")
-def choose_actor(
-    lang: LangDep, actor: Annotated[str, Form()], back: Annotated[str, Form()] = ""
-) -> RedirectResponse:
-    target = back if back.startswith(f"/{lang}/drafts") and "//" not in back else f"/{lang}/drafts"
-    response = RedirectResponse(target, 303)
-    if actor in ACTORS:
-        response.set_cookie(COOKIE, actor, httponly=True, samesite="strict")
-        response.delete_cookie(SESSION_COOKIE)  # another person: another approval session
-    return response
 
 
 @router.post("/{lang}/drafts")
 def start_batch(
     lang: LangDep,
     backends: BackendsDep,
+    who: PrincipalDep,
     catalog: Annotated[str, Form()],
     version: Annotated[str, Form()],
     instrument: Annotated[str, Form()],
     from_version: Annotated[str, Form(alias="from")],
     to_version: Annotated[str, Form(alias="to")],
-    actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
 ) -> RedirectResponse:
     """Plan the drafting work (plain code), then ask the engine for the drafts."""
     body = {"catalog": catalog, "version": version, "instrument": instrument,
             "from": from_version, "to": to_version}  # fmt: skip
-    batch = backends.rulebook.post("/drafts/batches", body, headers=headers_for(actor_of(actor)))
+    batch = backends.rulebook.post("/drafts/batches", body)
     try:
         backends.engine.post(f"/drafting/batches/{batch['id']}/draft", {})
         notice = "drafted"
@@ -154,25 +125,23 @@ def batch_detail(
     request: Request,
     lang: LangDep,
     backends: BackendsDep,
+    who: PrincipalDep,
     batch_id: str,
     notice: str | None = None,
     error: str | None = None,
     item: str | None = None,
-    actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
     draft_session: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
 ) -> HTMLResponse:
     """Showing this page opens this language's view of every draft: the rulebook records
     it in the person's approval session (approval needs both languages opened)."""
-    person = actor_of(actor)
+    person = who.id
     sid = session_of(draft_session, person)
     status = backends.rulebook.get(f"/drafts/batches/{batch_id}")["status"]
     if status == "open":
-        headers = headers_for(person)
         if sid is None:
-            sid = str(backends.rulebook.post("/drafts/sessions", {}, headers=headers)["id"])
+            sid = str(backends.rulebook.post("/drafts/sessions", {})["id"])
         backends.rulebook.post(
-            f"/drafts/batches/{batch_id}/views", {"session_id": sid, "lang": lang},
-            headers=headers,
+            f"/drafts/batches/{batch_id}/views", {"session_id": sid, "lang": lang}
         )  # fmt: skip
     batch = backends.rulebook.get(
         f"/drafts/batches/{batch_id}", **({"session_id": sid} if sid else {})
@@ -181,7 +150,7 @@ def batch_detail(
     decided = all(i["status"] in ("approved", "rejected") for i in batch["items"])
     response = render(
         request, lang, "drafts-batch.html", title_key="drafts.batch_title", screen="drafts",
-        batch=batch, defaults=defaults, decided=decided, actor=person, actors=ACTORS,
+        batch=batch, defaults=defaults, decided=decided, actor=person,
         notice=notice if notice in NOTICES else None,
         error=error if error in ERROR_CODES else None, error_item=item,
         obligations=OBLIGATIONS, min_date=min_source_date(defaults["previous"]),
@@ -195,13 +164,13 @@ def batch_detail(
 def edit_item(
     lang: LangDep,
     backends: BackendsDep,
+    who: PrincipalDep,
     batch_id: str,
     item_id: str,
     statement: Annotated[str, Form()] = "",
     obligation: Annotated[str, Form()] = "",
     check_type: Annotated[str, Form()] = "",
     proposed_id: Annotated[str, Form()] = "",
-    actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
 ) -> RedirectResponse:
     """A person writes or corrects the page language's draft (the other language is
     edited on its own page; the rulebook refuses approval while the two disagree)."""
@@ -214,9 +183,7 @@ def edit_item(
     if proposed_id.strip():
         body["proposed_id"] = proposed_id.strip()
     try:
-        backends.rulebook.put(
-            f"/drafts/items/{item_id}", body, headers=headers_for(actor_of(actor))
-        )
+        backends.rulebook.put(f"/drafts/items/{item_id}", body)
     except BackendError as exc:
         return _back(lang, batch_id, error=error_code(exc), item=item_id)
     return _back(lang, batch_id, notice="edited", item=item_id)
@@ -226,12 +193,12 @@ def edit_item(
 def decide_item(
     lang: LangDep,
     backends: BackendsDep,
+    who: PrincipalDep,
     batch_id: str,
     item_id: str,
     action: str,
     reason: Annotated[str, Form()] = "",
     both_languages: Annotated[str, Form()] = "",
-    actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
     draft_session: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
 ) -> RedirectResponse:
     """Approve or reject; the rulebook enforces the role and the two-person rule."""
@@ -242,8 +209,7 @@ def decide_item(
     try:
         backends.rulebook.post(
             f"/drafts/items/{item_id}/{action}",
-            {"reason": reason, "session_id": session_of(draft_session, actor_of(actor))},
-            headers=headers_for(actor_of(actor)),
+            {"reason": reason, "session_id": session_of(draft_session, who.id)},
         )  # fmt: skip
     except BackendError as exc:
         return _back(lang, batch_id, error=error_code(exc), item=item_id)
@@ -254,9 +220,9 @@ def decide_item(
 def publish(
     lang: LangDep,
     backends: BackendsDep,
+    who: PrincipalDep,
     batch_id: str,
     source_date: Annotated[str, Form()] = "",
-    actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
 ) -> RedirectResponse:
     defaults = backends.rulebook.get(f"/drafts/batches/{batch_id}/publish-defaults")
     value = check_source_date(source_date or defaults["default"][:10], defaults["previous"])
@@ -265,7 +231,6 @@ def publish(
     try:
         backends.rulebook.post(
             f"/drafts/batches/{batch_id}/publish", {"source_date": value},
-            headers=headers_for(actor_of(actor)),
         )  # fmt: skip
     except BackendError as exc:
         return _back(lang, batch_id, error=error_code(exc))

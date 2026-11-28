@@ -43,6 +43,12 @@ def rec(browser: Browser, base_url: str) -> Iterator[Recorder]:
     page = context.new_page()
     page.set_default_timeout(15_000)
     recorder = Recorder(page, base_url)
+    # Demo mode (the labelled one CI runs): sign in as the fictional reviewer first.
+    page.goto("/en/sign-in")
+    recorder.capture("sign-in-en")
+    page.select_option("#user", "demo-reviewer-01")
+    page.get_by_role("button", name="Continue as this user").click()
+    page.wait_for_url("**/en/")
     yield recorder
     context.close()
     allowed = {urlparse(base_url).netloc}

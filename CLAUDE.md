@@ -15,8 +15,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - ruff (lint + format), mypy **strict** for `shared` and `rulebook`, pytest.
 - Docker Compose for local dev only. Everything must run as plain containers on
   Kubernetes/OpenShift: no cloud-specific services, non-root images that work under an
-  arbitrary UID. **Only connector-hub may make outbound calls, and only to hosts listed in
-  its configuration; nothing else ever calls out.** (Calls between hub services inside the
+  arbitrary UID. **Only connector-hub (to hosts listed in its configuration) and
+  control-centre (only to the configured sign-in provider, `OIDC_ALLOWED_HOSTS`) may make
+  outbound calls; nothing else ever calls out.** (Calls between hub services inside the
   deployment are internal.) The model server is also internal to the deployment: the
   assessment engine reaches it only through `govhub_shared.model_gateway`, and only hosts
   listed in `MODEL_GATEWAY_ALLOWED_HOSTS` (approved).
@@ -113,8 +114,11 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - ServiceNow credentials come from environment variables or a gitignored `.env.servicenow`;
   never commit them. CI and tests use the mock ServiceNow only.
 - Hub tasks go to the custom table `u_govhub_task` (extends `task`), never `incident`.
-- review-desk trusts placeholder identity headers until control-centre exists: bind it to
-  localhost or the internal network only, never expose it.
+- Identity (Milestone 7, `docs/identity.md`): users sign in at control-centre (OIDC);
+  services accept only internal tokens (ES256, key ID, one audience, 5 minutes) verified
+  against a local trust file, and call each other with their own service keys. Roles are
+  per tenant; governance-officer and platform-admin are platform-wide. TRANSITIONAL until
+  every service reads tokens: control-centre also sends the old placeholder headers.
 - The decision log is append-only and hash-chained; never update or delete its rows.
   Its head is checkpointed outside the database (ServiceNow work note + checkpoint file on
   a separate volume); a checkpoint failure is reported, never blocks a decision.
@@ -149,11 +153,12 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - French pages never show English generated text (test scans every French page).
 - Never use Government of Canada logos, wordmark, flag symbols or "Canada.ca" text. Keep the
   demo banner, the bilingual footer and the synthetic/fictional notes.
-- Demo only, no authentication: bind to localhost or the internal network only.
+- Sign-in: `AUTH_MODE=oidc` in any real deployment. `AUTH_MODE=demo` (fictional users,
+  labelled banner) refuses to start unless bound internally and every tenant is synthetic.
 - `make demo-ui` (Playwright + axe) must pass with zero axe violations; so must
   `make demo-drafts` (run last: it publishes a catalog version).
-- Drafts screen: each page shows its own language's drafts only; demo identity comes from
-  the "Acting as" selector until sign-in exists (TODO(control-centre)).
+- Drafts screen: each page shows its own language's drafts only; the acting person is the
+  signed-in user (in demo mode, the "Acting as" fictional user in the header).
 
 ## AI usage
 - All model access goes through `govhub_shared.model_gateway` (`OpenAIGateway` to a

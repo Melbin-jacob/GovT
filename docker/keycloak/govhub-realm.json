@@ -1,0 +1,244 @@
+{
+ "realm": "govhub",
+ "enabled": true,
+ "displayName": "GovHub (fictional demo realm, local and CI only)",
+ "sslRequired": "none",
+ "groups": [
+  {
+   "name": "govhub",
+   "subGroups": [
+    {
+     "name": "platform",
+     "subGroups": [
+      {
+       "name": "governance-officer"
+      },
+      {
+       "name": "platform-admin"
+      }
+     ]
+    },
+    {
+     "name": "agency-sample-benefits",
+     "subGroups": [
+      {
+       "name": "system-owner"
+      },
+      {
+       "name": "reviewer"
+      },
+      {
+       "name": "tenant-admin"
+      },
+      {
+       "name": "auditor"
+      }
+     ]
+    },
+    {
+     "name": "dept-example-services",
+     "subGroups": [
+      {
+       "name": "system-owner"
+      },
+      {
+       "name": "reviewer"
+      },
+      {
+       "name": "tenant-admin"
+      },
+      {
+       "name": "auditor"
+      }
+     ]
+    },
+    {
+     "name": "office-fictional-permits",
+     "subGroups": [
+      {
+       "name": "system-owner"
+      },
+      {
+       "name": "reviewer"
+      },
+      {
+       "name": "tenant-admin"
+      },
+      {
+       "name": "auditor"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "users": [
+  {
+   "username": "demo-reviewer-01",
+   "enabled": true,
+   "emailVerified": true,
+   "firstName": "Riley",
+   "lastName": "Reviewer (fictional)",
+   "email": "demo-reviewer-01@example.invalid",
+   "credentials": [
+    {
+     "type": "password",
+     "value": "dev-only-fictional",
+     "temporary": false
+    }
+   ],
+   "groups": [
+    "/govhub/agency-sample-benefits/reviewer",
+    "/govhub/dept-example-services/reviewer",
+    "/govhub/office-fictional-permits/reviewer"
+   ]
+  },
+  {
+   "username": "demo-officer-01",
+   "enabled": true,
+   "emailVerified": true,
+   "firstName": "Olivia",
+   "lastName": "Officer (fictional)",
+   "email": "demo-officer-01@example.invalid",
+   "credentials": [
+    {
+     "type": "password",
+     "value": "dev-only-fictional",
+     "temporary": false
+    }
+   ],
+   "groups": [
+    "/govhub/platform/governance-officer"
+   ]
+  },
+  {
+   "username": "demo-officer-02",
+   "enabled": true,
+   "emailVerified": true,
+   "firstName": "Omar",
+   "lastName": "Officer (fictional)",
+   "email": "demo-officer-02@example.invalid",
+   "credentials": [
+    {
+     "type": "password",
+     "value": "dev-only-fictional",
+     "temporary": false
+    }
+   ],
+   "groups": [
+    "/govhub/platform/governance-officer"
+   ]
+  },
+  {
+   "username": "demo-owner-01",
+   "enabled": true,
+   "emailVerified": true,
+   "firstName": "Sam",
+   "lastName": "Owner (fictional)",
+   "email": "demo-owner-01@example.invalid",
+   "credentials": [
+    {
+     "type": "password",
+     "value": "dev-only-fictional",
+     "temporary": false
+    }
+   ],
+   "groups": [
+    "/govhub/office-fictional-permits/system-owner"
+   ]
+  },
+  {
+   "username": "demo-tenant-admin-01",
+   "enabled": true,
+   "emailVerified": true,
+   "firstName": "Tara",
+   "lastName": "Tenant-Admin (fictional)",
+   "email": "demo-tenant-admin-01@example.invalid",
+   "credentials": [
+    {
+     "type": "password",
+     "value": "dev-only-fictional",
+     "temporary": false
+    }
+   ],
+   "groups": [
+    "/govhub/office-fictional-permits/tenant-admin"
+   ]
+  },
+  {
+   "username": "demo-auditor-01",
+   "enabled": true,
+   "emailVerified": true,
+   "firstName": "Ari",
+   "lastName": "Auditor (fictional)",
+   "email": "demo-auditor-01@example.invalid",
+   "credentials": [
+    {
+     "type": "password",
+     "value": "dev-only-fictional",
+     "temporary": false
+    }
+   ],
+   "groups": [
+    "/govhub/agency-sample-benefits/auditor",
+    "/govhub/dept-example-services/auditor",
+    "/govhub/office-fictional-permits/auditor"
+   ]
+  },
+  {
+   "username": "demo-platform-admin-01",
+   "enabled": true,
+   "emailVerified": true,
+   "firstName": "Pat",
+   "lastName": "Platform-Admin (fictional)",
+   "email": "demo-platform-admin-01@example.invalid",
+   "credentials": [
+    {
+     "type": "password",
+     "value": "dev-only-fictional",
+     "temporary": false
+    }
+   ],
+   "groups": [
+    "/govhub/platform/platform-admin"
+   ]
+  }
+ ],
+ "clients": [
+  {
+   "clientId": "control-centre",
+   "enabled": true,
+   "protocol": "openid-connect",
+   "publicClient": false,
+   "secret": "dev-only-fictional-client-secret",
+   "standardFlowEnabled": true,
+   "directAccessGrantsEnabled": false,
+   "implicitFlowEnabled": false,
+   "serviceAccountsEnabled": false,
+   "redirectUris": [
+    "http://127.0.0.1:8004/auth/callback"
+   ],
+   "webOrigins": [
+    "http://127.0.0.1:8004"
+   ],
+   "attributes": {
+    "pkce.code.challenge.method": "S256",
+    "post.logout.redirect.uris": "http://127.0.0.1:8004/*"
+   },
+   "protocolMappers": [
+    {
+     "name": "groups",
+     "protocol": "openid-connect",
+     "protocolMapper": "oidc-group-membership-mapper",
+     "config": {
+      "full.path": "true",
+      "id.token.claim": "true",
+      "access.token.claim": "false",
+      "userinfo.token.claim": "true",
+      "claim.name": "groups"
+     }
+    }
+   ]
+  }
+ ]
+}

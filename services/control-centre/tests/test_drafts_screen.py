@@ -14,19 +14,25 @@ from cc_support import (
     FakeHub,
     fixture,
     item_id,
+    sign_in,
     stub_catalog_change,
     stub_drafts,
 )
 from fastapi.testclient import TestClient
 
 from control_centre.screens.drafts import (
-    COOKIE,
     SESSION_COOKIE,
     check_source_date,
     min_source_date,
 )
 
 PAGE = f"/{{lang}}/drafts/{DRAFT_BATCH}"
+
+
+@pytest.fixture(autouse=True)
+def as_officer(ui: TestClient) -> None:
+    """The drafts screen is mostly used by governance officers."""
+    sign_in(ui, "demo-officer-01")
 
 
 def _json(request: httpx.Request) -> Any:
@@ -86,7 +92,7 @@ def test_approve_sends_the_acting_persons_identity(ui: TestClient, hub: FakeHub)
     batch = stub_drafts(hub)
     iid = item_id(batch, "WID-6.1.2")
     hub.rulebook.on("POST", f"/drafts/items/{iid}/approve", {"id": iid, "status": "approved"})
-    ui.cookies.set(COOKIE, "demo-officer-02")
+    sign_in(ui, "demo-officer-02")
     resp = ui.post(
         f"/en/drafts/{DRAFT_BATCH}/items/{iid}/approve",
         data={"both_languages": "yes"},
@@ -146,7 +152,7 @@ def test_last_editor_sees_the_two_person_note(ui: TestClient, hub: FakeHub) -> N
     section = html.split(f'id="item-{item_id(batch, "WID-C002")}"')[1].split("</section>")[0]
     assert "Last edited by demo-officer-01." in section
     assert "another governance officer must approve it (two-person rule)" in section
-    ui.cookies.set(COOKIE, "demo-officer-02")
+    sign_in(ui, "demo-officer-02")
     other = ui.get(PAGE.format(lang="en")).text
     assert (
         "two-person rule)"
@@ -158,7 +164,7 @@ def test_edit_sends_only_the_page_language(ui: TestClient, hub: FakeHub) -> None
     batch = stub_drafts(hub)
     iid = item_id(batch, "WID-C001")
     hub.rulebook.on("PUT", f"/drafts/items/{iid}", {"id": iid})
-    ui.cookies.set(COOKIE, "demo-reviewer-01")
+    sign_in(ui, "demo-reviewer-01")
     resp = ui.post(
         f"/fr/drafts/{DRAFT_BATCH}/items/{iid}/edit",
         data={"statement": " Texte corrigé. ", "obligation": "must", "check_type": "judgment",
@@ -198,7 +204,7 @@ def test_reviewer_cannot_approve(ui: TestClient, hub: FakeHub) -> None:
         "POST", f"/drafts/items/{iid}/approve",
         httpx.Response(403, json={"detail": {"code": "role", "message": "officers only"}}),
     )  # fmt: skip
-    ui.cookies.set(COOKIE, "demo-reviewer-01")
+    sign_in(ui, "demo-reviewer-01")
     resp = ui.post(f"/en/drafts/{DRAFT_BATCH}/items/{iid}/approve", data={"both_languages": "yes"})
     assert "only a governance officer approves or rejects" in resp.text
 
@@ -299,19 +305,24 @@ def test_start_plans_then_asks_the_engine(ui: TestClient, hub: FakeHub) -> None:
 
 
 def test_list_and_acting_as(ui: TestClient, hub: FakeHub) -> None:
+    """Demo mode: the header's "Acting as" signs in as another fictional user."""
     stub_drafts(hub)
     html = ui.get("/fr/drafts").text
     assert f'href="/fr/drafts/{DRAFT_BATCH}"' in html
     assert "agent de gouvernance" in html and "Agir en tant que (démo)" in html
+    assert 'action="/fr/sign-in/demo"' in html and 'data-user="demo-officer-01"' in html
     resp = ui.post(
-        "/fr/drafts/actor", data={"actor": "demo-reviewer-01", "back": f"/fr/drafts/{DRAFT_BATCH}"},
+        "/fr/sign-in/demo", data={"user": "demo-reviewer-01", "next": f"/fr/drafts/{DRAFT_BATCH}"},
         follow_redirects=False,
     )  # fmt: skip
     assert resp.headers["location"] == f"/fr/drafts/{DRAFT_BATCH}"
-    assert f"{COOKIE}=demo-reviewer-01" in resp.headers["set-cookie"]
-    bad = ui.post("/fr/drafts/actor", data={"actor": "root", "back": "//evil.example"},
+    assert 'data-user="demo-reviewer-01"' in ui.get("/fr/drafts").text
+    bad = ui.post("/fr/sign-in/demo", data={"user": "root", "next": "//evil.example"},
                   follow_redirects=False)  # fmt: skip
-    assert bad.headers["location"] == "/fr/drafts" and "set-cookie" not in bad.headers
+    assert bad.headers["location"] == "/fr/sign-in?error=unknown"
+    offsite = ui.post("/fr/sign-in/demo", data={"user": "demo-reviewer-01", "next": "//evil.example"},
+                      follow_redirects=False)  # fmt: skip
+    assert offsite.headers["location"] == "/fr/"
 
 
 @pytest.mark.parametrize("lang", ["en", "fr"])
@@ -338,7 +349,7 @@ def test_opening_a_page_records_that_languages_view(
 ) -> None:
     """The server, not the checkbox, knows which languages the approver opened."""
     stub_drafts(hub)
-    ui.cookies.set(COOKIE, "demo-officer-02")
+    sign_in(ui, "demo-officer-02")
     resp = ui.get(PAGE.format(lang=lang))
     (started,) = _posts(hub, "/drafts/sessions")
     assert started.headers["X-GovHub-User"] == "demo-officer-02"
@@ -372,14 +383,14 @@ def test_the_session_is_reused_and_sent_with_the_approval(ui: TestClient, hub: F
 def test_another_person_gets_another_session(ui: TestClient, hub: FakeHub) -> None:
     stub_drafts(hub)
     ui.get(PAGE.format(lang="en"))
-    resp = ui.post("/en/drafts/actor", data={"actor": "demo-officer-02", "back": PAGE.format(lang="en")},
+    resp = ui.post("/en/sign-in/demo", data={"user": "demo-officer-02", "next": PAGE.format(lang="en")},
                    follow_redirects=False)  # fmt: skip
     assert (
         f'{SESSION_COOKIE}=""' in resp.headers["set-cookie"]
         or "Max-Age=0" in resp.headers["set-cookie"]
     )
     # A session cookie that belongs to someone else is never sent for this person.
-    ui.cookies.set(COOKIE, "demo-officer-02")
+    sign_in(ui, "demo-officer-02")
     ui.cookies.set(SESSION_COOKIE, f'"demo-officer-01 {DRAFT_SESSION}"')
     batch = fixture("drafts-batch.open.json")
     iid = item_id(batch, "WID-6.1.2")

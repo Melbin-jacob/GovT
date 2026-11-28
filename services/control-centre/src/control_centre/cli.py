@@ -47,7 +47,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(problem)
         return 1 if problems else 0
     import uvicorn
+    from sqlalchemy.orm import sessionmaker as _sessionmaker
 
+    from control_centre.config import get_settings
+    from control_centre.db import get_engine as _get_engine
+    from control_centre.startup import StartupRefusedError, check
+
+    with _sessionmaker(bind=_get_engine())() as session:
+        try:
+            check(get_settings(), args.host, session)
+        except StartupRefusedError as exc:
+            print(exc)
+            return 2
     uvicorn.run("control_centre.app:app", host=args.host, port=args.port)
     return 0
 
