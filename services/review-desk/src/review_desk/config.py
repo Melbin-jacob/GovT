@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # Internal URL of connector-hub (tasks in ServiceNow). Empty: side effects are recorded
     # as "not sent" in the decision log instead.
     connector_hub_url: str = Field(default="", validation_alias="CONNECTOR_HUB_URL")
+    # The assessment engine (evidence and facts provenance for the conflict-of-interest
+    # check). Empty: no provenance (tests, review-only deployments).
+    assessment_engine_url: str = Field(default="", validation_alias="ASSESSMENT_ENGINE_URL")
     # Relative paths resolve against the working directory (/app in the container).
     review_rate_path: str = "data/config/review-rate.toml"
     # Decision-log checkpoints outside the database (checkpoints.py). Every N decisions;

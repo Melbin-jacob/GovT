@@ -7,18 +7,30 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from ae_support import TABLES
+from ae_support import DEMO_TENANTS, TABLES, TEST_SYSTEMS
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
+from assessment_engine.access import get_systems
 from assessment_engine.app import app
 from assessment_engine.config import get_settings
 from assessment_engine.db import get_session
 from assessment_engine.migrate import downgrade, ensure_database, upgrade
+from govhub_shared.auth import GOVERNANCE_OFFICER
+from govhub_shared.auth.testing import KEYS, DefaultCaller, user
+from govhub_shared.auth.web import install
 
 DEFAULT_URL = "postgresql+psycopg://govhub:govhub@localhost:5432/assessment_engine_test"
+
+install(app, "assessment-engine", KEYS.trust)
+# Requests without their own Authorization act as one person holding every role in the
+# fictional tenants (tests that check refusals send their own caller).
+EVERYONE = user(
+    "test-user", platform=(GOVERNANCE_OFFICER,), reviewer=DEMO_TENANTS,
+    system_owner=DEMO_TENANTS, auditor=DEMO_TENANTS, tenant_admin=DEMO_TENANTS,
+)  # fmt: skip
 
 
 @pytest.fixture(scope="session")
@@ -69,6 +81,8 @@ def engine_api(ae_engine: Engine, ae_db: Session) -> Iterator[TestClient]:
             yield session
 
     app.dependency_overrides[get_session] = _session
+    app.dependency_overrides[get_systems] = lambda: TEST_SYSTEMS
     with TestClient(app) as client:
+        client.auth = DefaultCaller(EVERYONE, "assessment-engine")
         yield client
     app.dependency_overrides.clear()

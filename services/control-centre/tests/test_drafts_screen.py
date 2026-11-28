@@ -25,6 +25,8 @@ from control_centre.screens.drafts import (
     check_source_date,
     min_source_date,
 )
+from govhub_shared.auth import Principal, verify
+from govhub_shared.auth.testing import KEYS
 
 PAGE = f"/{{lang}}/drafts/{DRAFT_BATCH}"
 
@@ -33,6 +35,12 @@ PAGE = f"/{{lang}}/drafts/{DRAFT_BATCH}"
 def as_officer(ui: TestClient) -> None:
     """The drafts screen is mostly used by governance officers."""
     sign_in(ui, "demo-officer-01")
+
+
+def caller(request: httpx.Request) -> Principal:
+    """Who the request says is calling: the internal token, verified for the rulebook."""
+    token = request.headers["Authorization"].removeprefix("Bearer ")
+    return verify(token, KEYS.trust, "rulebook")
 
 
 def _json(request: httpx.Request) -> Any:
@@ -101,8 +109,8 @@ def test_approve_sends_the_acting_persons_identity(ui: TestClient, hub: FakeHub)
     assert resp.status_code == 303
     assert "notice=approved" in resp.headers["location"]
     (sent,) = [r for r in hub.rulebook.requests if r.method == "POST"]
-    assert sent.headers["X-GovHub-User"] == "demo-officer-02"
-    assert sent.headers["X-GovHub-Role"] == "governance-officer"
+    assert caller(sent).id == "demo-officer-02"
+    assert caller(sent).has("governance-officer")
 
 
 def test_approve_needs_the_both_languages_confirmation(ui: TestClient, hub: FakeHub) -> None:
@@ -180,7 +188,7 @@ def test_edit_sends_only_the_page_language(ui: TestClient, hub: FakeHub) -> None
         },
         "proposed_id": "WID-C007",
     }  # fmt: skip
-    assert sent.headers["X-GovHub-Role"] == "reviewer"
+    assert caller(sent).has("reviewer") and not caller(sent).has("governance-officer")
 
 
 def test_id_reuse_refusal_is_translated(ui: TestClient, hub: FakeHub) -> None:
@@ -263,7 +271,7 @@ def test_publish_sends_the_chosen_date(ui: TestClient, hub: FakeHub) -> None:
     assert "notice=published" in resp.headers["location"]
     (sent,) = [r for r in hub.rulebook.requests if r.method == "POST"]
     assert _json(sent) == {"source_date": "2026-12-03T00:00:00Z"}
-    assert sent.headers["X-GovHub-Role"] == "governance-officer"
+    assert caller(sent).has("governance-officer")
 
 
 def test_publish_waits_for_every_decision(ui: TestClient, hub: FakeHub) -> None:
@@ -298,9 +306,7 @@ def test_start_plans_then_asks_the_engine(ui: TestClient, hub: FakeHub) -> None:
     )  # fmt: skip
     assert resp.headers["location"] == f"/en/drafts/{DRAFT_BATCH}?notice=drafted"
     (plan,) = [r for r in hub.rulebook.requests if r.method == "POST"]
-    assert (
-        _json(plan)["from"] == "2023-01-01" and plan.headers["X-GovHub-User"] == "demo-officer-01"
-    )
+    assert _json(plan)["from"] == "2023-01-01" and caller(plan).id == "demo-officer-01"
     assert [r.url.path for r in hub.engine.requests] == [f"/drafting/batches/{DRAFT_BATCH}/draft"]
 
 
@@ -352,10 +358,10 @@ def test_opening_a_page_records_that_languages_view(
     sign_in(ui, "demo-officer-02")
     resp = ui.get(PAGE.format(lang=lang))
     (started,) = _posts(hub, "/drafts/sessions")
-    assert started.headers["X-GovHub-User"] == "demo-officer-02"
+    assert caller(started).id == "demo-officer-02"
     (view,) = _posts(hub, "/views")
     assert _json(view) == {"session_id": DRAFT_SESSION, "lang": lang}
-    assert view.headers["X-GovHub-User"] == "demo-officer-02"
+    assert caller(view).id == "demo-officer-02"
     shown = [
         r
         for r in hub.rulebook.requests

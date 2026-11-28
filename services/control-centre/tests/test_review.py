@@ -140,3 +140,28 @@ def test_decided_finding_has_no_form(ui: TestClient, hub: FakeHub) -> None:
     html = ui.get(f"/en/review/{finding['id']}?session=41").text
     assert 'name="action"' not in html and "Start review" not in html
     assert 'data-state="accepted"' in html
+
+
+@pytest.mark.parametrize(
+    ("lang", "intro", "reason"),
+    [
+        ("en", "Conflict of interest: you cannot decide this finding",
+         "facts (you recorded facts used by the rule-based checks)"),
+        ("fr", "Conflit d&#39;intérêts : vous ne pouvez pas trancher cette constatation",
+         "des faits (vous avez consigné des faits utilisés"),
+    ],
+)  # fmt: skip
+def test_conflict_of_interest_is_explained(
+    ui: TestClient, hub: FakeHub, lang: str, intro: str, reason: str
+) -> None:
+    """review-desk refuses a reviewer who supplied the system's evidence or facts."""
+    finding = stub_review(hub)
+    refusal = {"detail": {"code": "conflict-of-interest", "reasons": ["wrote-facts"],
+                          "message": "demo-reviewer-01 supplied this system's facts"}}  # fmt: skip
+    hub.desk.on("POST", f"/findings/{finding['id']}/decisions", httpx.Response(409, json=refusal))
+    resp = ui.post(
+        f"/{lang}/review/{finding['id']}/decide",
+        data={"session_id": "41", "action": "accept", "annotation": "Looks complete."},
+    )
+    assert intro in resp.text and reason in resp.text
+    assert "demo-reviewer-01 supplied" not in resp.text  # never review-desk's own message

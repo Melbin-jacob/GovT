@@ -9,7 +9,7 @@ from typing import Any
 import httpx
 import pytest
 from fastapi.testclient import TestClient
-from mock_support import REPO, mock_client
+from mock_support import REPO, mock_client, signed
 
 from connector_hub import app as app_module
 from connector_hub.inventory import (
@@ -143,7 +143,7 @@ def test_sync_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda url, result, source: pushed.append(source) or {"snapshot": 7},
     )
     try:
-        api = TestClient(app_module.app)
+        api = signed(TestClient(app_module.app))
         dry = api.post("/inventory/sync", params={"dry_run": True}).json()
         assert dry["systems"] == 9 and pushed == []
         body = api.post("/inventory/sync").json()
@@ -162,6 +162,6 @@ def test_sync_endpoint_without_configuration(
     for key in ("SERVICENOW_INSTANCE_URL", "SERVICENOW_USERNAME", "SERVICENOW_PASSWORD"):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setenv("SERVICENOW_ENV_FILE", str(tmp_path / "absent"))
-    resp = TestClient(app_module.app).post("/inventory/sync")
+    resp = signed(TestClient(app_module.app)).post("/inventory/sync")
     assert resp.status_code == 503
     assert "not configured" in resp.json()["detail"]

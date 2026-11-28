@@ -21,7 +21,7 @@ platform = ["governance-officer"]
 [[users]]
 id = "demo-owner-01"
 name = "Sam Owner (fictional)"
-system-owner = ["office-fictional-permits"]
+system-owner = ["agency-sample-benefits", "dept-example-services", "office-fictional-permits"]
 
 [[users]]
 id = "demo-tenant-admin-01"

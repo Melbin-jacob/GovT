@@ -25,7 +25,7 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 ## Layout
 - `services/<name>/` — one folder per service: connector-hub, rulebook, assessment-engine,
   review-desk, control-centre. Implemented: rulebook (M1–2), connector-hub and review-desk (M3),
-  control-centre demo UI (M4; sign-in still TODO), rulebook drafts (M6).
+  control-centre UI (M4; sign-in M7), rulebook drafts (M6).
 - `shared/` — `govhub_shared`: constants, OSCAL helpers, model-gateway interface.
 - `data/golden/` — hand-mapped golden set CSVs. `data/catalogs/` — generated catalogs.
   `data/profiles/` — OSCAL profiles.
@@ -117,8 +117,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Identity (Milestone 7, `docs/identity.md`): users sign in at control-centre (OIDC);
   services accept only internal tokens (ES256, key ID, one audience, 5 minutes) verified
   against a local trust file, and call each other with their own service keys. Roles are
-  per tenant; governance-officer and platform-admin are platform-wide. TRANSITIONAL until
-  every service reads tokens: control-centre also sends the old placeholder headers.
+  per tenant; governance-officer and platform-admin are platform-wide. No placeholder
+  identity headers remain. A reviewer never decides a finding of a system whose evidence
+  or facts they supplied (conflict of interest, enforced by review-desk).
 - The decision log is append-only and hash-chained; never update or delete its rows.
   Its head is checkpointed outside the database (ServiceNow work note + checkpoint file on
   a separate volume); a checkpoint failure is reported, never blocks a decision.

@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 
 from assessment_engine import messages
 from assessment_engine.rules import Fact, assess_rule, load_rules, referenced_facts
+from govhub_shared.auth.testing import headers, user
 
 RULES = REPO / "data" / "rules"
 CATALOGS = {
@@ -126,7 +127,8 @@ def test_facts_api_and_rule_checks(engine_api: TestClient) -> None:
             "register_fields_complete_ratio": {"value": 1.0, "source": "register export"},
         }
     }
-    resp = engine_api.put("/systems/SYS-001/facts", json=body, headers={"X-GovHub-User": "o"})
+    writer = headers(user("o", reviewer=["agency-sample-benefits"]), "assessment-engine")
+    resp = engine_api.put("/systems/SYS-001/facts", json=body, headers=writer)
     assert resp.status_code == 200
     assert resp.json()["facts"]["widgets_in_service"] == {"value": 4, "source": "register export"}
     result = engine_api.get(

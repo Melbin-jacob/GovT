@@ -99,28 +99,11 @@ def _clients(settings: Settings) -> dict[str, httpx.Client]:
     return _CLIENTS
 
 
-def acting_role(principal: Principal, audience: str) -> str:
-    """TRANSITIONAL (removed when every service reads tokens): the single role the old
-    placeholder header carried."""
-    order = (
-        ("governance-officer", "reviewer") if audience == "rulebook"
-        else ("reviewer", "governance-officer")
-    )  # fmt: skip
-    for role in (*order, "tenant-admin", "system-owner", "auditor", "platform-admin"):
-        if principal.has(role):
-            return role
-    return "none"
-
-
 def identity_for(principal: Principal, key: SigningKey) -> Identity:
-    """Headers for one call: a fresh internal token for that service (5 minutes, one
-    audience), plus the transitional placeholder headers."""
+    """Headers for one call: a fresh internal token for that service only (one audience,
+    5 minutes), minted for the signed-in user."""
 
     def headers(audience: str) -> dict[str, str]:
-        return {
-            "Authorization": f"Bearer {mint(key, principal, audience)}",
-            "X-GovHub-User": principal.id,
-            "X-GovHub-Role": acting_role(principal, audience),
-        }
+        return {"Authorization": f"Bearer {mint(key, principal, audience)}"}
 
     return headers

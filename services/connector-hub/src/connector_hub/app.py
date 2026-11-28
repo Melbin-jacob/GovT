@@ -21,6 +21,9 @@ from connector_hub.servicenow import (
 )
 from connector_hub.task_sync import TaskRequest, sync_impact_report, upsert_request
 from connector_hub.tasks import TaskWriter
+from govhub_shared.auth import AUDITOR, GOVERNANCE_OFFICER, REVIEWER, TENANT_ADMIN, Principal
+from govhub_shared.auth.client import trust_store
+from govhub_shared.auth.web import install, require
 
 app = FastAPI(title="Canadian AI Governance Hub - Connector hub", version="0.1.0")
 
@@ -48,13 +51,37 @@ def _servicenow_error(_request: Request, exc: ServiceNowError) -> JSONResponse:
     return JSONResponse(status_code=502, content={"detail": str(exc)})
 
 
+# Who may call what (docs/access-matrix.md), from internal tokens.
+SyncTrigger = Annotated[
+    Principal, Depends(require(TENANT_ADMIN, services=("control-centre-service",)))
+]
+ReportTasks = Annotated[
+    Principal,
+    Depends(require(GOVERNANCE_OFFICER, services=("review-desk", "control-centre-service"))),
+]
+DeskOnly = Annotated[Principal, Depends(require(services=("review-desk",)))]
+NoteReader = Annotated[
+    Principal,
+    Depends(
+        require(REVIEWER, TENANT_ADMIN, AUDITOR, GOVERNANCE_OFFICER, services=("review-desk",))
+    ),
+]
+
+# Internal tokens (GOVHUB_TRUST_FILE); without them protected endpoints answer 503.
+_trust = trust_store()
+if _trust is not None:
+    install(app, "connector-hub", _trust)
+
+
 @app.get("/health", tags=["ops"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.post("/inventory/sync", tags=["inventory"])
-def sync_inventory(client: Client, mapping: MappingDep, dry_run: bool = False) -> dict[str, Any]:
+def sync_inventory(
+    who: SyncTrigger, client: Client, mapping: MappingDep, dry_run: bool = False
+) -> dict[str, Any]:
     """Pull the AI systems from ServiceNow, push them to the rulebook as a new inventory
     snapshot, and create/update/close data-gap tasks. ``dry_run`` only pulls."""
     result = inventory.pull_inventory(client, mapping)
@@ -78,6 +105,7 @@ def sync_inventory(client: Client, mapping: MappingDep, dry_run: bool = False) -
 
 @app.post("/tasks/sync-impact-report", tags=["tasks"])
 def sync_report_tasks(
+    who: ReportTasks,
     client: Client,
     mapping: MappingDep,
     report: Annotated[dict[str, Any], Body(description="A rulebook impact report")],
@@ -89,7 +117,9 @@ def sync_report_tasks(
 
 
 @app.post("/tasks", tags=["tasks"])
-def upsert_task(client: Client, mapping: MappingDep, request: TaskRequest) -> dict[str, Any]:
+def upsert_task(
+    who: DeskOnly, client: Client, mapping: MappingDep, request: TaskRequest
+) -> dict[str, Any]:
     """Create or update a single hub task (used by review-desk for remediation and
     evidence requests)."""
     writer = TaskWriter(client, mapping)
@@ -98,7 +128,7 @@ def upsert_task(client: Client, mapping: MappingDep, request: TaskRequest) -> di
 
 @app.get("/tasks/notes", tags=["tasks"])
 def list_notes(
-    client: Client, mapping: MappingDep, type: str = "reassessment"
+    who: NoteReader, client: Client, mapping: MappingDep, type: str = "reassessment"
 ) -> list[dict[str, str]]:
     """Work notes of the hub's tasks of one type (used to read decision-log checkpoints)."""
     fields = mapping.task_fields
@@ -120,6 +150,7 @@ def list_notes(
 @app.post("/tasks/{correlation_id}/notes", tags=["tasks"])
 def add_note(
     correlation_id: str,
+    who: DeskOnly,
     client: Client,
     mapping: MappingDep,
     text: Annotated[str, Body(embed=True, min_length=1)],

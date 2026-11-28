@@ -454,3 +454,7 @@
 "signin.demo_button" = "Continue as this user"
 "signin.error.oidc" = "Sign-in did not complete. Try again; if it keeps failing, contact your administrator."
 "signin.error.unknown" = "That fictional user does not exist."
+"decide.error_conflict" = "Conflict of interest: you cannot decide this finding, because you supplied this system's"
+"decide.conflict.uploaded-evidence" = "evidence (you uploaded evidence files);"
+"decide.conflict.wrote-facts" = "facts (you recorded facts used by the rule-based checks)."
+"decide.error_provenance" = "The decision was not recorded: the hub could not check for a conflict of interest right now. Try again later."

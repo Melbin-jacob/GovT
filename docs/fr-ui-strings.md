@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-568 strings: 3 provided by the project owner, 565 unverified.
+572 strings: 3 provided by the project owner, 569 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -47,8 +47,12 @@ strings before any use outside the demo.
 | `decide.annotation` | Motif ou note | Reason or note | Unverified, written by Claude Code |
 | `decide.annotation_hint` | Obligatoire pour rejeter, demander d'autres preuves ou remplacer le verdict. | Required to reject, request more evidence or override the verdict. | Unverified, written by Claude Code |
 | `decide.choose` | Choisissez un verdict | Choose a verdict | Unverified, written by Claude Code |
+| `decide.conflict.uploaded-evidence` | des preuves (vous avez téléversé des fichiers de preuve); | evidence (you uploaded evidence files); | Unverified, written by Claude Code |
+| `decide.conflict.wrote-facts` | des faits (vous avez consigné des faits utilisés par les contrôles fondés sur des règles). | facts (you recorded facts used by the rule-based checks). | Unverified, written by Claude Code |
 | `decide.error_action` | Choisissez une décision. | Choose a decision. | Unverified, written by Claude Code |
 | `decide.error_annotation` | Indiquez le motif de cette décision. | Give a reason for this decision. | Unverified, written by Claude Code |
+| `decide.error_conflict` | Conflit d'intérêts : vous ne pouvez pas trancher cette constatation, car vous avez fourni pour ce système | Conflict of interest: you cannot decide this finding, because you supplied this system's | Unverified, written by Claude Code |
+| `decide.error_provenance` | La décision n'a pas été consignée : le carrefour n'a pas pu vérifier l'absence de conflit d'intérêts pour le moment. Réessayez plus tard. | The decision was not recorded: the hub could not check for a conflict of interest right now. Try again later. | Unverified, written by Claude Code |
 | `decide.error_refused` | Le bureau d'examen a refusé la décision : {detail} | The review desk refused the decision: {detail} | Unverified, written by Claude Code |
 | `decide.error_remediation` | Décrivez les mesures correctives et indiquez leur échéance. | Describe the remediation and give its due date. | Unverified, written by Claude Code |
 | `decide.error_verdict` | Choisissez le nouveau verdict. | Choose the new verdict. | Unverified, written by Claude Code |

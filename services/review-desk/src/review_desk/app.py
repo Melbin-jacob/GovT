@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from govhub_shared.auth import GOVERNANCE_OFFICER, Principal
 from govhub_shared.auth.client import trust_store
 from govhub_shared.auth.web import install
-from review_desk import assessments, checkpoints, decision_log, forecast, queue
+from review_desk import assessments, checkpoints, decision_log, forecast, provenance, queue
 from review_desk.config import get_settings
 from review_desk.db import get_session
 from review_desk.decisions import DecisionError, DecisionRequest, decide, history
@@ -156,6 +156,34 @@ def get_task_sink() -> TaskSink:
 Sink = Annotated[TaskSink, Depends(get_task_sink)]
 
 
+def get_provenance() -> provenance.ProvenanceSource:
+    """The engine's provenance, or none when no engine is configured (overridden in tests)."""
+    url = get_settings().assessment_engine_url
+    return provenance.HttpProvenance(url) if url else provenance.NoProvenance()
+
+
+Provenance = Annotated[provenance.ProvenanceSource, Depends(get_provenance)]
+
+
+def check_conflict(source: provenance.ProvenanceSource, finding: Finding, person: str) -> None:
+    """409 ``conflict-of-interest`` when the reviewer supplied the system's evidence or
+    facts; 503 ``provenance-unavailable`` when the engine cannot say (fail closed)."""
+    try:
+        record = source.of(finding.system_id)
+    except provenance.ProvenanceUnavailableError as exc:
+        raise HTTPException(503, {
+            "code": "provenance-unavailable",
+            "message": f"cannot check for a conflict of interest ({exc}); try again later",
+        }) from exc  # fmt: skip
+    reasons = provenance.conflicts(record, person)
+    if reasons:
+        raise HTTPException(409, {
+            "code": "conflict-of-interest", "reasons": reasons,
+            "message": f"{person} supplied this system's evidence or facts "
+                       f"({', '.join(reasons)}) and cannot decide its findings",
+        })  # fmt: skip
+
+
 @app.post("/findings/{finding_id}/decisions", tags=["decisions"])
 def post_decision(
     finding_id: str,
@@ -163,12 +191,16 @@ def post_decision(
     session: Tx,
     who: ReviewerAnywhere,
     sink: Sink,
+    source: Provenance,
 ) -> dict[str, Any]:
     """Record a human decision: accept, accept-with-remediation, reject,
-    request-more-evidence or override-verdict. Performs the side effects (POA&M item,
-    ServiceNow tasks through connector-hub) and appends one hash-chained log record."""
+    request-more-evidence or override-verdict (a reviewer of the finding's tenant who did
+    not supply the system's evidence or facts: conflict of interest). Performs the side
+    effects (POA&M item, ServiceNow tasks through connector-hub) and appends one
+    hash-chained log record."""
     finding = _finding(session, finding_id, who)
     reviewer = reviewer_in(who, finding.tenant)
+    check_conflict(source, finding, reviewer.id)
     row = decide(session, finding, request, reviewer, sink=sink)
     record = json.loads(row.record_text)
     session.commit()  # the checkpoint must describe a committed log

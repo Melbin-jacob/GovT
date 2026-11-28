@@ -99,3 +99,20 @@ def reply(
             "reasoning_fr": "L'avis est donné en ligne seulement.",
         }
     )
+
+
+class CsvSystems:
+    """The fictional inventory's system -> tenant (tests; production asks the rulebook)."""
+
+    def __init__(self, path: Path) -> None:
+        import csv
+
+        with path.open(encoding="utf-8") as fh:
+            self.tenants = {r["System ID"]: r["Tenant"] for r in csv.DictReader(fh)}
+
+    def tenant_of(self, system_id: str) -> str | None:
+        return self.tenants.get(system_id)
+
+
+TEST_SYSTEMS = CsvSystems(REPO / "data/inventory/systems.csv")
+DEMO_TENANTS = sorted(set(TEST_SYSTEMS.tenants.values()))

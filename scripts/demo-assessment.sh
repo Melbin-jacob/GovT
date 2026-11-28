@@ -14,7 +14,6 @@ DESK="${DESK:-http://127.0.0.1:8002}"
 OUT="${1:-$(mktemp -d)}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 EVIDENCE="$ROOT/data/accuracy/synthetic-demo/evidence"
-WHO=(-H "X-GovHub-User: demo-owner-01" -H "X-GovHub-Role: reviewer")
 mkdir -p "$OUT"
 
 # shellcheck source=lib/hub-token.sh
@@ -22,12 +21,12 @@ mkdir -p "$OUT"
 hub_tokens
 call() {  # call METHOD URL [BODY_FILE]
   if [ $# -ge 3 ]; then
-    curl --fail-with-body -sS -X "$1" "$2" "${WHO[@]}" -H "$(hub_auth "$1" "$2")" -H 'content-type: application/json' --data-binary "@$3"
+    curl --fail-with-body -sS -X "$1" "$2" -H "$(hub_auth "$1" "$2")" -H 'content-type: application/json' --data-binary "@$3"
   else
-    curl --fail-with-body -sS -X "$1" "$2" "${WHO[@]}" -H "$(hub_auth "$1" "$2")"
+    curl --fail-with-body -sS -X "$1" "$2" -H "$(hub_auth "$1" "$2")"
   fi
 }
-upload() { curl --fail-with-body -sS "${WHO[@]}" -F "file=@$2" "$ENGINE/systems/$1/evidence"; }
+upload() { curl --fail-with-body -sS -H "$(hub_auth POST "$ENGINE/systems/$1/evidence")" -F "file=@$2" "$ENGINE/systems/$1/evidence"; }
 
 echo "== 1. Facts for SYS-003's rule-based checks (fictional)"
 cat > "$OUT/facts.json" <<JSON

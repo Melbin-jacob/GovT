@@ -8,15 +8,17 @@ from __future__ import annotations
 import base64
 import logging
 from pathlib import Path
+from typing import Any
 
 import pytest
-from ae_support import docx_bytes, minimal_pdf
+from ae_support import TEST_SYSTEMS, docx_bytes, minimal_pdf
 from fastapi.testclient import TestClient
 
 from assessment_engine.config import get_settings
 from assessment_engine.extract import extract
 from assessment_engine.passages import bm25, chunk, guess_language, injection_flags
 from assessment_engine.storage import EvidenceStore, StorageError, parse_key
+from govhub_shared.auth.testing import headers, user
 
 NOTICE_EN = (
     "Notice templates. Clients receive a plain-language notice on the online portal before "
@@ -31,11 +33,17 @@ NOTICE_FR = (
 KEY = base64.b64encode(b"k" * 32).decode()
 
 
+def as_owner(system: str) -> Any:
+    """The fictional owner "owner-01" of the system's tenant (the uploader recorded)."""
+    return headers(user("owner-01", system_owner=[TEST_SYSTEMS.tenant_of(system) or ""]),
+                   "assessment-engine")  # fmt: skip
+
+
 def upload(api: TestClient, name: str, data: bytes, system: str = "SYS-001") -> dict:  # type: ignore[type-arg]
     resp = api.post(
         f"/systems/{system}/evidence",
         files={"file": (name, data)},
-        headers={"X-GovHub-User": "owner-01"},
+        headers=as_owner(system),
     )
     assert resp.status_code == 201, resp.text
     return resp.json()  # type: ignore[no-any-return]

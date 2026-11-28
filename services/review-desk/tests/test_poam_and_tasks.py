@@ -18,6 +18,8 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from connector_hub import app as connector_module
+from govhub_shared.auth.testing import KEYS, DefaultCaller, service
+from govhub_shared.auth.web import install
 from govhub_shared.oscal import validate
 from review_desk.app import app as desk_app
 from review_desk.app import get_task_sink
@@ -39,7 +41,10 @@ def servicenow(desk: TestClient, impact_report: dict[str, Any]) -> Iterator[Fast
     task sink pointed at connector-hub."""
     client, sn_app = mock_client()
     connector_module.app.dependency_overrides[connector_module.get_client] = lambda: client
+    install(connector_module.app, "connector-hub", KEYS.trust)
     connector = TestClient(connector_module.app)
+    # review-desk's own service identity, as HttpTaskSink sends it in production.
+    connector.auth = DefaultCaller(service("review-desk", all_tenants=True), "connector-hub")
     synced = connector.post("/tasks/sync-impact-report", json=impact_report).json()
     assert all(t["action"] == "created" for t in synced["tasks"])
     desk_app.dependency_overrides[get_task_sink] = lambda: HttpTaskSink("", http=connector)

@@ -144,6 +144,8 @@
     }
    ],
    "groups": [
+    "/govhub/agency-sample-benefits/system-owner",
+    "/govhub/dept-example-services/system-owner",
     "/govhub/office-fictional-permits/system-owner"
    ]
   },

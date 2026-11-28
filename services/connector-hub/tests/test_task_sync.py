@@ -9,12 +9,13 @@ from typing import Any
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from mock_support import REPO, mock_client
+from mock_support import REPO, mock_client, signed
 
 from connector_hub import app as app_module
 from connector_hub.live_check import SMOKE_ID, run_check
 from connector_hub.mapping import load_mapping
 from connector_hub.servicenow import ServiceNowClient
+from govhub_shared.auth.testing import DefaultCaller, headers, service
 
 MAPPING = load_mapping(REPO / "data" / "config" / "servicenow-mapping.toml")
 REPORT: dict[str, Any] = {
@@ -50,7 +51,7 @@ REPORT: dict[str, Any] = {
 def mock() -> Iterator[tuple[ServiceNowClient, FastAPI, TestClient]]:
     client, sn_app = mock_client()
     app_module.app.dependency_overrides[app_module.get_client] = lambda: client
-    yield client, sn_app, TestClient(app_module.app)
+    yield client, sn_app, signed(TestClient(app_module.app))
     app_module.app.dependency_overrides.clear()
 
 
@@ -98,8 +99,12 @@ def test_resync_updates_changed_fields_but_never_reopens(
     assert row["work_notes"][-1] == "GovHub impact report c560bb4d0af19c72"
 
 
+DESK = headers(service("review-desk", all_tenants=True), "connector-hub")
+
+
 def test_generic_task_and_notes(mock: tuple[ServiceNowClient, FastAPI, TestClient]) -> None:
     _, sn_app, api = mock
+    api.auth = DefaultCaller(service("review-desk", all_tenants=True), "connector-hub")
     body = api.post(
         "/tasks",
         json={
@@ -114,10 +119,13 @@ def test_generic_task_and_notes(mock: tuple[ServiceNowClient, FastAPI, TestClien
             "reference": "poam-item-uuid",
             "note": "Accepted with remediation by governance-officer-01",
         },
+        headers=DESK,
     ).json()
     assert body["action"] == "created" and body["number"].startswith("GOVT")
     note = api.post(
-        "/tasks/POAM-1234/notes", json={"text": "Fix verified", "state": "closed_complete"}
+        "/tasks/POAM-1234/notes",
+        json={"text": "Fix verified", "state": "closed_complete"},
+        headers=DESK,
     )
     assert note.status_code == 200
     row = tasks(sn_app)[0]
@@ -139,7 +147,7 @@ def test_acl_denial_is_reported() -> None:
     client, _ = mock_client(username="readonly.tester")
     app_module.app.dependency_overrides[app_module.get_client] = lambda: client
     try:
-        resp = TestClient(app_module.app).post("/tasks/sync-impact-report", json=REPORT)
+        resp = signed(TestClient(app_module.app)).post("/tasks/sync-impact-report", json=REPORT)
         assert resp.status_code == 502
         assert "User Not Authorized" in resp.json()["detail"]
     finally:

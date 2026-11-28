@@ -176,6 +176,22 @@ def open_for_review(lang: LangDep, backends: BackendsDep, finding_id: str) -> Re
     )
 
 
+CONFLICT_REASONS = ("uploaded-evidence", "wrote-facts")
+
+
+def refusal_messages(exc: BackendError, t: Translator) -> list[str] | None:
+    """review-desk's refusal in the page language: conflict of interest (with its reasons),
+    provenance unavailable, or the generic refusal; None for an outage (error page)."""
+    if "'code': 'conflict-of-interest'" in exc.detail:
+        reasons = [r for r in CONFLICT_REASONS if f"'{r}'" in exc.detail]
+        return [t("decide.error_conflict")] + [t(f"decide.conflict.{r}") for r in reasons]
+    if "'code': 'provenance-unavailable'" in exc.detail:
+        return [t("decide.error_provenance")]
+    if exc.status is None or exc.status >= 500:
+        return None
+    return [t("decide.error_refused", detail=exc.detail)]
+
+
 def decision_body(form: dict[str, str], t: Translator) -> tuple[dict[str, Any], list[str]]:
     """The review-desk request for the submitted form, or translated problems."""
     action = form.get("action", "")
@@ -228,9 +244,10 @@ def decide(
         try:
             result = backends.desk.post(f"/findings/{finding_id}/decisions", body)
         except BackendError as exc:
-            if exc.status is None or exc.status >= 500:
+            refused = refusal_messages(exc, Translator(lang))
+            if refused is None:
                 raise
-            errors = [Translator(lang)("decide.error_refused", detail=exc.detail)]
+            errors = refused
         else:
             seq = result["log"]["seq"]
             return RedirectResponse(

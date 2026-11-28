@@ -102,6 +102,8 @@ services:
       dockerfile: services/review-desk/Dockerfile
     command: ["review-desk", "serve", "--migrate", "--host", "0.0.0.0", "--port", "8000"]
     environment:
+      # Evidence and facts provenance for the conflict-of-interest check.
+      ASSESSMENT_ENGINE_URL: http://assessment-engine:8000
       # Internal tokens: everyone's public keys, and this service's own signing key.
       GOVHUB_TRUST_FILE: /keys/trust.json
       GOVHUB_SIGNING_KEY_FILE: /keys/review-desk.pem
