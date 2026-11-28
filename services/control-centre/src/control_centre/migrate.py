@@ -15,7 +15,10 @@ MIGRATION_LOCK_KEY = 0x434F4E54524F4C43  # "CONTROLC"
 def alembic_config(database_url: str | None = None) -> Config:
     cfg = Config()
     cfg.set_main_option("script_location", "control_centre:migrations")
-    cfg.set_main_option("sqlalchemy.url", database_url or get_settings().database_url)
+    cfg.set_main_option(
+        "sqlalchemy.url",
+        database_url or (get_settings().migration_database_url or get_settings().database_url),
+    )
     return cfg
 
 

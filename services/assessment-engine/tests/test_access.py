@@ -113,3 +113,42 @@ def test_drafting_and_platform_admin(engine_api: TestClient) -> None:
     admin = as_(user("pa", platform=(PLATFORM_ADMIN,)))
     assert engine_api.get(f"/systems/{SYS}/evidence", headers=admin).status_code == 404
     assert engine_api.get("/evidence-policy", headers=admin).status_code == 200
+
+
+def test_every_row_carries_the_systems_tenant(engine_api: TestClient, ae_engine: Any) -> None:
+    from sqlalchemy import text
+
+    _upload(engine_api, SYS)
+    engine_api.put(f"/systems/{SYS}/facts", json=FACTS)
+    body = {"system_id": SYS, "catalog": "example-widgets", "catalog_version": "1.0.0",
+            "control_ids": ["WID-6.1.2"], "as_of": "2026-12-01"}  # fmt: skip
+    assert engine_api.post("/assessments", json=body).status_code == 201
+    with ae_engine.connect() as conn:
+        for table in ("evidence_documents", "evidence_passages", "system_facts", "assessments",
+                      "assessment_results_documents"):  # fmt: skip
+            tenants = set(conn.scalars(text(f"SELECT DISTINCT tenant FROM {table}")))  # noqa: S608
+            assert tenants == {"office-fictional-permits"}, table
+
+
+def test_backfill_sets_the_tenant_of_old_rows(engine_api: TestClient, ae_engine: Any,
+                                              ae_database_url: str) -> None:  # fmt: skip
+    from sqlalchemy import text
+
+    from assessment_engine.backfill import backfill
+
+    _upload(engine_api, SYS)
+    body = {"system_id": SYS, "catalog": "example-widgets", "catalog_version": "1.0.0",
+            "control_ids": ["WID-6.1.2"], "as_of": "2026-12-01"}  # fmt: skip
+    engine_api.post("/assessments", json=body)
+    with ae_engine.begin() as conn:  # as stored before Milestone 7
+        for table in ("evidence_documents", "evidence_passages", "assessments"):
+            conn.execute(text(f"ALTER TABLE {table} DISABLE TRIGGER USER"))
+            conn.execute(text(f"UPDATE {table} SET tenant = NULL"))  # noqa: S608
+            conn.execute(text(f"ALTER TABLE {table} ENABLE TRIGGER USER"))
+    counts = backfill(ae_database_url, TEST_SYSTEMS)
+    assert counts["evidence_documents"] == 1 and counts["assessments"] == 1
+    with ae_engine.connect() as conn:
+        assert conn.scalar(text("SELECT count(*) FROM assessments WHERE tenant IS NULL")) == 0
+        # The immutability trigger is back on.
+        with pytest.raises(Exception, match="immutable"):
+            conn.execute(text("UPDATE assessments SET verdict = 'met'"))

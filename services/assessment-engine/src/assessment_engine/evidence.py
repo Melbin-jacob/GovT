@@ -65,6 +65,7 @@ def ingest(
     filename: str,
     data: bytes,
     uploaded_by: str,
+    tenant: str | None = None,
 ) -> tuple[EvidenceDocument, list[Passage], bool]:
     """Store and index one file. Returns (document, passages, created)."""
     extracted = extract(filename, data)
@@ -82,6 +83,7 @@ def ingest(
     doc = EvidenceDocument(
         id=doc_id,
         system_id=system_id,
+        tenant=tenant,
         filename=Path(filename).name[:255],
         media_type=extracted.media_type,
         sha256=digest,
@@ -100,6 +102,7 @@ def ingest(
             id=f"{doc_id}:{i}",
             document_id=doc_id,
             system_id=system_id,
+            tenant=tenant,
             seq=i,
             text=text,
             language=psg.guess_language(text) if language == "unknown" else language,

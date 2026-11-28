@@ -131,7 +131,11 @@ def open_finding(finding_id: str, session: Tx, who: ReviewerAnywhere) -> dict[st
     finding = _finding(session, finding_id, who)
     reviewer = reviewer_in(who, finding.tenant)
     review = ReviewSession(
-        finding_id=finding_id, reviewer=reviewer.id, opened_at=datetime.now(UTC), closed=False
+        finding_id=finding_id,
+        reviewer=reviewer.id,
+        opened_at=datetime.now(UTC),
+        closed=False,
+        tenant=finding.tenant,
     )
     session.add(review)
     session.flush()

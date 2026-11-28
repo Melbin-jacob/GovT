@@ -161,3 +161,27 @@ def test_conflict_check_fails_closed(desk: TestClient, impact_report: dict[str, 
     resp = decide(desk, mine["id"], ACCEPT, headers=as_(user("rv", reviewer=[PERMITS])))
     assert resp.status_code == 503 and resp.json()["detail"]["code"] == "provenance-unavailable"
     assert desk.get(f"/findings/{mine['id']}/decisions").json() == []  # nothing recorded
+
+
+def test_tenant_columns_follow_the_finding(
+    desk: TestClient, impact_report: dict[str, Any], review_engine: Any
+) -> None:
+    from sqlalchemy import text
+
+    mine, _ = _split(load_report(desk, impact_report))
+    reviewer = as_(user("rv", reviewer=[PERMITS]))
+    opened = desk.post(f"/findings/{mine['id']}/open", headers=reviewer).json()
+    remediate = {"action": "accept-with-remediation", "annotation": "Needs a fix.",
+                 "remediation": {"description": "Fix it.", "due_date": "2027-01-31"},
+                 "session_id": opened["session_id"]}  # fmt: skip
+    assert decide(desk, mine["id"], remediate, headers=reviewer).status_code == 200
+    with review_engine.connect() as conn:
+        for table in ("review_sessions", "poam_versions", "decision_log"):
+            got = set(conn.scalars(text(f"SELECT DISTINCT tenant FROM {table}")))  # noqa: S608
+            assert got == {PERMITS}, table
+        # The decision log's tenant is generated from the record itself, never written.
+        generated = conn.scalar(text(
+            "SELECT attgenerated FROM pg_attribute WHERE attrelid = 'decision_log'::regclass "
+            "AND attname = 'tenant'"
+        ))  # fmt: skip
+        assert generated == "s"

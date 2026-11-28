@@ -180,6 +180,7 @@ def add_item(
     validate(doc, KIND)
     row = PoamVersion(
         system_id=finding.system_id,
+        tenant=finding.tenant,
         version=version,
         document=doc,
         content_hash=content_hash(doc, KIND),

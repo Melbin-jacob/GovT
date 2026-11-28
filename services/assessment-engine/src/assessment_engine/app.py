@@ -95,7 +95,7 @@ async def upload_evidence(
 ) -> dict[str, Any]:
     """Store and index one evidence file for a system (same file twice: no duplicate).
     The system's owners and reviewers; the uploader is recorded (conflict of interest)."""
-    check_system(systems, who, system_id, *EVIDENCE_WRITERS)
+    tenant = check_system(systems, who, system_id, *EVIDENCE_WRITERS)
     user = who.id
     settings = get_settings()
     data = await file.read(settings.max_upload_bytes + 1)
@@ -108,6 +108,7 @@ async def upload_evidence(
         filename=file.filename or "upload",
         data=data,
         uploaded_by=user,
+        tenant=tenant,
     )
     session.commit()
     return {**evidence.document_view(doc, rows), "created": created}
@@ -177,7 +178,7 @@ def put_facts(
 ) -> dict[str, Any]:
     """Record structured facts about a system (latest value wins; null clears a fact).
     The system's owners and reviewers; the writer is recorded (conflict of interest)."""
-    check_system(systems, who, system_id, *EVIDENCE_WRITERS)
+    tenant = check_system(systems, who, system_id, *EVIDENCE_WRITERS)
     user = who.id
     now = datetime.now(UTC)
     for name, entry in facts.items():
@@ -185,12 +186,13 @@ def put_facts(
             raise HTTPException(422, f"fact {name}: expected {{'value': ..., 'source': ...}}")
         row = session.get(SystemFact, (system_id, name))
         if row is None:
-            row = SystemFact(system_id=system_id, name=name)
+            row = SystemFact(system_id=system_id, name=name, tenant=tenant)
             session.add(row)
         row.value = entry["value"]
         row.source = str(entry.get("source", ""))[:255]
         row.recorded_by = user[:128]
         row.recorded_at = now
+        row.tenant = tenant
     session.commit()
     return {"system_id": system_id, "facts": _facts_view(session, system_id)}
 
@@ -290,11 +292,11 @@ def run_assessments(
 ) -> dict[str, Any]:
     """Assess controls for one system (a reviewer of its tenant). Results are drafts: a
     person decides."""
-    check_system(systems, who, body.system_id, *ASSESSORS)
+    tenant = check_system(systems, who, body.system_id, *ASSESSORS)
     try:
         run_id, rows, doc = engine.run(
             session,
-            engine.RunRequest(**body.model_dump()),
+            engine.RunRequest(**body.model_dump(), tenant=tenant),
             gateway=gateway,
             source=source,
             rules_dir=Path(get_settings().rules_dir),
@@ -357,7 +359,7 @@ def assess_open_findings(
 ) -> dict[str, Any]:
     """Assess the system's open findings in review-desk and post the drafts back (a
     reviewer of the system's tenant). The findings stay open: a person decides."""
-    check_system(systems, who, system_id, *ASSESSORS)
+    tenant = check_system(systems, who, system_id, *ASSESSORS)
     findings = [
         f
         for f in desk.open_findings(system_id)
@@ -375,6 +377,7 @@ def assess_open_findings(
             control_ids=sorted(by_control),
             as_of=body.as_of,
             findings=by_control,
+            tenant=tenant,
         )
         try:
             run_id, rows, doc = engine.run(

@@ -35,6 +35,7 @@ class RunRequest:
     control_ids: list[str]
     as_of: date
     findings: dict[str, str]  # control ID -> review-desk finding ID
+    tenant: str | None = None  # the system's tenant (row-level security)
 
 
 def facts_of(session: Session, system_id: str) -> dict[str, rules.Fact]:
@@ -128,6 +129,7 @@ def run(
                 run_id=run_id,
                 finding_id=request.findings.get(control_id),
                 system_id=request.system_id,
+                tenant=request.tenant,
                 catalog=request.catalog,
                 catalog_version=request.catalog_version,
                 control_id=control_id,
@@ -151,6 +153,7 @@ def run(
     stored = AssessmentResultsDocument(
         run_id=run_id,
         system_id=request.system_id,
+        tenant=request.tenant,
         document=doc,
         content_hash=content_hash(doc, "assessment-results"),
         created_at=started,

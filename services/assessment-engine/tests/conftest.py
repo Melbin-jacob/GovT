@@ -7,15 +7,16 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from ae_support import DEMO_TENANTS, TABLES, TEST_SYSTEMS
+from ae_support import DEMO_TENANTS, REPO, TABLES, TEST_SYSTEMS
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
 from assessment_engine.access import get_systems
-from assessment_engine.app import app
+from assessment_engine.app import app, get_controls
 from assessment_engine.config import get_settings
+from assessment_engine.controls import FileControls
 from assessment_engine.db import get_session
 from assessment_engine.migrate import downgrade, ensure_database, upgrade
 from govhub_shared.auth import GOVERNANCE_OFFICER
@@ -82,6 +83,8 @@ def engine_api(ae_engine: Engine, ae_db: Session) -> Iterator[TestClient]:
 
     app.dependency_overrides[get_session] = _session
     app.dependency_overrides[get_systems] = lambda: TEST_SYSTEMS
+    # Never a real rulebook in tests: the committed demo catalogs (tests may override).
+    app.dependency_overrides[get_controls] = lambda: FileControls(REPO / "data/demo/catalogs")
     with TestClient(app) as client:
         client.auth = DefaultCaller(EVERYONE, "assessment-engine")
         yield client

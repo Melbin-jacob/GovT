@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="REVIEW_DESK_", populate_by_name=True)
 
     database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/review_desk"
+    # Migrations run as the database owner; the service runs as the app role (no
+    # ownership, no row-level-security bypass). Empty: the runtime URL does both.
+    migration_database_url: str = ""
     # Internal URL of connector-hub (tasks in ServiceNow). Empty: side effects are recorded
     # as "not sent" in the decision log instead.
     connector_hub_url: str = Field(default="", validation_alias="CONNECTOR_HUB_URL")

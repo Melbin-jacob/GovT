@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="RULEBOOK_")
 
     database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/rulebook"
+    # Migrations run as the database owner; the service runs as the app role (no
+    # ownership, no row-level-security bypass). Empty: the runtime URL does both.
+    migration_database_url: str = ""
     # Relative paths resolve against the working directory (/app in the container).
     due_dates_path: str = "data/config/due-dates.toml"
     # Approval-log checkpoints outside the database (empty disables).

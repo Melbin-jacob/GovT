@@ -30,7 +30,8 @@ services:
       GOVHUB_TRUST_FILE: /keys/trust.json
       GOVHUB_SIGNING_KEY_FILE: /keys/rulebook.pem
       GOVHUB_SIGNING_KID_FILE: /keys/rulebook.kid
-      RULEBOOK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/rulebook
+      RULEBOOK_DATABASE_URL: postgresql+psycopg://govhub_app:govhub_app@postgres:5432/rulebook
+      RULEBOOK_MIGRATION_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/rulebook
       # Approval-log checkpoints on their own volume, not the database's.
       RULEBOOK_APPROVAL_CHECKPOINT_FILE: /checkpoints/approval-log.jsonl
     volumes:
@@ -108,7 +109,8 @@ services:
       GOVHUB_TRUST_FILE: /keys/trust.json
       GOVHUB_SIGNING_KEY_FILE: /keys/review-desk.pem
       GOVHUB_SIGNING_KID_FILE: /keys/review-desk.kid
-      REVIEW_DESK_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/review_desk
+      REVIEW_DESK_DATABASE_URL: postgresql+psycopg://govhub_app:govhub_app@postgres:5432/review_desk
+      REVIEW_DESK_MIGRATION_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/review_desk
       CONNECTOR_HUB_URL: http://connector-hub:8000
       # Decision-log checkpoints on their own volume, not the database's.
       REVIEW_DESK_CHECKPOINT_FILE: /checkpoints/decision-log.jsonl
@@ -144,7 +146,8 @@ services:
       GOVHUB_TRUST_FILE: /keys/trust.json
       GOVHUB_SIGNING_KEY_FILE: /keys/assessment-engine.pem
       GOVHUB_SIGNING_KID_FILE: /keys/assessment-engine.kid
-      ASSESSMENT_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/assessment_engine
+      ASSESSMENT_DATABASE_URL: postgresql+psycopg://govhub_app:govhub_app@postgres:5432/assessment_engine
+      ASSESSMENT_MIGRATION_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/assessment_engine
       ASSESSMENT_EVIDENCE_DIR: /evidence
       ASSESSMENT_EVIDENCE_KEY: ZGV2LW9ubHktZmljdGlvbmFsLWRlbW8tZGF0YS1rZXk=  # dev only
       RULEBOOK_URL: http://rulebook:8000
@@ -228,7 +231,8 @@ services:
               "--host", "0.0.0.0", "--port", "8000"]
     environment:
       # Its own database: tenants, sessions, and later their data settings and grants.
-      CONTROL_CENTRE_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/control_centre
+      CONTROL_CENTRE_DATABASE_URL: postgresql+psycopg://govhub_app:govhub_app@postgres:5432/control_centre
+      CONTROL_CENTRE_MIGRATION_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/control_centre
       # Labelled demo mode (fictional users). It refuses to start unless every tenant is
       # synthetic and the deployment is internal-only (ports published on 127.0.0.1).
       # Sign-in with Keycloak instead: docs/identity.md (profile "oidc").

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
         default="http://127.0.0.1:8005", validation_alias="ASSESSMENT_ENGINE_URL"
     )
     database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/control_centre"
+    # Migrations run as the database owner; the service runs as the app role (no
+    # ownership, no row-level-security bypass). Empty: the runtime URL does both.
+    migration_database_url: str = ""
     # Public keys of every token issuer (govhub-trust/1); see govhub_shared.auth.devkeys.
     trust_file: str = Field(default="var/keys/trust.json", validation_alias="GOVHUB_TRUST_FILE")
     # Sign-in: "oidc" (production) or "demo" (labelled, fictional users; refuses to start

@@ -14,6 +14,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     serve.add_argument("--port", type=int, default=8005)
     serve.add_argument("--migrate", action="store_true", help="Apply migrations first")
     sub.add_parser("migrate", help="Apply database migrations")
+    sub.add_parser("backfill-tenants", help="Set the tenant of rows stored before sign-in")
     fake = sub.add_parser("fake-model", help="Scripted fake model server (demo and CI only)")
     fake.add_argument("--host", default="127.0.0.1")
     fake.add_argument("--port", type=int, default=8090)
@@ -56,6 +57,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         from assessment_engine.harness_cli import accuracy
 
         return accuracy(args)
+    if args.command == "backfill-tenants":
+        from assessment_engine.access import get_systems
+        from assessment_engine.backfill import backfill
+        from assessment_engine.config import get_settings
+
+        settings = get_settings()
+        counts = backfill(settings.migration_database_url or settings.database_url, get_systems())
+        print(", ".join(f"{t}: {n}" for t, n in counts.items()))
+        return 0
     if args.command == "fake-model":
         import uvicorn
 

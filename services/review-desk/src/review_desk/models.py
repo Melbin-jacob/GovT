@@ -9,6 +9,7 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     CheckConstraint,
+    Computed,
     Date,
     DateTime,
     Float,
@@ -89,6 +90,7 @@ class ReviewSession(Base):
     reviewer: Mapped[str] = mapped_column(String(200))
     opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     closed: Mapped[bool] = mapped_column(Boolean, default=False)
+    tenant: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
 
 
 class DecisionRecord(Base):
@@ -105,6 +107,10 @@ class DecisionRecord(Base):
     previous_hash: Mapped[str] = mapped_column(String(71))
     record_hash: Mapped[str] = mapped_column(String(71), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # Read from the record's own text (never written): row-level security by tenant.
+    tenant: Mapped[str | None] = mapped_column(
+        String(100), Computed("(record_text::jsonb) ->> 'tenant'", persisted=True), nullable=True
+    )
 
 
 class PoamVersion(Base):
@@ -119,3 +125,4 @@ class PoamVersion(Base):
     document: Mapped[dict[str, Any]] = mapped_column(JSONB)
     content_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    tenant: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)

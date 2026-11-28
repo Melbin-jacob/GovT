@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="ASSESSMENT_", populate_by_name=True)
 
     database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/assessment_engine"
+    # Migrations run as the database owner; the service runs as the app role (no
+    # ownership, no row-level-security bypass). Empty: the runtime URL does both.
+    migration_database_url: str = ""
     # Evidence files live on their own volume (never in git, never in an image). Encrypt the
     # volume at rest where the platform allows (encrypted StorageClass / disk encryption).
     # With ASSESSMENT_EVIDENCE_KEY set (base64, 32 bytes) files are also encrypted by the

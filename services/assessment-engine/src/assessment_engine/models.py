@@ -22,6 +22,8 @@ class EvidenceDocument(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     system_id: Mapped[str] = mapped_column(String(64), index=True)
+    # The system's tenant (row-level security); set on every insert.
+    tenant: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     filename: Mapped[str] = mapped_column(String(255))
     media_type: Mapped[str] = mapped_column(String(128))
     sha256: Mapped[str] = mapped_column(String(64))
@@ -45,6 +47,8 @@ class Passage(Base):
         ForeignKey("evidence_documents.id", ondelete="CASCADE"), index=True
     )
     system_id: Mapped[str] = mapped_column(String(64), index=True)
+    # The system's tenant (row-level security); set on every insert.
+    tenant: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     seq: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
     language: Mapped[str] = mapped_column(String(8))
@@ -57,6 +61,8 @@ class SystemFact(Base):
     __tablename__ = "system_facts"
 
     system_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    # The system's tenant (row-level security); set on every insert.
+    tenant: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(64), primary_key=True)
     value: Mapped[Any] = mapped_column(JSONB, nullable=True)
     source: Mapped[str] = mapped_column(String(255), default="")
@@ -74,6 +80,8 @@ class Assessment(Base):
     run_id: Mapped[str] = mapped_column(String(36), index=True)
     finding_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     system_id: Mapped[str] = mapped_column(String(64), index=True)
+    # The system's tenant (row-level security); set on every insert.
+    tenant: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     catalog: Mapped[str] = mapped_column(String(128))
     catalog_version: Mapped[str] = mapped_column(String(32))
     control_id: Mapped[str] = mapped_column(String(64))
@@ -92,6 +100,8 @@ class AssessmentResultsDocument(Base):
 
     run_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     system_id: Mapped[str] = mapped_column(String(64), index=True)
+    # The system's tenant (row-level security); set on every insert.
+    tenant: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     document: Mapped[dict[str, Any]] = mapped_column(JSONB)
     content_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

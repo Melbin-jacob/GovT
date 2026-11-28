@@ -15,7 +15,10 @@ MIGRATION_LOCK_KEY = 0x5245564945574453  # "REVIEWDS"
 def alembic_config(database_url: str | None = None) -> Config:
     cfg = Config()
     cfg.set_main_option("script_location", "review_desk:migrations")
-    cfg.set_main_option("sqlalchemy.url", database_url or get_settings().database_url)
+    cfg.set_main_option(
+        "sqlalchemy.url",
+        database_url or (get_settings().migration_database_url or get_settings().database_url),
+    )
     return cfg
 
 

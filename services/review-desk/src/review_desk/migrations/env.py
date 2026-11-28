@@ -13,7 +13,9 @@ target_metadata = Base.metadata
 
 
 def _url() -> str:
-    return config.get_main_option("sqlalchemy.url") or get_settings().database_url
+    return config.get_main_option("sqlalchemy.url") or (
+        get_settings().migration_database_url or get_settings().database_url
+    )
 
 
 def run() -> None:
