@@ -35,4 +35,7 @@ def transaction(session: Annotated[Session, Depends(get_session)]) -> Iterator[S
         raise
 
 
-Tx = Annotated[Session, Depends(transaction)]
+# scope="function": commit when the endpoint returns, BEFORE the response is sent. With the
+# default ("request") the commit ran after the client already had its 201, so a fast next
+# request could miss the row (seen in CI: a second POST /catalogs hit a duplicate name).
+Tx = Annotated[Session, Depends(transaction, scope="function")]
