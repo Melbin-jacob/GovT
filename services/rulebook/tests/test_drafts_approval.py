@@ -11,9 +11,11 @@ from drafts_support import (
     OFFICER,
     OFFICER_2,
     REVIEWER,
+    approve,
     by_kind,
     create_batch,
     draft_everything,
+    open_both,
 )
 from fastapi.testclient import TestClient
 from test_impact import seed
@@ -42,8 +44,11 @@ def drafted_batch(client: TestClient) -> dict[str, Any]:
 def approve_all(
     client: TestClient, batch: dict[str, Any], headers: dict[str, str] = OFFICER
 ) -> None:
+    sid = open_both(client, batch["id"], headers)
     for item in batch["items"]:
-        resp = client.post(f"/drafts/items/{item['id']}/approve", headers=headers)
+        resp = client.post(
+            f"/drafts/items/{item['id']}/approve", json={"session_id": sid}, headers=headers
+        )
         assert resp.status_code == 200, (item["kind"], resp.json())
 
 
@@ -66,7 +71,7 @@ def test_two_person_rule(client: TestClient) -> None:
         "officer-01 last edited this draft and cannot also approve it"
         in refused.json()["detail"]["message"]
     )
-    assert client.post(f"/drafts/items/{item['id']}/approve", headers=OFFICER_2).status_code == 200
+    assert approve(client, batch["id"], item["id"], OFFICER_2).status_code == 200
 
 
 def test_roles_needs_human_and_language_agreement(client: TestClient) -> None:
@@ -172,6 +177,6 @@ def test_rejecting_a_reference_update_leaves_a_stale_link(client: TestClient) ->
                 headers=OFFICER,
             )
         else:
-            client.post(f"/drafts/items/{item['id']}/approve", headers=OFFICER)
+            approve(client, batch["id"], item["id"])
     resp = client.post(f"/drafts/batches/{batch['id']}/publish", json={}, headers=OFFICER)
     assert resp.status_code == 409 and resp.json()["detail"]["code"] == "stale-links"

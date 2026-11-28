@@ -179,6 +179,7 @@ def stub_engine(hub: FakeHub, system_id: str = "SYS-002") -> None:
 
 
 DRAFT_BATCH = "75e803c6-e4aa-4ac3-852f-c9e88a5e1d2e"
+DRAFT_SESSION = "5e55a0b1-0000-4000-8000-000000000001"
 
 
 def stub_drafts(hub: FakeHub, state: str = "open") -> dict[str, Any]:
@@ -193,6 +194,13 @@ def stub_drafts(hub: FakeHub, state: str = "open") -> dict[str, Any]:
     )  # fmt: skip
     hub.rulebook.on("GET", "/sources", fixture("sources.json"))
     hub.rulebook.on("GET", "/catalogs", fixture("catalogs.json"))
+    hub.rulebook.on("POST", "/drafts/sessions", {"id": DRAFT_SESSION})
+
+    def views(request: httpx.Request) -> Any:
+        body = json.loads(request.content)
+        return {"recorded": 6, "lang": body["lang"], "session_id": body["session_id"]}
+
+    hub.rulebook.on("POST", f"/drafts/batches/{DRAFT_BATCH}/views", views)
     return batch
 
 

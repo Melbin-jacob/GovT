@@ -92,3 +92,26 @@ def draft_everything(client: TestClient, batch: dict[str, Any]) -> None:
                 body["check_type"] = "judgment" if key == "6.2.2" else "rule-based"
             resp = client.put(f"/drafts/items/{item['id']}/model/{lang}", json=body, headers=ENGINE)
             assert resp.status_code == 200, resp.json()
+
+
+def open_both(client: TestClient, batch_id: str, headers: dict[str, str]) -> str:
+    """Start an approval session and open the English and French views of the batch."""
+    sid: str = client.post("/drafts/sessions", headers=headers).json()["id"]
+    for lang in ("en", "fr"):
+        resp = client.post(
+            f"/drafts/batches/{batch_id}/views",
+            json={"session_id": sid, "lang": lang},
+            headers=headers,
+        )
+        assert resp.status_code == 200, resp.json()
+    return sid
+
+
+def approve(
+    client: TestClient, batch_id: str, item_id: str, headers: dict[str, str] = OFFICER
+) -> Any:
+    """Read both languages in a fresh session, then approve."""
+    sid = open_both(client, batch_id, headers)
+    return client.post(
+        f"/drafts/items/{item_id}/approve", json={"session_id": sid}, headers=headers
+    )
