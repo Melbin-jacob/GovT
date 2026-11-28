@@ -133,7 +133,9 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
 - Drafting (M6): the rulebook plans with plain code; the model drafts each language from
   that language's text only (never translated); instruction-like clause text is never sent.
   Only a governance officer approves, never the person who last edited the draft
-  (two-person rule, enforced by the rulebook). The approval log is append-only and
+  (two-person rule, enforced by the rulebook), and only after opening both languages'
+  drafts in their approval session since the draft last changed (server-recorded views;
+  the checkbox is only the explicit confirmation). The approval log is append-only and
   hash-chained like the decision log. New control IDs are `<prefix>-C<nnn>`, never reused.
   The drafting harness's synthetic batch is the planner's output (regenerate with
   `UPDATE_DRAFTING_BATCH=1`); recordings via `scripts/make_synthetic_recordings.py`.

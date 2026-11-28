@@ -34,6 +34,8 @@ TABLES = (
     "profiles",
     "inventory_snapshots",
     "ai_systems",
+    "draft_views",
+    "draft_sessions",
     "draft_items",
     "draft_batches",
     "approval_log",
@@ -82,9 +84,11 @@ def engine(database_url: str) -> Iterator[Engine]:
 def db(engine: Engine) -> Iterator[Session]:
     with engine.begin() as conn:
         # The approval log refuses TRUNCATE; as its owner, tests may switch that off briefly.
-        conn.execute(text("ALTER TABLE approval_log DISABLE TRIGGER USER"))
+        for table in ("approval_log", "draft_views"):  # append-only outside tests
+            conn.execute(text(f"ALTER TABLE {table} DISABLE TRIGGER USER"))
         conn.execute(text(f"TRUNCATE {', '.join(TABLES)} CASCADE"))
-        conn.execute(text("ALTER TABLE approval_log ENABLE TRIGGER USER"))
+        for table in ("approval_log", "draft_views"):
+            conn.execute(text(f"ALTER TABLE {table} ENABLE TRIGGER USER"))
     with sessionmaker(bind=engine, expire_on_commit=False)() as session:
         yield session
 

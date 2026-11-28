@@ -7,7 +7,7 @@ Every French string is **unverified, written by Claude Code**, unless marked
 comes from the French catalog. Have a qualified translator review the unverified
 strings before any use outside the demo.
 
-548 strings: 3 provided by the project owner, 545 unverified.
+553 strings: 3 provided by the project owner, 550 unverified.
 
 ## Web UI (`services/control-centre/src/control_centre/locales/fr.toml`)
 
@@ -81,7 +81,7 @@ strings before any use outside the demo.
 | `drafts.check_type` | Type de contrôle | Check type | Unverified, written by Claude Code |
 | `drafts.clause_change` | Changement de la disposition | Clause change | Unverified, written by Claude Code |
 | `drafts.clause_removed` | La disposition a été supprimée de la nouvelle version. | The clause was removed from the new version. | Unverified, written by Claude Code |
-| `drafts.confirm_both` | J'ai lu les ébauches dans les deux langues | I have read the drafts in both languages | Unverified, written by Claude Code |
+| `drafts.confirm_both` | J'ai lu les ébauches dans les deux langues (vérifié aussi par le serveur) | I have read the drafts in both languages (also checked by the server) | Unverified, written by Claude Code |
 | `drafts.created` | Commencé | Started | Unverified, written by Claude Code |
 | `drafts.current` | Contrôle actuel | Current control | Unverified, written by Claude Code |
 | `drafts.decided.approved` | Approuvé par {who} | Approved by {who} | Unverified, written by Claude Code |
@@ -105,10 +105,12 @@ strings before any use outside the demo.
 | `drafts.error.no-statement` | Une ébauche n'a pas de texte d'exigence. | A draft has no requirement text. | Unverified, written by Claude Code |
 | `drafts.error.no-wording` | Cet élément n'a pas de libellé à modifier. | This item has no wording to edit. | Unverified, written by Claude Code |
 | `drafts.error.not-new` | Seuls les nouveaux contrôles reçoivent un identifiant proposé. | Only new controls get a proposed ID. | Unverified, written by Claude Code |
+| `drafts.error.not-read` | Ouvrez cette ébauche dans les deux langues (cette page et la page de l'autre langue) avant de l'approuver; une ébauche modifiée depuis son ouverture doit être ouverte de nouveau. | Open this draft in both languages (this page and the other language's page) before approving; a draft changed since you opened it must be opened again. | Unverified, written by Claude Code |
 | `drafts.error.not-ready` | L'élément n'est pas prêt : les deux langues doivent avoir une ébauche. | The item is not ready: both languages need a draft. | Unverified, written by Claude Code |
 | `drafts.error.reason` | Un rejet doit être motivé. | A rejection needs a reason. | Unverified, written by Claude Code |
 | `drafts.error.refused` | Le recueil de règles a refusé la demande. | The rulebook refused the request. | Unverified, written by Claude Code |
 | `drafts.error.role` | Votre rôle ne le permet pas : seul un agent de gouvernance approuve ou rejette, et seuls les réviseurs et les agents de gouvernance modifient. | Your role cannot do this: only a governance officer approves or rejects, and only reviewers and governance officers edit. | Unverified, written by Claude Code |
+| `drafts.error.session` | Votre séance d'approbation ne correspond pas à la personne qui agit. Rechargez la page et réessayez. | Your approval session does not match the person acting. Reload the page and try again. | Unverified, written by Claude Code |
 | `drafts.error.source-date` | La date de source doit être postérieure à la date de source précédente; le contrôle de SOURCE_DATE la refuserait. | The source date must be a date later than the previous source date; the SOURCE_DATE guard would refuse it. | Unverified, written by Claude Code |
 | `drafts.error.stale-links` | Un contrôle garderait un lien vers une disposition qui a maintenant un autre sens. Approuvez la mise à jour de son renvoi ou retirez-le. | A control would keep a link to a clause that now has another meaning. Approve its clause-reference update or retire it. | Unverified, written by Claude Code |
 | `drafts.error.two-person-rule` | Règle des deux personnes : vous avez modifié cette ébauche en dernier; un autre agent de gouvernance doit donc l'approuver. | Two-person rule: you last edited this draft, so another governance officer must approve it. | Unverified, written by Claude Code |
@@ -150,7 +152,10 @@ strings before any use outside the demo.
 | `drafts.publish_hint` | Les modifications approuvées forment la version {version} du catalogue, en anglais et en français (celles qui ont été rejetées sont exclues). Les versions enregistrées ne changent jamais. | Approved changes become catalog version {version} in English and in French (rejected ones are left out). Stored versions never change. | Unverified, written by Claude Code |
 | `drafts.publish_wait` | Chaque élément doit faire l'objet d'une décision (approuvé ou rejeté) avant que la nouvelle version puisse être publiée. | Every item needs a decision (approved or rejected) before the new version can be published. | Unverified, written by Claude Code |
 | `drafts.published` | Publié comme version {version} du catalogue. | Published as catalog version {version}. | Unverified, written by Claude Code |
+| `drafts.read.no` | ébauche en {language} pas encore ouverte | {language} draft not opened yet | Unverified, written by Claude Code |
+| `drafts.read.yes` | ébauche en {language} ouverte | {language} draft opened | Unverified, written by Claude Code |
 | `drafts.read_other` | Lire l'ébauche en {language} | Read the {language} draft | Unverified, written by Claude Code |
+| `drafts.read_status` | Ouvertes dans votre séance d'approbation depuis la dernière modification de l'ébauche : | Opened in your approval session since the draft last changed: | Unverified, written by Claude Code |
 | `drafts.reason.citation-not-found` | le texte cité ne figure pas dans la nouvelle disposition | the quoted clause text is not in the new clause | Unverified, written by Claude Code |
 | `drafts.reason.incomplete` | l'ébauche du modèle est incomplète | the model's draft is incomplete | Unverified, written by Claude Code |
 | `drafts.reason.instruction-like-text` | la disposition contient un texte ressemblant à des instructions; elle n'a donc pas été envoyée au modèle | the clause contains instruction-like text, so it was not sent to the model | Unverified, written by Claude Code |

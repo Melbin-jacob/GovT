@@ -3,7 +3,9 @@
 Side by side per item: the current control, the clause change (old and new official
 text) and the draft, all in the page language; French pages never show English drafts.
 The other language's draft status is shown with a link to it. Approving approves both
-languages, so the approver confirms having read both. Edit, approve or reject per item;
+languages: the rulebook records which language views the person opened (in an approval
+session) and refuses approval until both were opened since the draft last changed; the
+approver also confirms it explicitly. Edit, approve or reject per item;
 publish the approved changes as a new catalog version.
 
 The rulebook enforces the rules (governance officers approve; the person who last edited
@@ -36,11 +38,14 @@ ACTORS: Final = {
 }
 DEFAULT_ACTOR: Final = "demo-officer-01"
 COOKIE: Final = "govhub_demo_actor"
+# The rulebook's approval session for the acting person: "<actor> <session id>".
+SESSION_COOKIE: Final = "govhub_draft_session"
 # Codes the rulebook returns when it refuses (approval.ApprovalError), plus the screen's own.
 ERROR_CODES: Final = (
     "two-person-rule", "role", "needs-human", "languages-differ", "not-ready", "id-used",
     "source-date", "undecided", "stale-links", "reason", "batch-closed", "item-decided",
-    "no-statement", "no-check-type", "no-wording", "not-new", "confirm-both", "refused",
+    "no-statement", "no-check-type", "no-wording", "not-new", "confirm-both", "not-read",
+    "session", "refused",
 )  # fmt: skip
 OBLIGATIONS: Final = ("must", "must-not", "should", "should-not", "may", "may-not", "restriction")
 NOTICES: Final = ("created", "drafted", "edited", "approved", "rejected", "published")
@@ -60,6 +65,12 @@ def error_code(exc: BackendError) -> str:
         if f"'code': '{code}'" in exc.detail:
             return code
     return "refused"
+
+
+def session_of(cookie: str | None, actor: str) -> str | None:
+    """The approval session in the cookie, if it belongs to the acting person."""
+    owner, _, sid = (cookie or "").partition(" ")
+    return sid if owner == actor and sid else None
 
 
 def min_source_date(previous: str) -> str:
@@ -111,6 +122,7 @@ def choose_actor(
     response = RedirectResponse(target, 303)
     if actor in ACTORS:
         response.set_cookie(COOKIE, actor, httponly=True, samesite="strict")
+        response.delete_cookie(SESSION_COOKIE)  # another person: another approval session
     return response
 
 
@@ -147,17 +159,36 @@ def batch_detail(
     error: str | None = None,
     item: str | None = None,
     actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
+    draft_session: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
 ) -> HTMLResponse:
-    batch = backends.rulebook.get(f"/drafts/batches/{batch_id}")
+    """Showing this page opens this language's view of every draft: the rulebook records
+    it in the person's approval session (approval needs both languages opened)."""
+    person = actor_of(actor)
+    sid = session_of(draft_session, person)
+    status = backends.rulebook.get(f"/drafts/batches/{batch_id}")["status"]
+    if status == "open":
+        headers = headers_for(person)
+        if sid is None:
+            sid = str(backends.rulebook.post("/drafts/sessions", {}, headers=headers)["id"])
+        backends.rulebook.post(
+            f"/drafts/batches/{batch_id}/views", {"session_id": sid, "lang": lang},
+            headers=headers,
+        )  # fmt: skip
+    batch = backends.rulebook.get(
+        f"/drafts/batches/{batch_id}", **({"session_id": sid} if sid else {})
+    )
     defaults = backends.rulebook.get(f"/drafts/batches/{batch_id}/publish-defaults")
     decided = all(i["status"] in ("approved", "rejected") for i in batch["items"])
-    return render(
+    response = render(
         request, lang, "drafts-batch.html", title_key="drafts.batch_title", screen="drafts",
-        batch=batch, defaults=defaults, decided=decided, actor=actor_of(actor), actors=ACTORS,
+        batch=batch, defaults=defaults, decided=decided, actor=person, actors=ACTORS,
         notice=notice if notice in NOTICES else None,
         error=error if error in ERROR_CODES else None, error_item=item,
         obligations=OBLIGATIONS, min_date=min_source_date(defaults["previous"]),
     )  # fmt: skip
+    if sid:
+        response.set_cookie(SESSION_COOKIE, f"{person} {sid}", httponly=True, samesite="strict")
+    return response
 
 
 @router.post("/{lang}/drafts/{batch_id}/items/{item_id}/edit")
@@ -201,6 +232,7 @@ def decide_item(
     reason: Annotated[str, Form()] = "",
     both_languages: Annotated[str, Form()] = "",
     actor: Annotated[str | None, Cookie(alias=COOKIE)] = None,
+    draft_session: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
 ) -> RedirectResponse:
     """Approve or reject; the rulebook enforces the role and the two-person rule."""
     if action not in ("approve", "reject"):
@@ -209,7 +241,8 @@ def decide_item(
         return _back(lang, batch_id, error="confirm-both", item=item_id)
     try:
         backends.rulebook.post(
-            f"/drafts/items/{item_id}/{action}", {"reason": reason},
+            f"/drafts/items/{item_id}/{action}",
+            {"reason": reason, "session_id": session_of(draft_session, actor_of(actor))},
             headers=headers_for(actor_of(actor)),
         )  # fmt: skip
     except BackendError as exc:

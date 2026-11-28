@@ -153,3 +153,4 @@ dl.facts.small { font-size: 0.95rem; }
 .badge-status-approved { background: #e6f4ea; color: #1e4620; }
 .badge-status-rejected, .badge-obligation-mismatch, .badge-instruction-like-text { background: var(--warn-bg); color: var(--warn-text); }
 .acting-as { border: 1px dashed var(--rule); padding: 0.5rem 0.75rem; margin: 1rem 0; }
+.read-status { flex-basis: 100%; margin: 0; }
