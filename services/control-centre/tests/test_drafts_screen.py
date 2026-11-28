@@ -8,10 +8,23 @@ from typing import Any
 
 import httpx
 import pytest
-from cc_support import DRAFT_BATCH, FakeHub, fixture, item_id, stub_catalog_change, stub_drafts
+from cc_support import (
+    DRAFT_BATCH,
+    DRAFT_SESSION,
+    FakeHub,
+    fixture,
+    item_id,
+    stub_catalog_change,
+    stub_drafts,
+)
 from fastapi.testclient import TestClient
 
-from control_centre.screens.drafts import COOKIE, check_source_date, min_source_date
+from control_centre.screens.drafts import (
+    COOKIE,
+    SESSION_COOKIE,
+    check_source_date,
+    min_source_date,
+)
 
 PAGE = f"/{{lang}}/drafts/{DRAFT_BATCH}"
 
@@ -198,8 +211,8 @@ def test_reject_needs_a_reason(ui: TestClient, hub: FakeHub) -> None:
     section = html.split(f'id="item-{iid}"')[1].split("</section>")[0]
     assert re.search(r'<input id="reason-[^"]+" name="reason" required', section)
     ui.post(f"/en/drafts/{DRAFT_BATCH}/items/{iid}/reject", data={"reason": "Wrong year."})
-    (sent,) = [r for r in hub.rulebook.requests if r.method == "POST"]
-    assert _json(sent) == {"reason": "Wrong year."}
+    (sent,) = [r for r in hub.rulebook.requests if r.url.path.endswith("/reject")]
+    assert _json(sent)["reason"] == "Wrong year."
 
 
 def test_source_date_rules() -> None:
@@ -313,3 +326,101 @@ def test_impact_screen_shows_a_catalog_change(ui: TestClient, hub: FakeHub, lang
     assert "WID-6.1.1, WID-6.2.2, WID-6.2.3, WID-6.4.1" in html  # renumbered only
     (sent,) = [r for r in hub.rulebook.requests if r.method == "POST"]
     assert "source" not in _json(sent)
+
+
+def _posts(hub: FakeHub, suffix: str) -> list[httpx.Request]:
+    return [r for r in hub.rulebook.requests if r.method == "POST" and r.url.path.endswith(suffix)]
+
+
+@pytest.mark.parametrize("lang", ["en", "fr"])
+def test_opening_a_page_records_that_languages_view(
+    ui: TestClient, hub: FakeHub, lang: str
+) -> None:
+    """The server, not the checkbox, knows which languages the approver opened."""
+    stub_drafts(hub)
+    ui.cookies.set(COOKIE, "demo-officer-02")
+    resp = ui.get(PAGE.format(lang=lang))
+    (started,) = _posts(hub, "/drafts/sessions")
+    assert started.headers["X-GovHub-User"] == "demo-officer-02"
+    (view,) = _posts(hub, "/views")
+    assert _json(view) == {"session_id": DRAFT_SESSION, "lang": lang}
+    assert view.headers["X-GovHub-User"] == "demo-officer-02"
+    shown = [
+        r
+        for r in hub.rulebook.requests
+        if r.method == "GET"
+        and r.url.path == f"/drafts/batches/{DRAFT_BATCH}"
+        and "session_id" in r.url.params
+    ]
+    assert shown and shown[-1].url.params["session_id"] == DRAFT_SESSION
+    assert f"demo-officer-02 {DRAFT_SESSION}" in resp.headers["set-cookie"].replace('"', "")
+
+
+def test_the_session_is_reused_and_sent_with_the_approval(ui: TestClient, hub: FakeHub) -> None:
+    batch = stub_drafts(hub)
+    iid = item_id(batch, "WID-6.1.2")
+    hub.rulebook.on("POST", f"/drafts/items/{iid}/approve", {"id": iid})
+    ui.get(PAGE.format(lang="en"))
+    ui.get(PAGE.format(lang="fr"))
+    assert len(_posts(hub, "/drafts/sessions")) == 1  # one session, both languages in it
+    assert [_json(v)["lang"] for v in _posts(hub, "/views")] == ["en", "fr"]
+    ui.post(f"/en/drafts/{DRAFT_BATCH}/items/{iid}/approve", data={"both_languages": "yes"})
+    (approved,) = _posts(hub, "/approve")
+    assert _json(approved)["session_id"] == DRAFT_SESSION
+
+
+def test_another_person_gets_another_session(ui: TestClient, hub: FakeHub) -> None:
+    stub_drafts(hub)
+    ui.get(PAGE.format(lang="en"))
+    resp = ui.post("/en/drafts/actor", data={"actor": "demo-officer-02", "back": PAGE.format(lang="en")},
+                   follow_redirects=False)  # fmt: skip
+    assert (
+        f'{SESSION_COOKIE}=""' in resp.headers["set-cookie"]
+        or "Max-Age=0" in resp.headers["set-cookie"]
+    )
+    # A session cookie that belongs to someone else is never sent for this person.
+    ui.cookies.set(COOKIE, "demo-officer-02")
+    ui.cookies.set(SESSION_COOKIE, f'"demo-officer-01 {DRAFT_SESSION}"')
+    batch = fixture("drafts-batch.open.json")
+    iid = item_id(batch, "WID-6.1.2")
+    hub.rulebook.on("POST", f"/drafts/items/{iid}/approve", {"id": iid})
+    ui.post(f"/en/drafts/{DRAFT_BATCH}/items/{iid}/approve", data={"both_languages": "yes"})
+    assert _json(_posts(hub, "/approve")[-1])["session_id"] is None
+
+
+@pytest.mark.parametrize(
+    ("lang", "message"),
+    [
+        ("en", "Open this draft in both languages"),
+        ("fr", "Ouvrez cette ébauche dans les deux langues"),
+    ],
+)
+def test_not_read_refusal_is_shown(ui: TestClient, hub: FakeHub, lang: str, message: str) -> None:
+    batch = stub_drafts(hub)
+    iid = item_id(batch, "WID-6.1.2")
+    refusal = {"detail": {"code": "not-read", "message": "not opened in this session: fr"}}
+    hub.rulebook.on("POST", f"/drafts/items/{iid}/approve", httpx.Response(409, json=refusal))
+    resp = ui.post(
+        f"/{lang}/drafts/{DRAFT_BATCH}/items/{iid}/approve", data={"both_languages": "yes"}
+    )
+    section = resp.text.split(f'id="item-{iid}"')[1].split("</section>")[0]
+    assert message in section
+
+
+def test_read_status_is_shown_per_item(ui: TestClient, hub: FakeHub) -> None:
+    batch = stub_drafts(hub)
+    for entry in batch["items"]:
+        entry["read"] = {"en": "2026-11-28T10:00:00+00:00", "fr": None}
+    html = ui.get(PAGE.format(lang="fr")).text
+    section = html.split(f'id="item-{item_id(batch, "WID-6.1.2")}"')[1].split("</section>")[0]
+    assert 'data-read-en="yes" data-read-fr="no"' in section
+    assert (
+        "ébauche en anglais ouverte" in section
+        and "ébauche en français pas encore ouverte" in section
+    )
+
+
+def test_a_published_batch_records_no_views(ui: TestClient, hub: FakeHub) -> None:
+    stub_drafts(hub, "published")
+    ui.get(PAGE.format(lang="en"))
+    assert not _posts(hub, "/drafts/sessions") and not _posts(hub, "/views")

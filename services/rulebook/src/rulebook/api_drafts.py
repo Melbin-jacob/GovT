@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govhub_shared.obligations import OBLIGATION_CODES
-from rulebook import approval, approval_log, drafts
+from rulebook import approval, approval_log, drafts, reading
 from rulebook.config import get_settings
 from rulebook.db import get_session
 from rulebook.identity import ENGINE_ROLE, ActorDep
@@ -105,8 +105,14 @@ def list_batches(session: SessionDep, catalog: str | None = None) -> list[dict[s
 
 
 @router.get("/batches/{batch_id}")
-def read_batch(batch_id: str, session: SessionDep) -> dict[str, Any]:
-    return drafts.batch_view(session, get_batch(session, batch_id))
+def read_batch(batch_id: str, session: SessionDep, session_id: str | None = None) -> dict[str, Any]:
+    """With ``session_id``: each item's ``read`` shows which languages count as opened."""
+    view = drafts.batch_view(session, get_batch(session, batch_id))
+    if session_id:
+        by_id = {i.id: i for i in drafts.items_of(session, batch_id)}
+        for entry in view["items"]:
+            entry["read"] = reading.read_times(session, by_id[entry["id"]], session_id)
+    return view
 
 
 @router.put("/items/{item_id}/model/{lang}")
@@ -129,6 +135,7 @@ def put_model_draft(
     if draft.obligation is not None and draft.obligation not in OBLIGATION_CODES:
         raise HTTPException(422, f"obligation must be one of {list(OBLIGATION_CODES)}")
     item.drafts = {**item.drafts, lang: {**draft.model_dump(), "source": "model"}}
+    reading.touch(item)
     if all(item.drafts[la].get("status") != "pending" for la in drafts.LANGS):
         item.status = "ready"
     approval_log.append(
@@ -164,6 +171,15 @@ class EditRequest(BaseModel):
 
 class DecisionRequest(BaseModel):
     reason: str = ""
+    session_id: str | None = Field(
+        default=None, description="Approval session in which both languages were opened"
+    )
+
+
+class ViewRequest(BaseModel):
+    session_id: str
+    lang: Literal["en", "fr"]
+    items: list[str] | None = Field(default=None, description="Default: every draft shown")
 
 
 class PublishRequest(BaseModel):
@@ -173,8 +189,33 @@ class PublishRequest(BaseModel):
 def _approval(call: Any) -> Any:
     try:
         return call()
-    except approval.ApprovalError as exc:
+    except (approval.ApprovalError, reading.ReadingError) as exc:
         raise HTTPException(exc.status, {"code": exc.code, "message": str(exc)}) from exc
+
+
+@router.post("/sessions", status_code=201)
+def start_session(session: SessionDep, actor: ActorDep) -> dict[str, Any]:
+    """An approval session: the drafts this person opens are recorded in it."""
+    row = _approval(lambda: reading.start(session, actor))
+    session.commit()
+    return {"id": row.id, "user": row.user_id, "started_at": row.started_at.isoformat()}
+
+
+@router.post("/batches/{batch_id}/views")
+def record_views(
+    batch_id: str, body: ViewRequest, session: SessionDep, actor: ActorDep
+) -> dict[str, Any]:
+    """The person opened one language's view of these drafts (control-centre calls this
+    when it shows the page)."""
+    batch = get_batch(session, batch_id)
+    items = [
+        i for i in drafts.items_of(session, batch.id) if body.items is None or i.id in body.items
+    ]
+    count = _approval(
+        lambda: reading.record(session, actor, batch, items, body.session_id, body.lang)
+    )
+    session.commit()
+    return {"recorded": count, "lang": body.lang, "session_id": body.session_id}
 
 
 @router.put("/items/{item_id}")
@@ -194,10 +235,14 @@ def edit_item(
 
 
 @router.post("/items/{item_id}/approve")
-def approve_item(item_id: str, session: SessionDep, actor: ActorDep) -> dict[str, Any]:
+def approve_item(
+    item_id: str, session: SessionDep, actor: ActorDep, body: DecisionRequest | None = None
+) -> dict[str, Any]:
+    """Both languages must have been opened in ``session_id`` since the last change."""
     item = get_item(session, item_id)
     batch = get_batch(session, item.batch_id)
-    _approval(lambda: approval.decide(session, batch, item, actor, "approve", ""))
+    sid = body.session_id if body else None
+    _approval(lambda: approval.decide(session, batch, item, actor, "approve", "", sid))
     session.commit()
     return drafts.item_view(item)
 
