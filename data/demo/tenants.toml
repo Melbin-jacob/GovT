@@ -1,0 +1,26 @@
+# FICTIONAL tenants of the demo (the same IDs as the fictional inventory). Seed with
+#   control-centre seed-tenants data/demo/tenants.toml
+# Every one is synthetic: AUTH_MODE=demo refuses to start if any tenant is not.
+# French names written by Claude Code, unverified.
+# Residency labels are PLACEHOLDER values (project owner's answer 8).
+
+[[tenants]]
+id = "agency-sample-benefits"
+name_en = "Agency of Sample Benefits (fictional)"
+name_fr = "Agence des prestations exemples (fictive)"
+synthetic = true
+residency = "unrestricted-synthetic"
+
+[[tenants]]
+id = "dept-example-services"
+name_en = "Department of Example Services (fictional)"
+name_fr = "Ministère des services exemples (fictif)"
+synthetic = true
+residency = "unrestricted-synthetic"
+
+[[tenants]]
+id = "office-fictional-permits"
+name_en = "Office of Fictional Permits (fictional)"
+name_fr = "Bureau des permis fictifs (fictif)"
+synthetic = true
+residency = "unrestricted-synthetic"

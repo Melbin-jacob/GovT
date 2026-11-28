@@ -166,8 +166,11 @@ services:
     build:
       context: .
       dockerfile: services/control-centre/Dockerfile
-    command: ["control-centre", "serve", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["control-centre", "serve", "--migrate", "--seed-tenants", "data/demo/tenants.toml",
+              "--host", "0.0.0.0", "--port", "8000"]
     environment:
+      # Its own database: tenants, and later their data settings and grants.
+      CONTROL_CENTRE_DATABASE_URL: postgresql+psycopg://govhub:govhub@postgres:5432/control_centre
       RULEBOOK_URL: http://rulebook:8000
       REVIEW_DESK_URL: http://review-desk:8000
       CONNECTOR_HUB_URL: http://connector-hub:8000
@@ -175,6 +178,8 @@ services:
     ports:
       - "127.0.0.1:8004:8000"
     depends_on:
+      postgres:
+        condition: service_healthy
       review-desk:
         condition: service_healthy
       assessment-engine:

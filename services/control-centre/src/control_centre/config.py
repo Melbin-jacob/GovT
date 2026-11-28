@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     assessment_engine_url: str = Field(
         default="http://127.0.0.1:8005", validation_alias="ASSESSMENT_ENGINE_URL"
     )
+    database_url: str = "postgresql+psycopg://govhub:govhub@localhost:5432/control_centre"
+    # Public keys of every token issuer (govhub-trust/1); see govhub_shared.auth.devkeys.
+    trust_file: str = Field(default="var/keys/trust.json", validation_alias="GOVHUB_TRUST_FILE")
     # Placeholder identity sent to review-desk. TODO(control-centre): OIDC sign-in.
     demo_user: str = "demo-reviewer-01"
     demo_role: str = "reviewer"

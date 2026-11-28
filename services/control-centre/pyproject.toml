@@ -11,7 +11,14 @@ dependencies = [
     "pydantic>=2.9,<3",
     "pydantic-settings>=2.6",
     "python-multipart>=0.0.12",
+    "govhub-shared",
+    "sqlalchemy>=2.0.36,<2.1",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.14",
 ]
+
+[tool.uv.sources]
+govhub-shared = { workspace = true }
 
 [project.scripts]
 control-centre = "control_centre.cli:main"

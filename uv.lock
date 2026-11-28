@@ -549,23 +549,31 @@ name = "govhub-control-centre"
 version = "0.1.0"
 source = { editable = "services/control-centre" }
 dependencies = [
+    { name = "alembic" },
     { name = "fastapi" },
+    { name = "govhub-shared" },
     { name = "httpx" },
     { name = "jinja2" },
+    { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-multipart" },
+    { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "alembic", specifier = ">=1.14" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "govhub-shared", editable = "shared" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "jinja2", specifier = ">=3.1.4" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
     { name = "pydantic", specifier = ">=2.9,<3" },
     { name = "pydantic-settings", specifier = ">=2.6" },
     { name = "python-multipart", specifier = ">=0.0.12" },
+    { name = "sqlalchemy", specifier = ">=2.0.36,<2.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
 

@@ -14,6 +14,8 @@ RUN uv sync --frozen --no-dev --no-editable --package govhub-control-centre
 FROM python:3.12-slim
 WORKDIR /app
 COPY --from=build /app/.venv /app/.venv
+# Fictional demo tenants only (seeded with --seed-tenants); no other data.
+COPY data/demo/tenants.toml ./data/demo/tenants.toml
 RUN chgrp -R 0 /app && chmod -R g=u /app
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 USER 1001

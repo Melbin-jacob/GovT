@@ -8,15 +8,20 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from importlib.resources import files
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
+from control_centre import tenants
 from control_centre.backends import BackendError
+from control_centre.config import get_settings
 from control_centre.i18n import LANGS, Translator
 from control_centre.screens import drafts, impact, inventory, log, policy, review
 from control_centre.web import LangDep, env, render
+from govhub_shared.auth import TrustStore
+from govhub_shared.auth.web import install
 
 app = FastAPI(
     title="GovHub control centre (demo UI)",
@@ -37,6 +42,17 @@ app.include_router(review.router)
 app.include_router(log.router)
 app.include_router(inventory.router)
 app.include_router(drafts.router)
+app.include_router(tenants.router)
+
+
+def load_trust() -> None:
+    """Public keys of the token issuers (services calling /internal/...)."""
+    path = Path(get_settings().trust_file)
+    if path.is_file():
+        install(app, "control-centre", TrustStore.from_file(path))
+
+
+load_trust()
 
 # Nothing is ever loaded from another origin: the browser enforces it too.
 CSP = (
