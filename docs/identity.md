@@ -121,3 +121,31 @@ each issuer's private key is a secret mounted into that service only, and every 
 gets the same trust file. **Rotation**: add the new public key (new `kid`) to the trust
 file everywhere, switch the issuer to the new private key, then remove the old public key
 after at most 5 minutes plus clock skew.
+
+## Tenant isolation in the database (row-level security)
+
+Every table holding one tenant's data has a `tenant` column and a PostgreSQL policy
+(`govhub_shared.tenancy`), enabled on 11 tables: the rulebook's `ai_systems` and
+`profile_assignments`; review-desk's `findings`, `review_sessions`, `decision_log` and
+`poam_versions`; the engine's `evidence_documents`, `evidence_passages`, `system_facts`,
+`assessments` and `assessment_results_documents`. Each request's database session is bound
+to the caller's tenants (the same rule as the application's checks: the tenants where the
+caller holds one of the service's tenant roles; every tenant only for a service token with
+the all-tenants scope). The binding is two transaction-local settings, re-applied at the
+start of every transaction; when they are absent the policies return no rows.
+
+The services connect as `govhub_app`, which owns no table and has no `BYPASSRLS`, so the
+policies bind it. Migrations and `assessment-engine backfill-tenants` run as the owner
+(`*_MIGRATION_DATABASE_URL`), which RLS is not forced on.
+
+A few platform operations read across tenants, each named in code (`tenancy.widened`):
+review-desk's intake (governance officer or hub service), the decision log's head (one
+chain for every tenant until per-tenant chains), whole-chain verification and checkpoints
+(counts and hashes only), the review rate (durations only) and a governance officer's
+forecast totals; the review-desk CLI (an operator's command on the whole log). Writes are
+still checked: a record for another tenant is refused even after the head was read.
+
+The policies back up the application's own checks (a forgotten filter returns nothing
+rather than another tenant's rows). They do not defend against arbitrary SQL run as the
+app role, which could change the settings. control-centre's tables (tenants, sign-in
+sessions) are platform tables and have no policy; connector-hub has no database.

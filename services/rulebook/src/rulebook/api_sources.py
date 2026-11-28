@@ -9,13 +9,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from rulebook.access import govern_content, read_shared
-from rulebook.db import get_session
-from rulebook.deps import LangParam, Tx, User
+from rulebook.deps import LangParam, Tx, User, scoped_session
 from rulebook.sources import store as source_store
 from rulebook.store import NotFoundError
 
 router = APIRouter(prefix="/sources", tags=["sources"])
-ReadSession = Annotated[Session, Depends(get_session)]
+ReadSession = Annotated[Session, Depends(scoped_session)]
 
 
 @router.post("", status_code=201, dependencies=[Depends(govern_content)])

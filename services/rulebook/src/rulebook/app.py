@@ -22,8 +22,7 @@ from rulebook.api_impact import router as impact_router
 from rulebook.api_inventory import router as inventory_router
 from rulebook.api_source_diff import router as source_diff_router
 from rulebook.api_sources import router as sources_router
-from rulebook.db import get_session
-from rulebook.deps import LangParam, Tx, User
+from rulebook.deps import LangParam, Tx, User, scoped_session
 from rulebook.diff import CatalogDiff
 from rulebook.profiles import store_loader
 
@@ -85,7 +84,7 @@ def health() -> dict[str, str]:
 
 
 @app.get("/ready", tags=["ops"])
-def ready(session: Annotated[Session, Depends(get_session)]) -> dict[str, str]:
+def ready(session: Annotated[Session, Depends(scoped_session)]) -> dict[str, str]:
     """Readiness: the database is reachable."""
     try:
         session.execute(text("SELECT 1"))
@@ -119,7 +118,7 @@ def import_catalog(
 
 @app.get("/catalogs", tags=["catalogs"])
 def list_catalogs(
-    session: Annotated[Session, Depends(get_session)], _who_read: ReadShared
+    session: Annotated[Session, Depends(scoped_session)], _who_read: ReadShared
 ) -> list[dict[str, Any]]:
     return store.list_catalogs(session)
 
@@ -128,7 +127,7 @@ def list_catalogs(
 def get_catalog_version(
     name: str,
     version: str,
-    session: Annotated[Session, Depends(get_session)],
+    session: Annotated[Session, Depends(scoped_session)],
     _who_read: ReadShared,
     lang: LangParam = "en",
 ) -> dict[str, Any]:
@@ -167,7 +166,7 @@ ToQ = Annotated[str, Query(alias="to", description="Target version")]
 @app.post("/catalogs/{name}/diff", tags=["diff"], response_model=CatalogDiff)
 def diff_post(
     name: str,
-    session: Annotated[Session, Depends(get_session)],
+    session: Annotated[Session, Depends(scoped_session)],
     _who_read: ReadShared,
     from_version: FromQ,
     to_version: ToQ,
@@ -182,7 +181,7 @@ def diff_post(
 @app.get("/catalogs/{name}/diff", tags=["diff"], response_model=CatalogDiff)
 def diff_get(
     name: str,
-    session: Annotated[Session, Depends(get_session)],
+    session: Annotated[Session, Depends(scoped_session)],
     _who_read: ReadShared,
     from_version: FromQ,
     to_version: ToQ,
@@ -203,7 +202,7 @@ class ResolvedProfileOut(BaseModel):
 
 @app.post("/profiles/resolve", tags=["profiles"], response_model=ResolvedProfileOut)
 def resolve_profile_endpoint(
-    session: Annotated[Session, Depends(get_session)],
+    session: Annotated[Session, Depends(scoped_session)],
     _who_read: ReadShared,
     profile: Annotated[dict[str, Any], Body(description="OSCAL 1.1.3 profile document")],
 ) -> Any:
@@ -228,7 +227,7 @@ def resolve_profile_endpoint(
 @app.get("/controls/{control_id}", tags=["controls"])
 def get_control(
     control_id: str,
-    session: Annotated[Session, Depends(get_session)],
+    session: Annotated[Session, Depends(scoped_session)],
     _who_read: ReadShared,
     version: Annotated[str | None, Query(description="Defaults to the latest")] = None,
     catalog: Annotated[str | None, Query(description="Needed if the ID is ambiguous")] = None,

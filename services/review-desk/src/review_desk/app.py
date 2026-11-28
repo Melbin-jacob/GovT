@@ -1,7 +1,8 @@
 """FastAPI application for the review desk.
 
-Must only be reachable on localhost or the internal network until control-centre provides
-real authentication: identity comes from placeholder headers (see identity.py).
+Callers present internal tokens (``govhub_shared.auth``); every request's database
+session is bound to the caller's tenants (row-level security, ``govhub_shared.tenancy``).
+The few platform-wide reads widen that scope explicitly below (``tenancy.widened``).
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from govhub_shared import tenancy
 from govhub_shared.auth import GOVERNANCE_OFFICER, Principal
 from govhub_shared.auth.client import trust_store
 from govhub_shared.auth.web import install
@@ -73,8 +75,10 @@ def intake(
     ] = None,
 ) -> dict[str, Any]:
     """Create one placeholder finding (unable-to-determine, no confidence) per affected
-    system x control. Idempotent per report."""
-    return queue.intake_report(session, report, servicenow)
+    system x control. Idempotent per report. Intake is platform-wide (a governance
+    officer or the hub's own services), so it reads and writes across tenants."""
+    with tenancy.widened(session, tenancy.ALL_TENANTS):
+        return queue.intake_report(session, report, servicenow)
 
 
 @app.get("/queue", tags=["findings"])
@@ -321,16 +325,19 @@ def verify_log(
     if unknown:
         raise HTTPException(422, f"unknown trust source(s) {unknown}; use file, servicenow")
     found, sources = trusted_checkpoints(trust, sink)
-    result = decision_log.verify_db(
-        session, expect_seq=expect_seq, expect_head=expect_head, checkpoints=found
-    ).as_dict()
+    # The one chain spans every tenant: verified whole, returning counts and hashes only.
+    with tenancy.widened(session, tenancy.ALL_TENANTS):
+        result = decision_log.verify_db(
+            session, expect_seq=expect_seq, expect_head=expect_head, checkpoints=found
+        ).as_dict()
     return {**result, "trusted_sources": sources}
 
 
 @app.get("/decision-log/checkpoint-status", tags=["decision log"])
 def checkpoint_status(session: ReadSession, user: LogReader, sink: Sink) -> dict[str, Any]:
     """Latest external checkpoint from each source, compared with the database head."""
-    head = decision_log.checkpoint(session)
+    with tenancy.widened(session, tenancy.ALL_TENANTS):  # seq and hash only
+        head = decision_log.checkpoint(session)
     out: dict[str, Any] = {"database_head": head, "every": get_settings().checkpoint_every}
     for source in ("file", "servicenow"):
         found, info = trusted_checkpoints([source], sink)
@@ -386,7 +393,8 @@ async def verify_export(
 @app.get("/decision-log/checkpoint", tags=["decision log"])
 def get_checkpoint(session: ReadSession, user: LogReader) -> dict[str, Any]:
     """Current head (seq, hash). Keep it outside the hub to detect truncation later."""
-    return decision_log.checkpoint(session)
+    with tenancy.widened(session, tenancy.ALL_TENANTS):  # seq and hash only
+        return decision_log.checkpoint(session)
 
 
 def _rate_config() -> forecast.RateConfig:
@@ -404,11 +412,13 @@ def forecast_report(
     """Reviewer hours an impact report will need, per tenant, against weekly capacity
     (the caller's tenants; a governance officer sees every tenant's totals, no findings)."""
     tenants = None if user.has(GOVERNANCE_OFFICER) else visible_tenants(user)
-    return forecast.from_report(session, _rate_config(), report, tenants)
+    with tenancy.widened(session, tenants):  # a governance officer: totals, no findings
+        return forecast.from_report(session, _rate_config(), report, tenants)
 
 
 @app.get("/forecast", tags=["forecast"])
 def forecast_queue(session: ReadSession, user: ForecastReader) -> dict[str, Any]:
     """Reviewer hours for the open review queue (the caller's tenants)."""
     tenants = None if user.has(GOVERNANCE_OFFICER) else visible_tenants(user)
-    return forecast.from_queue(session, _rate_config(), tenants)
+    with tenancy.widened(session, tenants):  # a governance officer: totals, no findings
+        return forecast.from_queue(session, _rate_config(), tenants)

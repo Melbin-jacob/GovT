@@ -11,6 +11,7 @@ from typing import Annotated, Final
 
 from fastapi import Depends
 
+from govhub_shared import tenancy
 from govhub_shared.auth import AUDITOR, REVIEWER, SYSTEM_OWNER, TENANT_ADMIN, Principal
 from govhub_shared.auth.web import principal, require_in_tenant
 
@@ -37,11 +38,10 @@ def reviewer_in(who: Principal, tenant: str) -> Reviewer:
     return Reviewer(who.id, REVIEWER)
 
 
-def visible_tenants(who: Principal) -> frozenset[str] | None:
-    """None: every tenant (a service with all-tenants scope); else the caller's."""
-    if who.kind == "service":
-        return None if who.all_tenants else frozenset()
-    return who.tenants_with(*TENANT_READERS)
+def visible_tenants(who: Principal | None) -> frozenset[str] | None:
+    """None: every tenant (a service with all-tenants scope); else the caller's.
+    The same scope binds the request's database session (row-level security)."""
+    return tenancy.visible(who, *TENANT_READERS)
 
 
 PrincipalDep = Annotated[Principal, Depends(principal)]

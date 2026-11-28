@@ -23,6 +23,7 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
+from govhub_shared import tenancy
 from govhub_shared.hashchain import (
     GENESIS,
     Checkpoint,
@@ -53,7 +54,11 @@ LOG_LOCK_KEY = 0x4C4F47434841494E  # "LOGCHAIN"
 def append(session: Session, record: dict[str, Any]) -> DecisionRecord:
     """Append a record (inside the caller's transaction). Fills seq and both hashes."""
     session.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": LOG_LOCK_KEY})
-    last = session.scalar(select(DecisionRecord).order_by(DecisionRecord.seq.desc()).limit(1))
+    # One chain for every tenant until per-tenant chains: its head may be another
+    # tenant's record, so it is read across tenants (only seq and hash are used). The new
+    # record is still inserted under the caller's scope (row-level security checks it).
+    with tenancy.widened(session, tenancy.ALL_TENANTS):
+        last = session.scalar(select(DecisionRecord).order_by(DecisionRecord.seq.desc()).limit(1))
     seq = (last.seq + 1) if last else 1
     previous = last.record_hash if last else GENESIS
     body = {**record, "seq": seq, "previous-record-hash": previous}

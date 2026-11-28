@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from rulebook.access import read_shared
-from rulebook.db import get_session
+from rulebook.deps import scoped_session
 from rulebook.sources import store as source_store
 from rulebook.sources.diff import METHOD, SPLIT_THRESHOLD, THRESHOLD, cross_check, diff_sources
 
@@ -56,7 +56,7 @@ def source_diff(
 
 def _endpoint(
     instrument: str,
-    session: Annotated[Session, Depends(get_session)],
+    session: Annotated[Session, Depends(scoped_session)],
     from_version: FromQ,
     to_version: ToQ,
     lang: LangQ = "both",

@@ -10,7 +10,6 @@ department sets it). Staged rollout when capacity is exceeded is not built yet
 
 from __future__ import annotations
 
-import json
 import math
 import statistics
 import tomllib
@@ -20,8 +19,10 @@ from pathlib import Path
 from typing import Any
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
+from govhub_shared import tenancy
 from review_desk.models import DecisionRecord, Finding
 from review_desk.queue import OPEN_STATES
 
@@ -53,13 +54,12 @@ def load_rate_config(path: Path) -> RateConfig:
 
 
 def measured_seconds(session: Session) -> list[float]:
-    rows = session.scalars(select(DecisionRecord.record_text).order_by(DecisionRecord.seq))
-    values = []
-    for text in rows:
-        seconds = json.loads(text).get("review-seconds")
-        if isinstance(seconds, int | float):
-            values.append(float(seconds))
-    return values
+    """Timed review durations from every tenant's decisions: the rate is a platform
+    statistic, so this reads across tenants (row-level security), the durations only."""
+    seconds = DecisionRecord.record_text.cast(JSONB)["review-seconds"]
+    with tenancy.widened(session, tenancy.ALL_TENANTS):
+        rows = session.scalars(select(seconds).order_by(DecisionRecord.seq)).all()
+    return [float(v) for v in rows if isinstance(v, int | float) and not isinstance(v, bool)]
 
 
 def current_rate(session: Session, config: RateConfig) -> dict[str, Any]:

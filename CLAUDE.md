@@ -120,6 +120,12 @@ verdicts plus a confidence score, and logs every human decision in a hash-chaine
   per tenant; governance-officer and platform-admin are platform-wide. No placeholder
   identity headers remain. A reviewer never decides a finding of a system whose evidence
   or facts they supplied (conflict of interest, enforced by review-desk).
+- Tenant data is isolated in the database too: services run as `govhub_app` (owns
+  nothing, no BYPASSRLS), migrations as the owner. Every table with tenant data gets a
+  `tenant` column and the RLS policy (`govhub_shared.tenancy.policy_sql`) in its migration
+  (a test fails otherwise); routes take their session from the binding dependency, never
+  `get_session` directly. A cross-tenant read is `tenancy.widened(...)`, named in code
+  and in `docs/identity.md`.
 - The decision log is append-only and hash-chained; never update or delete its rows.
   Its head is checkpointed outside the database (ServiceNow work note + checkpoint file on
   a separate volume); a checkpoint failure is reported, never blocks a decision.

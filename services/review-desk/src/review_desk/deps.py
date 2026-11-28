@@ -8,6 +8,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from govhub_shared import tenancy
 from govhub_shared.auth import (
     AUDITOR,
     GOVERNANCE_OFFICER,
@@ -18,9 +19,13 @@ from govhub_shared.auth import (
 )
 from govhub_shared.auth.web import require
 from review_desk.db import get_session
+from review_desk.identity import visible_tenants
+
+# The request's session, bound to the caller's tenants (row-level security).
+scoped_session = tenancy.tenant_session(get_session, visible_tenants)
 
 
-def transaction(session: Annotated[Session, Depends(get_session)]) -> Iterator[Session]:
+def transaction(session: Annotated[Session, Depends(scoped_session)]) -> Iterator[Session]:
     try:
         yield session
         session.commit()
@@ -33,7 +38,7 @@ def transaction(session: Annotated[Session, Depends(get_session)]) -> Iterator[S
 # default ("request") the commit ran after the client already had its 201, so a fast next
 # request could miss the row (seen in CI: a second POST /catalogs hit a duplicate name).
 Tx = Annotated[Session, Depends(transaction, scope="function")]
-ReadSession = Annotated[Session, Depends(get_session)]
+ReadSession = Annotated[Session, Depends(scoped_session)]
 # Who may call what (docs/access-matrix.md); tenant checks happen per finding.
 TenantReader = Annotated[
     Principal, Depends(require(SYSTEM_OWNER, REVIEWER, TENANT_ADMIN, AUDITOR,

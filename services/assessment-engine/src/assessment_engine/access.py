@@ -13,6 +13,7 @@ from typing import Annotated, Any, Final, Protocol
 import httpx
 from fastapi import Depends, HTTPException
 
+from govhub_shared import tenancy
 from govhub_shared.auth import (
     AUDITOR,
     GOVERNANCE_OFFICER,
@@ -33,6 +34,13 @@ ASSESSORS: Final = (REVIEWER,)
 SIGNED_IN: Final = (SYSTEM_OWNER, REVIEWER, TENANT_ADMIN, AUDITOR, GOVERNANCE_OFFICER,
                     PLATFORM_ADMIN)  # fmt: skip
 CACHE_SECONDS: Final = 60.0
+
+
+def visible_tenants(who: Principal | None) -> frozenset[str] | None:
+    """The tenants whose rows the request's database session sees (row-level security):
+    where the caller holds any engine role; every tenant for a service with that scope.
+    Per-system role checks still decide what the caller may do."""
+    return tenancy.visible(who, *METADATA_READERS)
 
 
 class SystemDirectory(Protocol):

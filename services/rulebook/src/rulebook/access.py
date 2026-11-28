@@ -10,6 +10,7 @@ from typing import Annotated, Final
 
 from fastapi import Depends
 
+from govhub_shared import tenancy
 from govhub_shared.auth import (
     AUDITOR,
     GOVERNANCE_OFFICER,
@@ -55,11 +56,10 @@ engine_drafts = require(services=("assessment-engine",))
 audit_drafts = require(GOVERNANCE_OFFICER, AUDITOR)
 
 
-def visible_tenants(who: Principal) -> frozenset[str] | None:
-    """None: every tenant (a service job with all-tenants scope); else the caller's."""
-    if who.kind == "service":
-        return None if who.all_tenants else frozenset()
-    return who.tenants_with(*TENANT_READERS)
+def visible_tenants(who: Principal | None) -> frozenset[str] | None:
+    """None: every tenant (a service job with all-tenants scope); else the caller's.
+    The same scope binds the request's database session (row-level security)."""
+    return tenancy.visible(who, *TENANT_READERS)
 
 
 def require_sync_scope(who: Principal) -> None:

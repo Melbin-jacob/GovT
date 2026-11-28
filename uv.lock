@@ -646,6 +646,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyjwt" },
     { name = "regex" },
+    { name = "sqlalchemy" },
 ]
 
 [package.metadata]
@@ -658,6 +659,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.9,<3" },
     { name = "pyjwt", specifier = ">=2.10,<3" },
     { name = "regex", specifier = ">=2024.11" },
+    { name = "sqlalchemy", specifier = ">=2.0,<3" },
 ]
 
 [[package]]

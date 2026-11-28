@@ -29,6 +29,7 @@ from assessment_engine.access import (
     ReviewDeskOnly,
     Systems,
     check_system,
+    visible_tenants,
 )
 from assessment_engine.config import get_settings
 from assessment_engine.controls import ControlSource, RulebookControls
@@ -42,12 +43,14 @@ from assessment_engine.models import (
 from assessment_engine.review_desk import HttpReviewDesk, ReviewDesk, draft_of
 from assessment_engine.rulebook_drafts import HttpRulebookDrafts, RulebookDrafts, draft_batch
 from assessment_engine.settings_file import AssessmentConfig, load_config
+from govhub_shared import tenancy
 from govhub_shared.auth.client import trust_store
 from govhub_shared.auth.web import install
 from govhub_shared.model_gateway import ChatGateway, gateway_from_env
 
 app = FastAPI(title="Canadian AI Governance Hub - Assessment engine", version="0.1.0")
-ReadSession = Annotated[Session, Depends(get_session)]
+# The request's session, bound to the caller's tenants (row-level security).
+ReadSession = Annotated[Session, Depends(tenancy.tenant_session(get_session, visible_tenants))]
 # Internal tokens (GOVHUB_TRUST_FILE); without them protected endpoints answer 503.
 _trust = trust_store()
 if _trust is not None:

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from rulebook.access import ReadImpact, visible_tenants
 from rulebook.config import get_settings
-from rulebook.db import get_session
+from rulebook.deps import scoped_session
 from rulebook.impact import ImpactRequest, build_report, load_due_dates
 from rulebook.store import InvalidCatalogError
 
@@ -20,7 +20,7 @@ router = APIRouter(tags=["impact"])
 
 @router.post("/impact-reports")
 def impact_report(
-    session: Annotated[Session, Depends(get_session)],
+    session: Annotated[Session, Depends(scoped_session)],
     who: ReadImpact,
     payload: Annotated[
         dict[str, Any],

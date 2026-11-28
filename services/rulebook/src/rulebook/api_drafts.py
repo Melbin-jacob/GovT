@@ -18,12 +18,12 @@ from govhub_shared.obligations import OBLIGATION_CODES
 from rulebook import approval, approval_log, drafts, reading
 from rulebook.access import audit_drafts, edit_drafts, engine_drafts, govern_drafts, read_drafts
 from rulebook.config import get_settings
-from rulebook.db import get_session
+from rulebook.deps import scoped_session
 from rulebook.identity import ENGINE_ROLE, ActorDep
 from rulebook.models import DraftBatch, DraftItem
 
 router = APIRouter(prefix="/drafts", tags=["drafts"])
-SessionDep = Annotated[Session, Depends(get_session)]
+SessionDep = Annotated[Session, Depends(scoped_session)]
 
 
 class BatchRequest(BaseModel):

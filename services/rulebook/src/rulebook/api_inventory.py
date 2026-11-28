@@ -21,12 +21,11 @@ from rulebook.access import (
     require_sync_scope,
     visible_tenants,
 )
-from rulebook.db import get_session
-from rulebook.deps import Tx, User
+from rulebook.deps import Tx, User, scoped_session
 from rulebook.store import InvalidCatalogError, NotFoundError
 
 router = APIRouter()
-ReadSession = Annotated[Session, Depends(get_session)]
+ReadSession = Annotated[Session, Depends(scoped_session)]
 
 
 @router.put("/profiles/{name}", tags=["profiles"], dependencies=[Depends(govern_content)])

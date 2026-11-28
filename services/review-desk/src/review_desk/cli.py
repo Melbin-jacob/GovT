@@ -12,6 +12,7 @@ def _log_command(args: argparse.Namespace) -> int:
 
     from sqlalchemy.orm import sessionmaker
 
+    from govhub_shared import tenancy
     from review_desk import checkpoints, decision_log
     from review_desk.config import get_settings
     from review_desk.db import get_engine
@@ -42,6 +43,9 @@ def _log_command(args: argparse.Namespace) -> int:
         print(json.dumps(result.as_dict(), indent=2))
         return 0 if result.ok else 1
     with sessionmaker(bind=get_engine())() as session:
+        # An operator's command on the whole log: every tenant (row-level security would
+        # otherwise show the app role nothing, and an empty log "verifies").
+        tenancy.bind(session, tenancy.ALL_TENANTS)
         if args.command == "verify-log":
             result = decision_log.verify_db(
                 session,
